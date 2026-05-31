@@ -1,11 +1,16 @@
-import { Signal, useComputed, useSignal } from "@preact/signals";
+import {
+  Signal,
+  useComputed,
+  useSignal,
+  useSignalEffect,
+} from "@preact/signals";
 import { List, Map } from "immutable";
 import { Attributes } from "preact";
 import { useCallback, useContext } from "preact/hooks";
 import { Checkbox } from "../components/input";
 import { HumanName, Thumbnail } from "../components/util";
 import { AppState } from "../data";
-import { CraftList, ShowCraftList } from "../data/craftList";
+import { CraftList } from "../data/craftList";
 import { ExportWeapon } from "../data/schema";
 import cx from "../style";
 
@@ -39,7 +44,7 @@ export const InvasionResources = [
 type SelectedCategory = keyof typeof categoryMap;
 
 const modularRegexp = new RegExp(
-  "^(/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos|/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts|/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts|/Lotus/Types/Items/Deimos/WoundedInfested|/Lotus/Types/Vehicles/Hoverboard/HoverboardParts|/Lotus/Weapons/Corpus/OperatorAmplifiers|/Lotus/Weapons/Infested/Pistols/InfKitGun|/Lotus/Weapons/Ostron/Melee/ModularMelee|/Lotus/Weapons/Sentients/OperatorAmplifiers|/Lotus/Weapons/SolarisUnited)",
+  "^(/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos|/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts|/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts|/Lotus/Types/Items/Deimos/WoundedInfested|/Lotus/Types/Vehicles/Hoverboard/HoverboardParts|/Lotus/Weapons/Corpus/OperatorAmplifiers|/Lotus/Weapons/Infested/Pistols/InfKitGun|/Lotus/Weapons/Ostron/Melee/ModularMelee|/Lotus/Weapons/Sentients/OperatorAmplifiers|/Lotus/Weapons/SolarisUnited|/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire)",
 );
 
 const excludeModular = (weapons: ExportWeapon[]) =>
@@ -83,44 +88,6 @@ export function BrowseWeapons() {
       .toArray(),
   );
 
-  const totalWantedResources = useComputed(() => {
-    const resources: { [name: string]: number } = {};
-
-    function calcResources(path: string[], multi = 1) {
-      const uniqueName = path[path.length - 1];
-
-      const recipe = recipes.find((c) => c.resultType == uniqueName);
-      if (recipe == null) return;
-
-      for (const { ItemType, ItemCount } of recipe.ingredients) {
-        if (!(ItemType in resources)) resources[ItemType] = 0;
-        if (
-          !ResourcesLegacyCraftable.includes(ItemType) &&
-          recipes.some((r) => r.resultType == ItemType)
-        ) {
-          console.log(
-            `for ${path.map(HumanName).join(" => ")}: ${ItemType} x${ItemCount}`,
-          );
-          resources[ItemType] += ItemCount;
-          calcResources([...path, ItemType], ItemCount);
-        } else {
-          const total = ItemCount * Math.ceil(multi / recipe.num);
-          console.log(
-            `for ${path.map(HumanName).join(" => ")}: ${ItemType} x${total}`,
-          );
-          if (total > 12500)
-            console.warn(`Requirement for ${ItemType} seems too high`);
-          // e.g. deimos alloys are crafted in batches of 20, but some recipes need <20, so ensure we round up to the nearest batch size
-          resources[ItemType] += total;
-        }
-      }
-    }
-
-    for (const { uniqueName } of weapons.value) calcResources([uniqueName]);
-
-    return resources;
-  });
-
   const tab = (label: SelectedCategory) => (
     <li className={cx("nav-item")}>
       <a
@@ -140,13 +107,28 @@ export function BrowseWeapons() {
     [masteredWeapons],
   );
 
-  const craftList = useComputed(() => {
-    var cl = new CraftList(manifest, useInvasions.value);
-    for (const w of weapons.value) cl.add(w.uniqueName);
-    return cl;
+  const craftListLoading = useSignal(true);
+  const craftList = useSignal(new CraftList(manifest, true));
+  const ingredientsFlat = useSignal<[string, [string, number]][]>([]);
+
+  useSignalEffect(() => {
+    useInvasions.value;
+    weapons.value;
+    craftListLoading.value = true;
+    setTimeout(async () => {
+      console.log("starting expensive computation");
+      var cl = new CraftList(
+        manifest,
+        useInvasions.value,
+        weapons.value.map((w) => w.uniqueName),
+      );
+      craftList.value = cl;
+      ingredientsFlat.value = cl.flattened();
+      craftListLoading.value = false;
+    }, 0);
   });
 
-  const ingredientsFlat = useComputed(() => craftList.value.flattened());
+  const collapseShow = useSignal(false);
 
   return (
     <>
@@ -157,38 +139,43 @@ export function BrowseWeapons() {
           {tab("Melee")}
           {tab("All")}
         </ul>
-        <div className={cx("user-select-none")}>
+        <div>
+          <button
+            className={cx("btn", "btn-primary")}
+            onClick={() => (collapseShow.value = !collapseShow.value)}
+          >
+            {collapseShow.value ? "Hide options" : "Show options"}
+          </button>
+        </div>
+      </nav>
+      <div className={cx("user-select-none", "d-flex", "justify-content-end")}>
+        <div className={cx("collapse", "mb-2", { show: collapseShow.value })}>
           <Checkbox
             value={useInvasions}
-            label="Use invasions to gather components"
+            label="Research components come from invasions"
           />
           <Checkbox value={showImage} label="Enable images" />
           <Checkbox value={showMastered} label="Show mastered" />
         </div>
-      </nav>
+      </div>
       <div className={cx("container")}>
-        <div
-          className={cx("card", "overflow-y-scroll", "g-col-6")}
-          style={{ height: "300px" }}
-        >
-          <div className={cx("card-body")}>
-            <ShowCraftList list={craftList.value.items} />
+        <div className={cx("grid")}>
+          <div
+            className={cx("card", "overflow-y-scroll", "g-col-12")}
+            style={{ maxHeight: "400px" }}
+          >
+            <div className={cx("card-body")}>
+              <h5 className={cx("card-title")}>Total required resources:</h5>
+              <ul>
+                {ingredientsFlat.value.map((e) => (
+                  <li>
+                    <Thumbnail id={e[0]} width="32px" /> {HumanName(e[0])}:{" "}
+                    {e[1][1]}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-        </div>
-        <div
-          className={cx("card", "overflow-y-scroll", "g-col-6")}
-          style={{ height: "300px" }}
-        >
-          <div className={cx("card-body")}>
-            {Object.entries(ingredientsFlat.value).map((e) => (
-              <p>
-                {HumanName(e[0])}: {e[1]}
-              </p>
-            ))}
-          </div>
-        </div>
-        {/* <ListResources items={totalWantedResources} /> */}
-        <div className={cx("grid", "text-center")}>
           {weapons.value.map((c, i) => (
             <WeaponCard
               weapon={c}
@@ -201,30 +188,6 @@ export function BrowseWeapons() {
         </div>
       </div>
     </>
-  );
-}
-
-function ListResources({
-  items,
-}: {
-  items: Signal<{ [name: string]: number }>;
-}) {
-  return (
-    <div className={cx("card")}>
-      <div className={cx("card-body")}>
-        <ul>
-          {Object.entries(items.value).map((entry) => {
-            const [key, quant] = entry;
-            return (
-              <li key={key}>
-                <Thumbnail id={key} alt={HumanName(key)} width="32px" />{" "}
-                {HumanName(key)} x{quant}
-              </li>
-            );
-          })}
-        </ul>
-      </div>
-    </div>
   );
 }
 

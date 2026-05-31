@@ -1,4 +1,4 @@
-import { HumanName, Thumbnail } from "../components/util";
+import { human_name, HumanName, Thumbnail } from "../components/util";
 import { InvasionResources, ResourcesLegacyCraftable } from "../pages/Weapons";
 import { Manifest } from "./manifest";
 
@@ -7,9 +7,10 @@ export class CraftList {
   private invasion: boolean;
   items: CraftItem[] = [];
 
-  constructor(manifest: Manifest, invasion = true) {
+  constructor(manifest: Manifest, invasion = true, items: string[] = []) {
     this.manifest = manifest;
     this.invasion = invasion;
+    for (const it of items) this.add(it);
   }
 
   add(uniqueName: string) {
@@ -19,20 +20,29 @@ export class CraftList {
   }
 
   flattened() {
-    const allItems: { [key: string]: number } = {};
+    const allItems: { [key: string]: [string, number] } = {};
 
     const insertItem = (item: CraftItem) => {
       if (!(item.recipe.uniqueName in allItems))
-        allItems[item.recipe.uniqueName] = 0;
+        allItems[item.recipe.uniqueName] = [
+          human_name(item.recipe.uniqueName, this.manifest),
+          0,
+        ];
 
-      allItems[item.recipe.uniqueName] += item.quantity;
+      allItems[item.recipe.uniqueName][1] += item.quantity;
 
       for (const req of item.recipe.requires) insertItem(req);
     };
 
     for (const item of this.items) insertItem(item);
 
-    return allItems;
+    const paired = Object.entries(allItems);
+    paired.sort((a, b) => {
+      var quant = b[1][1] - a[1][1];
+      if (quant == 0) return a[1][0].localeCompare(b[1][0]);
+      return quant;
+    });
+    return paired;
   }
 
   toJSON() {
