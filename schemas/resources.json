@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generated Schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "uniqueName": { "type": "string" },
+      "name": { "type": "string" },
+      "codexSecret": { "type": "boolean" },
+      "excludeFromCodex": { "type": "boolean" },
+      "showInInventory": { "type": "boolean" },
+      "description": { "type": "string" },
+      "longDescription": { "type": "string" },
+      "parentName": { "type": "string" },
+      "primeSellingPrice": { "type": "number" }
+    },
+    "required": [
+      "uniqueName",
+      "description",
+      "name",
+      "parentName",
+      "codexSecret"
+    ]
+  }
+}

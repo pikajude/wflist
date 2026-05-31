@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Generated Schema",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "name": { "type": "string" },
+      "uniqueName": { "type": "string" },
+      "description": { "type": "string" },
+      "codexSecret": { "type": "boolean" },
+      "excludeFromCodex": { "type": "boolean" },
+      "masteryReq": { "type": "number" },
+      "slot": { "type": "number" },
+      "omegaAttenuation": { "type": "number" },
+      "primeOmegaAttenuation": { "type": "number" },
+      "fireRate": { "type": "number" },
+      "procChance": { "type": "number" },
+      "criticalChance": { "type": "number" },
+      "criticalMultiplier": { "type": "number" },
+      "totalDamage": { "type": "number" },
+      "productCategory": { "type": "string" },
+      "multishot": { "type": "number" },
+      "accuracy": { "type": "number" },
+      "magazineSize": { "type": "number" },
+      "reloadTime": { "type": "number" },
+      "damagePerShot": {
+        "type": "array",
+        "minLength": 20,
+        "maxLength": 20,
+        "items": { "type": "number" }
+      },
+      "noise": { "type": "string", "enum": ["ALARMING", "SILENT"] },
+      "trigger": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "AUTO",
+          "Auto Burst",
+          "BURST",
+          "CHARGE",
+          "DUPLEX",
+          "HELD",
+          "SEMI"
+        ]
+      },
+      "sentinel": { "type": "boolean" },
+
+      "windUp": { "type": "number" },
+      "range": { "type": "number" },
+      "slamAttack": { "type": "number" },
+      "heavyAttackDamage": { "type": "number" },
+      "heavySlamAttack": { "type": "number" },
+      "heavySlamRadius": { "type": "number" },
+      "heavySlamRadialDamage": { "type": "number" },
+      "slamRadius": { "type": "number" },
+      "blockingAngle": { "type": "number" },
+      "slamRadialDamage": { "type": "number" },
+      "followThrough": { "type": "number" },
+      "comboDuration": { "type": "number" },
+      "slideAttack": { "type": "number" },
+
+      "maxLevelCap": { "type": "number", "$comment": "For adversary weapons" }
+    },
+    "required": [
+      "name",
+      "uniqueName",
+      "description",
+      "omegaAttenuation",
+      "fireRate",
+      "procChance",
+      "totalDamage",
+      "productCategory",
+      "masteryReq",
+      "criticalChance",
+      "criticalMultiplier"
+    ],
+    "oneOf": [
+      {
+        "properties": {
+          "productCategory": {
+            "type": "string",
+            "enum": [
+              "LongGuns",
+              "OperatorAmps",
+              "Pistols",
+              "SentinelWeapons",
+              "SpaceGuns"
+            ]
+          }
+        },
+        "required": ["noise", "damagePerShot", "slot"]
+      },
+      {
+        "properties": {
+          "productCategory": {
+            "type": "string",
+            "enum": ["Melee", "SpaceMelee"]
+          }
+        },
+        "required": [
+          "range",
+          "slamAttack",
+          "heavyAttackDamage",
+          "heavySlamAttack",
+          "slamRadius",
+          "blockingAngle",
+          "slamRadialDamage",
+          "followThrough",
+          "comboDuration",
+          "slideAttack",
+          "slot"
+        ]
+      },
+      {
+        "properties": {
+          "productCategory": {
+            "type": "string",
+            "enum": ["SentinelWeapons"]
+          }
+        },
+        "required": ["blockingAngle"]
+      },
+      {
+        "properties": {
+          "uniqueName": {
+            "type": "string",
+            "enum": [
+              "/Lotus/Weapons/Tenno/Melee/Swords/DarkSword/DarkSwordDaggerHybridWeapon"
+            ],
+            "$comment": "Dark Split-Sword has different base stats depending on equipped stance, so they are not specified in the schema."
+          }
+        },
+        "required": ["slot"]
+      },
+      {
+        "properties": {
+          "productCategory": {
+            "type": "string",
+            "enum": ["SpecialItems"]
+          }
+        },
+        "required": ["slot"]
+      },
+      {
+        "properties": {
+          "uniqueName": {
+            "type": "string",
+            "pattern": "^(/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos|/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts|/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts|/Lotus/Types/Items/Deimos/WoundedInfested|/Lotus/Types/Vehicles/Hoverboard/HoverboardParts|/Lotus/Weapons/Corpus/OperatorAmplifiers|/Lotus/Weapons/Infested/Pistols/InfKitGun|/Lotus/Weapons/Ostron/Melee/ModularMelee|/Lotus/Weapons/Sentients/OperatorAmplifiers|/Lotus/Weapons/SolarisUnited)",
+            "$comment": "All modular components (K-drives, zaws, kitguns, moas, hounds, amps) as well as revivification resources"
+          }
+        }
+      }
+    ]
+  }
+}
