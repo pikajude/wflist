@@ -67,11 +67,48 @@ export function BrowseWeapons() {
     List(excludeModular(manifest.exports["ExportWeapons"])),
   );
 
-  const showImage = useSignal(true);
-  const showMastered = useSignal(true);
-  const useInvasions = useSignal(true);
+  const showImage = useSignal(
+    (localStorage.getItem("wfListShowImage") || "true") == "true",
+  );
+  const showMastered = useSignal(
+    (localStorage.getItem("wfListShowMastered") || "true") == "true",
+  );
+  const useInvasions = useSignal(
+    (localStorage.getItem("wfListUseInvasions") || "true") == "true",
+  );
 
-  const masteredWeapons = useSignal<Map<string, boolean>>(Map());
+  useSignalEffect(() => {
+    localStorage.setItem("wfListShowImage", showImage.value ? "true" : "false");
+    localStorage.setItem(
+      "wfListShowMastered",
+      showMastered.value ? "true" : "false",
+    );
+    localStorage.setItem(
+      "wfListUseInvasions",
+      useInvasions.value ? "true" : "false",
+    );
+  });
+
+  var storedM = Map<string, boolean>();
+  try {
+    storedM = storedM.withMutations((m) => {
+      for (const name of JSON.parse(
+        localStorage.getItem("wfListMastered") ?? "[]",
+      ) as string[])
+        m.set(name, true);
+    });
+  } catch (SyntaxError) {
+    console.log("Unable to load stored mastered weapons.");
+  }
+
+  const masteredWeapons = useSignal<Map<string, boolean>>(storedM);
+
+  useSignalEffect(() => {
+    const allMastered = Array.from(
+      masteredWeapons.value.filter((k) => k).keys(),
+    );
+    localStorage.setItem("wfListMastered", JSON.stringify(allMastered));
+  });
 
   const weapons = useComputed(() =>
     allWeapons.value
@@ -148,34 +185,39 @@ export function BrowseWeapons() {
           </button>
         </div>
       </nav>
-      <div className={cx("user-select-none", "d-flex", "justify-content-end")}>
-        <div className={cx("collapse", "mb-2", { show: collapseShow.value })}>
+      <div
+        className={cx(
+          "user-select-none",
+          "collapse",
+          "mb-2",
+          "justify-content-end",
+          {
+            show: collapseShow.value,
+            "d-flex": collapseShow.value,
+          },
+        )}
+      >
+        <div className={cx("d-flex", "flex-column")}>
           <Checkbox
             value={useInvasions}
             label="Research components come from invasions"
           />
           <Checkbox value={showImage} label="Enable images" />
           <Checkbox value={showMastered} label="Show mastered" />
+          <button
+            onClick={() => (masteredWeapons.value = Map())}
+            className={cx("btn", "btn-danger")}
+          >
+            Clear mastery
+          </button>
         </div>
       </div>
       <div className={cx("container")}>
         <div className={cx("grid")}>
-          <div
-            className={cx("card", "overflow-y-scroll", "g-col-12")}
-            style={{ maxHeight: "400px" }}
-          >
-            <div className={cx("card-body")}>
-              <h5 className={cx("card-title")}>Total required resources:</h5>
-              <ul>
-                {ingredientsFlat.value.map((e) => (
-                  <li>
-                    <Thumbnail id={e[0]} width="32px" /> {HumanName(e[0])}:{" "}
-                    {e[1][1]}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <IngredientsCard
+            ingredients={ingredientsFlat}
+            loading={craftListLoading}
+          />
           {weapons.value.map((c, i) => (
             <WeaponCard
               weapon={c}
@@ -227,6 +269,68 @@ function WeaponCard(
         )}
         {masteredWeapons.value.get(weapon.uniqueName, false) && "[M] "}
         {weapon.name}
+      </div>
+    </div>
+  );
+}
+
+function IngredientsCard(props: {
+  ingredients: Signal<[string, [string, number]][]>;
+  loading: Signal<boolean>;
+}) {
+  const ownedQuantities = useSignal<Map<string, number>>(Map());
+
+  return (
+    <div
+      className={cx("card", "overflow-y-scroll", "g-col-12")}
+      style={{ maxHeight: "400px" }}
+    >
+      <div className={cx("card-body")}>
+        <h5 className={cx("card-title")}>Total required resources:</h5>
+        <table className={cx("table", "table-striped")}>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Total</th>
+              <th>Owned</th>
+              <th>Needed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {props.loading.value ? (
+              <tr>
+                <td colSpan={4}>Calculating...</td>
+              </tr>
+            ) : (
+              props.ingredients.value.map((e, i) => (
+                <tr>
+                  <td>
+                    <Thumbnail id={e[0]} width="32px" /> {HumanName(e[0])}
+                  </td>
+                  <td>{e[1][1]}</td>
+                  <td>
+                    <input
+                      type="number"
+                      value={ownedQuantities.value.get(e[0])}
+                      onChange={(evt) => {
+                        ownedQuantities.value = ownedQuantities.value.set(
+                          e[0],
+                          evt.currentTarget.valueAsNumber,
+                        );
+                      }}
+                    />
+                  </td>
+                  <td>
+                    {Math.max(
+                      0,
+                      e[1][1] - (ownedQuantities.value.get(e[0]) || 0),
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
