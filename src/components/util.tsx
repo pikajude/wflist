@@ -10,11 +10,8 @@ export function Thumbnail(props: { id: string } & ImgHTMLAttributes) {
   return <img src={manifest.image_url(id)} {...rest} />;
 }
 
-export function HumanName(props: { id: string }) {
+export function HumanName(id: string) {
   const { manifest } = useContext(AppState);
 
-  const readable = manifest.names[props.id];
-  if (readable == null) return `Unknown key: ${props.id}`;
-
-  return readable;
+  return manifest.names[id];
 }

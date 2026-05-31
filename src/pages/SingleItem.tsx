@@ -28,7 +28,7 @@ export function SingleItem() {
               {recipe.ingredients.map((i, k) => (
                 <li key={k}>
                   <Thumbnail id={i.ItemType} width="32px" />
-                  <HumanName id={i.ItemType} /> x{i.ItemCount}
+                  {HumanName(i.ItemType)} x{i.ItemCount}
                 </li>
               ))}
             </ul>
