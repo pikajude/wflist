@@ -13,6 +13,7 @@
 		"immutable": "^5.1.5",
 		"localforage": "^1.10.0",
 		"lzma1": "^0.3.0",
+		"memoize": "^11.0.0",
 		"preact": "^10.26.9",
 		"preact-iso": "^2.12.0",
 		"preact-render-to-string": "^6.6.7"

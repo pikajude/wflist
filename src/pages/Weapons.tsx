@@ -5,6 +5,7 @@ import { useCallback, useContext } from "preact/hooks";
 import { Checkbox } from "../components/input";
 import { HumanName, Thumbnail } from "../components/util";
 import { AppState } from "../data";
+import { CraftList, ShowCraftList } from "../data/craftList";
 import { ExportWeapon } from "../data/schema";
 import cx from "../style";
 
@@ -16,7 +17,7 @@ const categoryMap = {
 } as const;
 
 // apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
-const resourcesNoLongerCraftable = [
+export const ResourcesLegacyCraftable = [
   "/Lotus/Types/Items/MiscItems/Morphic",
   "/Lotus/Types/Items/MiscItems/Neurode",
   "/Lotus/Types/Items/MiscItems/OrokinCell",
@@ -29,7 +30,20 @@ const resourcesNoLongerCraftable = [
   "/Lotus/Types/Items/RailjackMiscItems/GallosRailjackItem",
 ];
 
+export const InvasionResources = [
+  "/Lotus/Types/Items/Research/BioComponent",
+  "/Lotus/Types/Items/Research/ChemComponent",
+  "/Lotus/Types/Items/Research/EnergyComponent",
+];
+
 type SelectedCategory = keyof typeof categoryMap;
+
+const modularRegexp = new RegExp(
+  "^(/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos|/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts|/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts|/Lotus/Types/Items/Deimos/WoundedInfested|/Lotus/Types/Vehicles/Hoverboard/HoverboardParts|/Lotus/Weapons/Corpus/OperatorAmplifiers|/Lotus/Weapons/Infested/Pistols/InfKitGun|/Lotus/Weapons/Ostron/Melee/ModularMelee|/Lotus/Weapons/Sentients/OperatorAmplifiers|/Lotus/Weapons/SolarisUnited)",
+);
+
+const excludeModular = (weapons: ExportWeapon[]) =>
+  weapons.filter((w) => !w.uniqueName.match(modularRegexp));
 
 export function BrowseWeapons() {
   const { manifest } = useContext(AppState);
@@ -44,10 +58,13 @@ export function BrowseWeapons() {
     urlHash in categoryMap ? (urlHash as SelectedCategory) : "Primary";
 
   const category = useSignal<SelectedCategory>(initialCategory);
-  const allWeapons = useSignal(List(manifest.exports["ExportWeapons"]));
+  const allWeapons = useSignal(
+    List(excludeModular(manifest.exports["ExportWeapons"])),
+  );
 
   const showImage = useSignal(true);
   const showMastered = useSignal(true);
+  const useInvasions = useSignal(true);
 
   const masteredWeapons = useSignal<Map<string, boolean>>(Map());
 
@@ -78,7 +95,7 @@ export function BrowseWeapons() {
       for (const { ItemType, ItemCount } of recipe.ingredients) {
         if (!(ItemType in resources)) resources[ItemType] = 0;
         if (
-          !resourcesNoLongerCraftable.includes(ItemType) &&
+          !ResourcesLegacyCraftable.includes(ItemType) &&
           recipes.some((r) => r.resultType == ItemType)
         ) {
           console.log(
@@ -123,6 +140,14 @@ export function BrowseWeapons() {
     [masteredWeapons],
   );
 
+  const craftList = useComputed(() => {
+    var cl = new CraftList(manifest, useInvasions.value);
+    for (const w of weapons.value) cl.add(w.uniqueName);
+    return cl;
+  });
+
+  const ingredientsFlat = useComputed(() => craftList.value.flattened());
+
   return (
     <>
       <nav className={cx("navbar")}>
@@ -133,12 +158,36 @@ export function BrowseWeapons() {
           {tab("All")}
         </ul>
         <div className={cx("user-select-none")}>
+          <Checkbox
+            value={useInvasions}
+            label="Use invasions to gather components"
+          />
           <Checkbox value={showImage} label="Enable images" />
           <Checkbox value={showMastered} label="Show mastered" />
         </div>
       </nav>
       <div className={cx("container")}>
-        <ListResources items={totalWantedResources} />
+        <div
+          className={cx("card", "overflow-y-scroll", "g-col-6")}
+          style={{ height: "300px" }}
+        >
+          <div className={cx("card-body")}>
+            <ShowCraftList list={craftList.value.items} />
+          </div>
+        </div>
+        <div
+          className={cx("card", "overflow-y-scroll", "g-col-6")}
+          style={{ height: "300px" }}
+        >
+          <div className={cx("card-body")}>
+            {Object.entries(ingredientsFlat.value).map((e) => (
+              <p>
+                {HumanName(e[0])}: {e[1]}
+              </p>
+            ))}
+          </div>
+        </div>
+        {/* <ListResources items={totalWantedResources} /> */}
         <div className={cx("grid", "text-center")}>
           {weapons.value.map((c, i) => (
             <WeaponCard
