@@ -1,6 +1,7 @@
 import { useComputed, useSignal } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext } from "preact/hooks";
+import { completed } from "../components/Deferred";
 import { AppState } from "../data";
 import { CraftList, ShowCraftList } from "../data/craftList";
 import cx from "../style";
@@ -16,12 +17,11 @@ export function SingleItem() {
 
   const itemsOwned = useSignal({});
   const cl = new CraftList(manifest, true, [item.uniqueName]);
-  const ing = useComputed(() => cl.flattened(itemsOwned.value));
-  const loading = useSignal(false);
+  const ing = useComputed(() => completed(cl.flattened(itemsOwned.value)));
 
   return (
     <div className={cx("container")}>
-      <IngredientsCard ingredients={ing} loading={loading} itemsOwned={itemsOwned} />
+      <IngredientsCard ingredients={ing} itemsOwned={itemsOwned} />
       <div className={cx("card")}>
         <div className={cx("card-body")}>
           <h5 className={cx("card-title")}>Recipe tree</h5>

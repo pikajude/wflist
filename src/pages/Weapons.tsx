@@ -2,11 +2,13 @@ import { Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals
 import { List, Set } from "immutable";
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
+import { completed, Lazy, pending } from "../components/Deferred";
 import { Checkbox, CheckboxF, toggle } from "../components/input";
 import { HumanName, Thumbnail, useStored, useStoredWith } from "../components/util";
 import { AppState } from "../data";
 import { CraftList, CraftRequirement } from "../data/craftList";
 import { ExportWeapon } from "../data/schema";
+import allVaulted from "../data/vaulted.json";
 import cx from "../style";
 
 const categoryMap = {
@@ -23,8 +25,6 @@ const modularRegexp = new RegExp(
 );
 
 const excludeModular = (weapons: ExportWeapon[]) => weapons.filter((w) => !w.uniqueName.match(modularRegexp));
-
-import allVaulted from "../data/vaulted.json";
 
 export function BrowseWeapons() {
   const { manifest } = useContext(AppState);
@@ -69,38 +69,37 @@ export function BrowseWeapons() {
     </li>
   );
 
-  const craftList = useSignal(new CraftList(manifest, true));
-  const craftListLoading = useSignal(true);
-  const ingredientsFlat = useSignal<ReturnType<CraftList["flattened"]>>([]);
-  const ingredientsFlatLoading = useSignal(true);
+  const craftList = useSignal<Lazy<CraftList>>(pending());
+  const ingredientsFlat = useSignal<Lazy<ReturnType<CraftList["flattened"]>>>(pending());
 
   const ownedIngredients = useSignal<Record<string, number>>({});
 
   useSignalEffect(() => {
     useInvasions.value;
     weapons.value;
-    craftListLoading.value = true;
-    ingredientsFlatLoading.value = true;
-    setTimeout(async () => {
+    setTimeout(() => {
       console.log("assembling craft list...");
-      var cl = new CraftList(
-        manifest,
-        useInvasions.value,
-        weapons.value.map((w) => w.uniqueName),
+      craftList.value = pending();
+      ingredientsFlat.value = pending();
+      craftList.value = completed(
+        new CraftList(
+          manifest,
+          useInvasions.value,
+          weapons.value.map((w) => w.uniqueName),
+        ),
       );
-      craftList.value = cl;
-      craftListLoading.value = false;
-    }, 0);
+    });
   });
 
   useSignalEffect(() => {
-    craftList.value;
     ownedIngredients.value;
-    setTimeout(async () => {
-      console.log("calculating flat materials list...");
-      ingredientsFlat.value = craftList.value.flattened(ownedIngredients.value);
-      ingredientsFlatLoading.value = false;
-    }, 0);
+    if (craftList.value.state == "done") {
+      const ref_ = craftList.value.value;
+      setTimeout(() => {
+        console.log("calculating flat materials list...");
+        ingredientsFlat.value = completed(ref_.flattened(ownedIngredients.value));
+      });
+    }
   });
 
   const collapseShow = useSignal(false);
@@ -137,19 +136,9 @@ export function BrowseWeapons() {
       </div>
       <div className={cx("container")}>
         <div className={cx("grid")}>
-          <IngredientsCard
-            ingredients={ingredientsFlat}
-            loading={ingredientsFlatLoading}
-            itemsOwned={ownedIngredients}
-            style={{ height: "320px" }}
-          />
+          <IngredientsCard ingredients={ingredientsFlat} itemsOwned={ownedIngredients} style={{ height: "320px" }} />
           {weapons.value.map((c, i) => (
-            <WeaponCard
-              weapon={c}
-              masteredWeapons={masteredWeapons}
-              showImage={showImage}
-              key={`${i}${c.uniqueName}`}
-            />
+            <WeaponCard weapon={c} masteredWeapons={masteredWeapons} showImage={showImage} key={i} />
           ))}
         </div>
       </div>
@@ -179,12 +168,18 @@ function WeaponCard(
       {...rest}
     >
       <div className={cx("card-body")}>
-        {showImage.value && <img src={manifest.image_url(weapon.uniqueName)} className={cx("img-fluid")} />}
-        <div className={cx("card-text")}>
-          <a href={`/item${weapon.uniqueName}`} className={cx("link-info")}>
-            {weapon.name}
-          </a>
-        </div>
+        {showImage.value ? (
+          <>
+            <a href={`/item${weapon.uniqueName}`}>
+              <img src={manifest.image_url(weapon.uniqueName)} className={cx("img-fluid")} />
+            </a>
+            <div className={cx("card-text")}>{weapon.name}</div>
+          </>
+        ) : (
+          <div className={cx("card-text")}>
+            <a href={`/item${weapon.uniqueName}`}>{weapon.name}</a>
+          </div>
+        )}
         <form>
           <CheckboxF
             value={isChecked}
@@ -198,56 +193,18 @@ function WeaponCard(
   );
 }
 
-export function IngredientsCard(
-  props: {
-    ingredients: Signal<ReturnType<CraftList["flattened"]>>;
-    loading: Signal<boolean>;
-    itemsOwned: Signal<Record<string, number>>;
-  } & HTMLAttributes<HTMLDivElement>,
-) {
-  const { ingredients, loading, itemsOwned, ...attrs } = props;
-
-  function IngredientRow({
-    uniqueName,
-    requirement,
-    key,
-  }: {
-    uniqueName: string;
-    requirement: CraftRequirement;
-    key: number;
-  }) {
-    if (requirement.quantity == 0 || requirement.toplevel) return <></>;
-
-    return (
-      <tr key={key}>
-        <td>
-          <Thumbnail id={uniqueName} width="32px" /> {HumanName(uniqueName)}
-        </td>
-        <td>{requirement.quantity}</td>
-        <td>
-          <div className={cx("input-group")}>
-            <input
-              type="number"
-              className={cx("form-control")}
-              value={itemsOwned.value[uniqueName] || 0}
-              min={0}
-              onChange={(evt) => {
-                const x = { ...itemsOwned.value };
-                x[uniqueName] = Math.max(0, evt.currentTarget.valueAsNumber);
-                itemsOwned.value = x;
-              }}
-            />
-            <button className={cx("btn", "btn-outline-danger")}>Reset</button>
-          </div>
-        </td>
-      </tr>
-    );
-  }
-
+export function IngredientsCard({
+  ingredients,
+  itemsOwned,
+  ...attrs
+}: {
+  ingredients: Signal<Lazy<ReturnType<CraftList["flattened"]>>>;
+  itemsOwned: Signal<Record<string, number>>;
+} & HTMLAttributes<HTMLDivElement>) {
   return (
     <div className={cx("card", "overflow-y-scroll", "g-col-12", "mt-2", "mb-2")} {...attrs}>
       <div className={cx("card-body")}>
-        <h5 className={cx("card-title")}>Total required resources:</h5>
+        <h5 className={cx("card-title")}>Total required resources</h5>
         <table className={cx("table", "table-striped")}>
           <thead>
             <tr>
@@ -257,18 +214,57 @@ export function IngredientsCard(
             </tr>
           </thead>
           <tbody>
-            {loading.value ? (
-              <tr>
-                <td colSpan={4}>Calculating...</td>
-              </tr>
-            ) : (
-              ingredients.value.map(([uniqueName, req], i) => (
-                <IngredientRow uniqueName={uniqueName} requirement={req} key={i} />
+            {ingredients.value.state == "done" ? (
+              ingredients.value.value.map(([uniqueName, req], i) => (
+                <IngredientRow uniqueName={uniqueName} requirement={req} key={i} itemsOwned={itemsOwned} />
               ))
+            ) : (
+              <tr>
+                <td colSpan={3}>Calculating...</td>
+              </tr>
             )}
           </tbody>
         </table>
       </div>
     </div>
+  );
+}
+
+function IngredientRow({
+  uniqueName,
+  requirement,
+  key,
+  itemsOwned,
+}: {
+  uniqueName: string;
+  requirement: CraftRequirement;
+  key: number;
+  itemsOwned: Signal<Record<string, number>>;
+}) {
+  if (requirement.quantity == 0 || requirement.toplevel) return <></>;
+
+  return (
+    <tr key={key}>
+      <td>
+        <Thumbnail id={uniqueName} width="32px" /> {HumanName(uniqueName)}
+      </td>
+      <td>{requirement.quantity}</td>
+      <td>
+        <div className={cx("input-group", "input-group-sm")}>
+          <input
+            type="number"
+            className={cx("form-control")}
+            value={itemsOwned.value[uniqueName] || 0}
+            min={0}
+            onChange={(evt) => {
+              const x = { ...itemsOwned.value };
+              x[uniqueName] = Math.max(0, evt.currentTarget.valueAsNumber);
+              itemsOwned.value = x;
+            }}
+          />
+          <button className={cx("btn", "btn-outline-danger")}>Reset</button>
+        </div>
+      </td>
+    </tr>
   );
 }
