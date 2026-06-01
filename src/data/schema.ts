@@ -1,25 +1,42 @@
-export type DamagePerShot = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-];
+export type ExportGear = {
+  uniqueName: string;
+  name: string;
+  description: string;
+  codexSecret: boolean;
+  parentName: string;
+};
+
+export type ExportRecipe = {
+  uniqueName: string;
+  resultType: string;
+  codexSecret: boolean;
+  excludeFromCodex?: boolean;
+  alwaysAvailable?: boolean;
+  num: number;
+  ingredients: {
+    ItemType: string;
+    ItemCount: number;
+    ProductCategory: string;
+  }[];
+  secretIngredients: [];
+  consumeOnUse: boolean;
+  buildPrice: number;
+  buildTime: number;
+  skipBuildTimePrice: number;
+  primeSellingPrice?: number;
+};
+
+export type ExportResource = {
+  uniqueName: string;
+  name: string;
+  codexSecret: boolean;
+  excludeFromCodex?: boolean;
+  showInInventory?: boolean;
+  description: string;
+  longDescription?: string;
+  parentName: string;
+  primeSellingPrice?: number;
+};
 
 export type ExportWeapon = {
   name: string;
@@ -35,12 +52,7 @@ export type ExportWeapon = {
 } & (
   | {
       // regular guns
-      productCategory:
-        | "LongGuns"
-        | "OperatorAmps"
-        | "Pistols"
-        | "SentinelWeapons"
-        | "SpaceGuns";
+      productCategory: "LongGuns" | "OperatorAmps" | "Pistols" | "SentinelWeapons" | "SpaceGuns";
       slot: number;
       noise: "ALARMING" | "SILENT";
       damagePerShot: DamagePerShot;
@@ -82,34 +94,25 @@ export type ExportWeapon = {
 );
 // all the modular stuff (and infested companions) are categorized as Pistols for whatever reason, but aren't included in this
 
-export type ExportRecipe = {
-  uniqueName: string;
-  resultType: string;
-  codexSecret: boolean;
-  excludeFromCodex?: boolean;
-  alwaysAvailable?: boolean;
-  num: number;
-  ingredients: {
-    ItemType: string;
-    ItemCount: number;
-    ProductCategory: string;
-  }[];
-  secretIngredients: [];
-  consumeOnUse: boolean;
-  buildPrice: number;
-  buildTime: number;
-  skipBuildTimePrice: number;
-  primeSellingPrice?: number;
-};
-
-export type ExportResource = {
-  uniqueName: string;
-  name: string;
-  codexSecret: boolean;
-  excludeFromCodex?: boolean;
-  showInInventory?: boolean;
-  description: string;
-  longDescription?: string;
-  parentName: string;
-  primeSellingPrice?: number;
-};
+export type DamagePerShot = [
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+  number,
+];

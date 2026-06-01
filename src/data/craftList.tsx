@@ -1,13 +1,19 @@
 import { human_name, HumanName, Thumbnail } from "../components/util";
 import { InvasionResources, ResourcesLegacyCraftable } from "../pages/Weapons";
-import { Manifest } from "./manifest";
+import { Wanifest } from "./wanifest";
+
+export type CraftRequirement = {
+  name: string;
+  quantity: number;
+  toplevel: boolean;
+};
 
 export class CraftList {
-  private manifest: Manifest;
+  private manifest: Wanifest;
   private invasion: boolean;
   items: CraftItem[] = [];
 
-  constructor(manifest: Manifest, invasion = true, items: string[] = []) {
+  constructor(manifest: Wanifest, invasion = true, items: string[] = []) {
     this.manifest = manifest;
     this.invasion = invasion;
     for (const it of items) this.add(it);
@@ -19,36 +25,39 @@ export class CraftList {
     this.items.push(new CraftItem(cr, 1));
   }
 
-  flattened() {
-    const allItems: { [key: string]: [string, number] } = {};
+  flattened(ownedItemsIn: Record<string, number>) {
+    const allItems: Record<string, CraftRequirement> = {};
 
-    const insertItem = (item: CraftItem) => {
-      if (!(item.recipe.uniqueName in allItems))
-        allItems[item.recipe.uniqueName] = [
-          human_name(item.recipe.uniqueName, this.manifest),
-          0,
-        ];
+    const ownedItems = { ...ownedItemsIn };
 
-      allItems[item.recipe.uniqueName][1] += item.quantity;
+    const insertItem = (item: CraftItem, toplevel = false, multiplier = 1) => {
+      const uniqueName = item.recipe.uniqueName;
 
-      for (const req of item.recipe.requires) insertItem(req);
+      if (!(uniqueName in allItems))
+        allItems[uniqueName] = {
+          name: human_name(uniqueName, this.manifest),
+          quantity: 0,
+          toplevel,
+        };
+      if (!(uniqueName in ownedItems)) ownedItems[uniqueName] = 0;
+
+      var adjQuantity = Math.ceil(item.quantity * multiplier);
+
+      var ownedQuantity = Math.min(adjQuantity, ownedItems[uniqueName]);
+      var remainingNeeded = adjQuantity - ownedQuantity;
+      var newMulti = multiplier * (remainingNeeded / adjQuantity);
+
+      ownedItems[uniqueName] -= ownedQuantity;
+      allItems[uniqueName].quantity += remainingNeeded;
+
+      if (remainingNeeded > 0) for (const req of item.recipe.requires) insertItem(req, false, newMulti);
     };
 
-    for (const item of this.items) insertItem(item);
+    for (const item of this.items) insertItem(item, true);
 
     const paired = Object.entries(allItems);
-    paired.sort((a, b) => {
-      var quant = b[1][1] - a[1][1];
-      if (quant == 0) return a[1][0].localeCompare(b[1][0]);
-      return quant;
-    });
+    paired.sort((a, b) => (a[1].toplevel ? -1 : b[1].toplevel ? 1 : a[1].name.localeCompare(b[1].name)));
     return paired;
-  }
-
-  toJSON() {
-    return {
-      items: this.items,
-    };
   }
 }
 
@@ -71,18 +80,11 @@ export class CraftRecipe {
     this.uniqueName = uniqueName;
   }
 
-  resolve(
-    manifest: Manifest,
-    excludeInvasionMaterials: boolean,
-    multiplier: number = 1,
-  ) {
+  resolve(manifest: Wanifest, excludeInvasionMaterials: boolean, multiplier: number = 1) {
     if (ResourcesLegacyCraftable.includes(this.uniqueName)) return;
-    if (excludeInvasionMaterials && InvasionResources.includes(this.uniqueName))
-      return;
+    if (excludeInvasionMaterials && InvasionResources.includes(this.uniqueName)) return;
 
-    const recipe = manifest.exports.ExportRecipes.find(
-      (r) => r.resultType == this.uniqueName,
-    );
+    const recipe = manifest.find_recipe(this.uniqueName);
     if (recipe == null) return;
 
     this.output = recipe.num;

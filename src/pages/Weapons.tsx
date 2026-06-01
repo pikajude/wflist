@@ -1,16 +1,11 @@
-import {
-  Signal,
-  useComputed,
-  useSignal,
-  useSignalEffect,
-} from "@preact/signals";
-import { List, Map } from "immutable";
-import { Attributes } from "preact";
+import { Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import { List, Set } from "immutable";
+import { Attributes, HTMLAttributes } from "preact";
 import { useCallback, useContext } from "preact/hooks";
 import { Checkbox } from "../components/input";
-import { HumanName, Thumbnail } from "../components/util";
+import { HumanName, Thumbnail, useStored, useStoredWith } from "../components/util";
 import { AppState } from "../data";
-import { CraftList } from "../data/craftList";
+import { CraftList, CraftRequirement } from "../data/craftList";
 import { ExportWeapon } from "../data/schema";
 import cx from "../style";
 
@@ -47,79 +42,33 @@ const modularRegexp = new RegExp(
   "^(/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos|/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts|/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts|/Lotus/Types/Items/Deimos/WoundedInfested|/Lotus/Types/Vehicles/Hoverboard/HoverboardParts|/Lotus/Weapons/Corpus/OperatorAmplifiers|/Lotus/Weapons/Infested/Pistols/InfKitGun|/Lotus/Weapons/Ostron/Melee/ModularMelee|/Lotus/Weapons/Sentients/OperatorAmplifiers|/Lotus/Weapons/SolarisUnited|/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire)",
 );
 
-const excludeModular = (weapons: ExportWeapon[]) =>
-  weapons.filter((w) => !w.uniqueName.match(modularRegexp));
+const excludeModular = (weapons: ExportWeapon[]) => weapons.filter((w) => !w.uniqueName.match(modularRegexp));
 
 export function BrowseWeapons() {
   const { manifest } = useContext(AppState);
 
-  const recipes = manifest.exports["ExportRecipes"];
-
-  const urlHash =
-    window.location.hash.length == 0
-      ? "#Primary"
-      : window.location.hash.slice(1);
-  const initialCategory =
-    urlHash in categoryMap ? (urlHash as SelectedCategory) : "Primary";
+  const urlHash = window.location.hash.length == 0 ? "#Primary" : window.location.hash.slice(1);
+  const initialCategory = urlHash in categoryMap ? (urlHash as SelectedCategory) : "Primary";
 
   const category = useSignal<SelectedCategory>(initialCategory);
-  const allWeapons = useSignal(
-    List(excludeModular(manifest.exports["ExportWeapons"])),
+  const allWeapons = useSignal(List(excludeModular(manifest.exports["ExportWeapons"])));
+
+  const showImage = useStored("wfListShowImage", true);
+  const showMastered = useStored("wfListShowMastered", true);
+  const useInvasions = useStored("wfListUseInvasions", true);
+
+  const masteredWeapons = useStoredWith<Set<string>>(
+    "wfListMastered",
+    (v) => Set(v == null ? [] : (JSON.parse(v) as string[])),
+    (m) => JSON.stringify(m.toArray()),
   );
-
-  const showImage = useSignal(
-    (localStorage.getItem("wfListShowImage") || "true") == "true",
-  );
-  const showMastered = useSignal(
-    (localStorage.getItem("wfListShowMastered") || "true") == "true",
-  );
-  const useInvasions = useSignal(
-    (localStorage.getItem("wfListUseInvasions") || "true") == "true",
-  );
-
-  useSignalEffect(() => {
-    localStorage.setItem("wfListShowImage", showImage.value ? "true" : "false");
-    localStorage.setItem(
-      "wfListShowMastered",
-      showMastered.value ? "true" : "false",
-    );
-    localStorage.setItem(
-      "wfListUseInvasions",
-      useInvasions.value ? "true" : "false",
-    );
-  });
-
-  var storedM = Map<string, boolean>();
-  try {
-    storedM = storedM.withMutations((m) => {
-      for (const name of JSON.parse(
-        localStorage.getItem("wfListMastered") ?? "[]",
-      ) as string[])
-        m.set(name, true);
-    });
-  } catch (SyntaxError) {
-    console.log("Unable to load stored mastered weapons.");
-  }
-
-  const masteredWeapons = useSignal<Map<string, boolean>>(storedM);
-
-  useSignalEffect(() => {
-    const allMastered = Array.from(
-      masteredWeapons.value.filter((k) => k).keys(),
-    );
-    localStorage.setItem("wfListMastered", JSON.stringify(allMastered));
-  });
 
   const weapons = useComputed(() =>
     allWeapons.value
       .filter(
         (weapon) =>
-          (category.value == "All" ||
-            categoryMap[category.value].includes(
-              weapon.productCategory as never,
-            )) &&
-          (showMastered.value ||
-            !masteredWeapons.value.get(weapon.uniqueName, false)),
+          (category.value == "All" || categoryMap[category.value].includes(weapon.productCategory as never)) &&
+          (showMastered.value || !masteredWeapons.value.get(weapon.uniqueName, false)),
       )
       .sort((a, b) => a.name.localeCompare(b.name))
       .toArray(),
@@ -139,29 +88,45 @@ export function BrowseWeapons() {
 
   const toggleMastery = useCallback(
     (k: string) => {
-      masteredWeapons.value = masteredWeapons.value.update(k, false, (v) => !v);
+      masteredWeapons.value = masteredWeapons.value.withMutations((v) => {
+        if (v.has(k)) v.remove(k);
+        else v.add(k);
+      });
     },
     [masteredWeapons],
   );
 
-  const craftListLoading = useSignal(true);
   const craftList = useSignal(new CraftList(manifest, true));
-  const ingredientsFlat = useSignal<[string, [string, number]][]>([]);
+  const craftListLoading = useSignal(true);
+  const ingredientsFlat = useSignal<ReturnType<CraftList["flattened"]>>([]);
+  const ingredientsFlatLoading = useSignal(true);
+
+  const ownedIngredients = useSignal<Record<string, number>>({});
 
   useSignalEffect(() => {
     useInvasions.value;
     weapons.value;
     craftListLoading.value = true;
+    ingredientsFlatLoading.value = true;
     setTimeout(async () => {
-      console.log("starting expensive computation");
+      console.log("assembling craft list...");
       var cl = new CraftList(
         manifest,
         useInvasions.value,
         weapons.value.map((w) => w.uniqueName),
       );
       craftList.value = cl;
-      ingredientsFlat.value = cl.flattened();
       craftListLoading.value = false;
+    }, 0);
+  });
+
+  useSignalEffect(() => {
+    craftList.value;
+    ownedIngredients.value;
+    setTimeout(async () => {
+      console.log("calculating flat materials list...");
+      ingredientsFlat.value = craftList.value.flattened(ownedIngredients.value);
+      ingredientsFlatLoading.value = false;
     }, 0);
   });
 
@@ -177,37 +142,22 @@ export function BrowseWeapons() {
           {tab("All")}
         </ul>
         <div>
-          <button
-            className={cx("btn", "btn-primary")}
-            onClick={() => (collapseShow.value = !collapseShow.value)}
-          >
+          <button className={cx("btn", "btn-primary")} onClick={() => (collapseShow.value = !collapseShow.value)}>
             {collapseShow.value ? "Hide options" : "Show options"}
           </button>
         </div>
       </nav>
       <div
-        className={cx(
-          "user-select-none",
-          "collapse",
-          "mb-2",
-          "justify-content-end",
-          {
-            show: collapseShow.value,
-            "d-flex": collapseShow.value,
-          },
-        )}
+        className={cx("user-select-none", "collapse", "mb-2", "justify-content-end", {
+          show: collapseShow.value,
+          "d-flex": collapseShow.value,
+        })}
       >
         <div className={cx("d-flex", "flex-column")}>
-          <Checkbox
-            value={useInvasions}
-            label="Research components come from invasions"
-          />
+          <Checkbox value={useInvasions} label="Research components come from invasions" />
           <Checkbox value={showImage} label="Enable images" />
           <Checkbox value={showMastered} label="Show mastered" />
-          <button
-            onClick={() => (masteredWeapons.value = Map())}
-            className={cx("btn", "btn-danger")}
-          >
+          <button onClick={() => (masteredWeapons.value = Set())} className={cx("btn", "btn-danger")}>
             Clear mastery
           </button>
         </div>
@@ -216,7 +166,9 @@ export function BrowseWeapons() {
         <div className={cx("grid")}>
           <IngredientsCard
             ingredients={ingredientsFlat}
-            loading={craftListLoading}
+            loading={ingredientsFlatLoading}
+            itemsOwned={ownedIngredients}
+            style={{ height: "320px" }}
           />
           {weapons.value.map((c, i) => (
             <WeaponCard
@@ -236,18 +188,12 @@ export function BrowseWeapons() {
 function WeaponCard(
   props: {
     weapon: ExportWeapon;
-    masteredWeapons: Signal<Map<string, boolean>>;
+    masteredWeapons: Signal<Set<string>>;
     showImage: Signal<boolean>;
     onClick: (key: string) => void;
   } & Attributes,
 ) {
-  const {
-    weapon,
-    masteredWeapons,
-    showImage: showImage,
-    onClick,
-    ...rest
-  } = props;
+  const { weapon, masteredWeapons, showImage, onClick, ...rest } = props;
 
   const { manifest } = useContext(AppState);
 
@@ -257,76 +203,96 @@ function WeaponCard(
         "g-col-3": showImage.value,
         "g-col-2": !showImage.value,
       })}
-      onClick={() => onClick(weapon.uniqueName)}
       {...rest}
     >
       <div className={cx("card-body")}>
-        {showImage.value && (
-          <img
-            src={manifest.image_url(weapon.uniqueName)}
-            className={cx("img-fluid")}
-          />
-        )}
-        {masteredWeapons.value.get(weapon.uniqueName, false) && "[M] "}
-        {weapon.name}
+        {showImage.value && <img src={manifest.image_url(weapon.uniqueName)} className={cx("img-fluid")} />}
+        <div className={cx("card-text")}>
+          <a href={`/item${weapon.uniqueName}`} className={cx("link-info")}>
+            {weapon.name}
+          </a>
+        </div>
+        <div className={cx("input-group")}>
+          <label>
+            <input
+              type="checkbox"
+              checked={masteredWeapons.value.has(weapon.uniqueName)}
+              onChange={() => onClick(weapon.uniqueName)}
+            />{" "}
+            Mastered
+          </label>
+        </div>
       </div>
     </div>
   );
 }
 
-function IngredientsCard(props: {
-  ingredients: Signal<[string, [string, number]][]>;
-  loading: Signal<boolean>;
-}) {
-  const ownedQuantities = useSignal<Map<string, number>>(Map());
+export function IngredientsCard(
+  props: {
+    ingredients: Signal<ReturnType<CraftList["flattened"]>>;
+    loading: Signal<boolean>;
+    itemsOwned: Signal<Record<string, number>>;
+  } & HTMLAttributes<HTMLDivElement>,
+) {
+  const { ingredients, loading, itemsOwned, ...attrs } = props;
+
+  function IngredientRow({
+    uniqueName,
+    requirement,
+    key,
+  }: {
+    uniqueName: string;
+    requirement: CraftRequirement;
+    key: number;
+  }) {
+    if (requirement.quantity == 0 || requirement.toplevel) return <></>;
+
+    return (
+      <tr key={key}>
+        <td>
+          <Thumbnail id={uniqueName} width="32px" /> {HumanName(uniqueName)}
+        </td>
+        <td>{requirement.quantity}</td>
+        <td>
+          <div className={cx("input-group")}>
+            <input
+              type="number"
+              className={cx("form-control")}
+              value={itemsOwned.value[uniqueName] || 0}
+              min={0}
+              onChange={(evt) => {
+                const x = { ...itemsOwned.value };
+                x[uniqueName] = Math.max(0, evt.currentTarget.valueAsNumber);
+                itemsOwned.value = x;
+              }}
+            />
+            <button className={cx("btn", "btn-outline-danger")}>Reset</button>
+          </div>
+        </td>
+      </tr>
+    );
+  }
 
   return (
-    <div
-      className={cx("card", "overflow-y-scroll", "g-col-12")}
-      style={{ maxHeight: "400px" }}
-    >
+    <div className={cx("card", "overflow-y-scroll", "g-col-12", "mt-2", "mb-2")} {...attrs}>
       <div className={cx("card-body")}>
         <h5 className={cx("card-title")}>Total required resources:</h5>
         <table className={cx("table", "table-striped")}>
           <thead>
             <tr>
               <th>Name</th>
-              <th>Total</th>
-              <th>Owned</th>
               <th>Needed</th>
+              <th>Owned</th>
             </tr>
           </thead>
           <tbody>
-            {props.loading.value ? (
+            {loading.value ? (
               <tr>
                 <td colSpan={4}>Calculating...</td>
               </tr>
             ) : (
-              props.ingredients.value.map((e, i) => (
-                <tr>
-                  <td>
-                    <Thumbnail id={e[0]} width="32px" /> {HumanName(e[0])}
-                  </td>
-                  <td>{e[1][1]}</td>
-                  <td>
-                    <input
-                      type="number"
-                      value={ownedQuantities.value.get(e[0])}
-                      onChange={(evt) => {
-                        ownedQuantities.value = ownedQuantities.value.set(
-                          e[0],
-                          evt.currentTarget.valueAsNumber,
-                        );
-                      }}
-                    />
-                  </td>
-                  <td>
-                    {Math.max(
-                      0,
-                      e[1][1] - (ownedQuantities.value.get(e[0]) || 0),
-                    )}
-                  </td>
-                </tr>
+              ingredients.value.map(([uniqueName, req], i) => (
+                <IngredientRow uniqueName={uniqueName} requirement={req} key={i} />
               ))
             )}
           </tbody>

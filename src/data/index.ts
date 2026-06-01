@@ -1,13 +1,13 @@
 import { createContext } from "preact";
-import { Manifest } from "./manifest";
+import { Wanifest } from "./wanifest";
 
 export type TState = {
-  manifest: Manifest;
+  manifest: Wanifest;
 };
 
 export async function createAppState(): Promise<TState> {
   return {
-    manifest: await Manifest.create(),
+    manifest: await Wanifest.create(),
   };
 }
 
