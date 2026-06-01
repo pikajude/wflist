@@ -1,10 +1,4 @@
-import {
-  hydrate,
-  LocationProvider,
-  Route,
-  Router,
-  prerender as ssr,
-} from "preact-iso";
+import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "preact-iso";
 
 import { Attributes } from "preact";
 import { Header } from "./components/Header.js";

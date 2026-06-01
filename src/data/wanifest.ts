@@ -1,6 +1,6 @@
 import localforage from "localforage";
 import { decompress } from "lzma1";
-import { ExportGear, ExportRecipe, ExportResource, ExportWeapon } from "./schema";
+import { ExportGear, ExportRecipe, ExportResource, ExportSentinel, ExportWarframe, ExportWeapon } from "./schema";
 
 export type ExportCategory =
   | "ExportAbilities"
@@ -22,10 +22,8 @@ export type ExportCategory =
   | "ExportRegions"
   | "ExportRelicArcane"
   | "ExportResources"
-  | "ExportSentinels"
   | "ExportSortieRewards"
   | "ExportUpgrades"
-  | "ExportWarframes"
   | "ExportWeapons"
   | "Manifest";
 
@@ -35,6 +33,8 @@ type TypedExports = {
   ExportWeapons: ExportWeapon[];
   ExportRecipes: ExportRecipe[];
   ExportResources: ExportResource[];
+  ExportSentinels: ExportSentinel[];
+  ExportWarframes: ExportWarframe[];
 };
 
 type Exports = Record<Exclude<ExportCategory, keyof TypedExports>, object> & TypedExports;

@@ -1,6 +1,25 @@
 import { human_name, HumanName, Thumbnail } from "../components/util";
-import { InvasionResources, ResourcesLegacyCraftable } from "../pages/Weapons";
 import { Wanifest } from "./wanifest";
+
+// apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
+export const ResourcesLegacyCraftable = [
+  "/Lotus/Types/Items/MiscItems/Morphic",
+  "/Lotus/Types/Items/MiscItems/Neurode",
+  "/Lotus/Types/Items/MiscItems/OrokinCell",
+  "/Lotus/Types/Items/MiscItems/ControlModule",
+  "/Lotus/Types/Items/MiscItems/NeuralSensor",
+  "/Lotus/Types/Items/MiscItems/Gallium",
+  "/Lotus/Types/Items/RailjackMiscItems/CubicsRailjackItem",
+  "/Lotus/Types/Items/RailjackMiscItems/CarbidesRailjackItem",
+  "/Lotus/Types/Items/RailjackMiscItems/IsosRailjackItem",
+  "/Lotus/Types/Items/RailjackMiscItems/GallosRailjackItem",
+];
+
+export const InvasionResources = [
+  "/Lotus/Types/Items/Research/BioComponent",
+  "/Lotus/Types/Items/Research/ChemComponent",
+  "/Lotus/Types/Items/Research/EnergyComponent",
+];
 
 export type CraftRequirement = {
   name: string;

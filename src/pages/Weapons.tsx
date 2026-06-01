@@ -1,8 +1,8 @@
 import { Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { List, Set } from "immutable";
-import { Attributes, HTMLAttributes } from "preact";
-import { useCallback, useContext } from "preact/hooks";
-import { Checkbox } from "../components/input";
+import { HTMLAttributes } from "preact";
+import { useContext } from "preact/hooks";
+import { Checkbox, CheckboxF, toggle } from "../components/input";
 import { HumanName, Thumbnail, useStored, useStoredWith } from "../components/util";
 import { AppState } from "../data";
 import { CraftList, CraftRequirement } from "../data/craftList";
@@ -16,26 +16,6 @@ const categoryMap = {
   All: [],
 } as const;
 
-// apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
-export const ResourcesLegacyCraftable = [
-  "/Lotus/Types/Items/MiscItems/Morphic",
-  "/Lotus/Types/Items/MiscItems/Neurode",
-  "/Lotus/Types/Items/MiscItems/OrokinCell",
-  "/Lotus/Types/Items/MiscItems/ControlModule",
-  "/Lotus/Types/Items/MiscItems/NeuralSensor",
-  "/Lotus/Types/Items/MiscItems/Gallium",
-  "/Lotus/Types/Items/RailjackMiscItems/CubicsRailjackItem",
-  "/Lotus/Types/Items/RailjackMiscItems/CarbidesRailjackItem",
-  "/Lotus/Types/Items/RailjackMiscItems/IsosRailjackItem",
-  "/Lotus/Types/Items/RailjackMiscItems/GallosRailjackItem",
-];
-
-export const InvasionResources = [
-  "/Lotus/Types/Items/Research/BioComponent",
-  "/Lotus/Types/Items/Research/ChemComponent",
-  "/Lotus/Types/Items/Research/EnergyComponent",
-];
-
 type SelectedCategory = keyof typeof categoryMap;
 
 const modularRegexp = new RegExp(
@@ -43,6 +23,8 @@ const modularRegexp = new RegExp(
 );
 
 const excludeModular = (weapons: ExportWeapon[]) => weapons.filter((w) => !w.uniqueName.match(modularRegexp));
+
+import allVaulted from "../data/vaulted.json";
 
 export function BrowseWeapons() {
   const { manifest } = useContext(AppState);
@@ -67,6 +49,7 @@ export function BrowseWeapons() {
     allWeapons.value
       .filter(
         (weapon) =>
+          !allVaulted.includes(weapon.uniqueName) &&
           (category.value == "All" || categoryMap[category.value].includes(weapon.productCategory as never)) &&
           (showMastered.value || !masteredWeapons.value.get(weapon.uniqueName, false)),
       )
@@ -84,16 +67,6 @@ export function BrowseWeapons() {
         {label}
       </a>
     </li>
-  );
-
-  const toggleMastery = useCallback(
-    (k: string) => {
-      masteredWeapons.value = masteredWeapons.value.withMutations((v) => {
-        if (v.has(k)) v.remove(k);
-        else v.add(k);
-      });
-    },
-    [masteredWeapons],
   );
 
   const craftList = useSignal(new CraftList(manifest, true));
@@ -153,14 +126,14 @@ export function BrowseWeapons() {
           "d-flex": collapseShow.value,
         })}
       >
-        <div className={cx("d-flex", "flex-column")}>
-          <Checkbox value={useInvasions} label="Research components come from invasions" />
-          <Checkbox value={showImage} label="Enable images" />
-          <Checkbox value={showMastered} label="Show mastered" />
+        <form>
+          <Checkbox name="useInv" value={useInvasions} label="Research components come from invasions" />
+          <Checkbox name="showIm" value={showImage} label="Enable images" />
+          <Checkbox name="showMa" value={showMastered} label="Show mastered" />
           <button onClick={() => (masteredWeapons.value = Set())} className={cx("btn", "btn-danger")}>
             Clear mastery
           </button>
-        </div>
+        </form>
       </div>
       <div className={cx("container")}>
         <div className={cx("grid")}>
@@ -175,7 +148,6 @@ export function BrowseWeapons() {
               weapon={c}
               masteredWeapons={masteredWeapons}
               showImage={showImage}
-              onClick={toggleMastery}
               key={`${i}${c.uniqueName}`}
             />
           ))}
@@ -190,12 +162,13 @@ function WeaponCard(
     weapon: ExportWeapon;
     masteredWeapons: Signal<Set<string>>;
     showImage: Signal<boolean>;
-    onClick: (key: string) => void;
-  } & Attributes,
+  } & HTMLAttributes<HTMLDivElement>,
 ) {
-  const { weapon, masteredWeapons, showImage, onClick, ...rest } = props;
+  const { weapon, masteredWeapons, showImage, ...rest } = props;
 
   const { manifest } = useContext(AppState);
+
+  const isChecked = useComputed(() => masteredWeapons.value.has(weapon.uniqueName));
 
   return (
     <div
@@ -212,16 +185,14 @@ function WeaponCard(
             {weapon.name}
           </a>
         </div>
-        <div className={cx("input-group")}>
-          <label>
-            <input
-              type="checkbox"
-              checked={masteredWeapons.value.has(weapon.uniqueName)}
-              onChange={() => onClick(weapon.uniqueName)}
-            />{" "}
-            Mastered
-          </label>
-        </div>
+        <form>
+          <CheckboxF
+            value={isChecked}
+            onChange={(_) => toggle(masteredWeapons, weapon.uniqueName)}
+            name={`${weapon.uniqueName}_ma`}
+            label="Mastered"
+          />
+        </form>
       </div>
     </div>
   );
