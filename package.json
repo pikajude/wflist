@@ -7,6 +7,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
     "@preact/signals": "^2.9.1",
     "bootstrap": "^5.3.8",
     "classnames": "^2.5.1",
@@ -16,7 +17,8 @@
     "memoize": "^11.0.0",
     "preact": "^10.26.9",
     "preact-iso": "^2.12.0",
-    "preact-render-to-string": "^6.6.7"
+    "preact-render-to-string": "^6.6.7",
+    "react-popper": "^2.3.0"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",

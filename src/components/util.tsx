@@ -4,7 +4,7 @@ import { useContext } from "preact/hooks";
 import { AppState } from "../data";
 import { Wanifest } from "../data/wanifest";
 
-export function Thumbnail(props: { id: string } & ImgHTMLAttributes) {
+export function Texture(props: { id: string } & ImgHTMLAttributes) {
   const { manifest } = useContext(AppState);
 
   const { id, ...rest } = props;

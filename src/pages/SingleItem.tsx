@@ -5,7 +5,7 @@ import { completed } from "../components/Deferred";
 import { AppState } from "../data";
 import { CraftList, ShowCraftList } from "../data/craftList";
 import cx from "../style";
-import { IngredientsCard } from "./Weapons";
+import { IngredientsCard } from "./BrowseWeapons";
 
 export function SingleItem() {
   const rte = useRoute();
@@ -21,7 +21,7 @@ export function SingleItem() {
 
   return (
     <div className={cx("container")}>
-      <IngredientsCard ingredients={ing} itemsOwned={itemsOwned} />
+      <IngredientsCard />
       <div className={cx("card")}>
         <div className={cx("card-body")}>
           <h5 className={cx("card-title")}>Recipe tree</h5>

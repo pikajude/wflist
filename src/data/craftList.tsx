@@ -1,4 +1,4 @@
-import { human_name, HumanName, Thumbnail } from "../components/util";
+import { human_name, HumanName, Texture } from "../components/util";
 import { Wanifest } from "./wanifest";
 
 // apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
@@ -133,7 +133,7 @@ export function ShowCraftItem(props: { item: CraftItem }) {
   return (
     <li>
       <p>
-        <Thumbnail id={item.recipe.uniqueName} width="32px" />
+        <Texture id={item.recipe.uniqueName} width="32px" />
         {HumanName(item.recipe.uniqueName)} x{item.quantity}
       </p>
       <ShowCraftList list={item.recipe.requires} />

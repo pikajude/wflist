@@ -3,8 +3,8 @@ import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "prea
 import { Attributes } from "preact";
 import { Header } from "./components/Header.js";
 import { AppState, createAppState, TState } from "./data/index.js";
+import { BrowseWeapons } from "./pages/BrowseWeapons.js";
 import { SingleItem } from "./pages/SingleItem.js";
-import { BrowseWeapons } from "./pages/Weapons.js";
 import { NotFound } from "./pages/_404.jsx";
 import cx from "./style.js";
 import "./style.module.scss";
