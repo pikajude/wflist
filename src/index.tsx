@@ -3,9 +3,9 @@ import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "prea
 import { Attributes } from "preact";
 import { Header } from "./components/Header.js";
 import { AppState, createAppState, TState } from "./data/index.js";
-import { BrowseWeapons } from "./pages/BrowseWeapons.js";
-import { SingleItem } from "./pages/SingleItem.js";
 import { NotFound } from "./pages/_404.jsx";
+import Browse from "./pages/itemBrowser/Browse.js";
+import ViewItem from "./pages/ViewItem.js";
 import cx from "./style.js";
 import "./style.module.scss";
 
@@ -16,8 +16,8 @@ export function App(props: { state: TState }) {
         <Header />
         <main className={cx("container")}>
           <Router>
-            <Route path="/" component={BrowseWeapons} />
-            <Route path="/item/:path*" component={SingleItem} />
+            <Route path="/" component={Browse} />
+            <Route path="/item/:path*" component={ViewItem} />
             <Route default component={NotFound} />
           </Router>
         </main>
