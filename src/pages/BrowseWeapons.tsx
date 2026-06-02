@@ -22,20 +22,34 @@ const categoryMap = {
 type SelectedCategory = keyof typeof categoryMap;
 
 const modularRegexp = new RegExp(
-  "^(/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos|/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts|/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts|/Lotus/Types/Items/Deimos/WoundedInfested|/Lotus/Types/Vehicles/Hoverboard/HoverboardParts|/Lotus/Weapons/Corpus/OperatorAmplifiers|/Lotus/Weapons/Infested/Pistols/InfKitGun|/Lotus/Weapons/Ostron/Melee/ModularMelee|/Lotus/Weapons/Sentients/OperatorAmplifiers|/Lotus/Weapons/SolarisUnited|/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire)",
+  "^(/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos|/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts|/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts|/Lotus/Types/Items/Deimos/WoundedInfested|/Lotus/Types/Vehicles/Hoverboard/HoverboardParts|/Lotus/Weapons/Corpus/OperatorAmplifiers|/Lotus/Weapons/Infested/Pistols/InfKitGun|/Lotus/Weapons/Ostron/Melee/ModularMelee|/Lotus/Weapons/SolarisUnited|/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire|/Lotus/Weapons/Sentients/OperatorAmplifiers/Set./(Grip|Chassis))",
 );
 
-const excludeModular = (weapons: ExportWeapon[]) => weapons.filter((w) => !w.uniqueName.match(modularRegexp));
+const modularPattern = [
+  "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos",
+  "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts",
+  "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts",
+  "/Lotus/Types/Items/Deimos/WoundedInfested",
+  "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts",
+  "/Lotus/Weapons/Corpus/OperatorAmplifiers",
+  "/Lotus/Weapons/Infested/Pistols/InfKitGun",
+  "/Lotus/Weapons/Ostron/Melee/ModularMelee",
+  "/Lotus/Weapons/SolarisUnited",
+  "/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire",
+  "/Lotus/Weapons/Sentients/OperatorAmplifiers/SentTrainingAmplifier",
+  new RegExp("^/Lotus/Weapons/Sentients/OperatorAmplifiers/Set./(Grip|Chassis)"),
+] as const;
+
+const isModular = (weapon: ExportWeapon) =>
+  modularPattern.some((p) => (typeof p == "string" ? weapon.uniqueName.startsWith(p) : weapon.uniqueName.match(p)));
+
+const excludeModular = (weapons: ExportWeapon[]) => weapons.filter((w) => !isModular(w));
 
 type TBrowserContext = {
   _allWeapons: ReadonlySignal<List<ExportWeapon>>;
   weapons: ReadonlySignal<Array<ExportWeapon>>;
 
   category: Signal<SelectedCategory>;
-
-  craftList: ReadonlySignal<Lazy<CraftList>>;
-  ingredientsFlat: ReadonlySignal<Lazy<ReturnType<CraftList["flattened"]>>>;
-  ownedIngredients: Signal<Record<string, number>>;
 
   options: {
     showImages: Signal<boolean>;
@@ -78,6 +92,28 @@ function createBrowserContext(): TBrowserContext {
       .toArray(),
   );
 
+  return {
+    _allWeapons: allWeapons,
+    weapons,
+    category,
+
+    options: {
+      showImages: showImage,
+      showMastered: showMastered,
+      useInvasions: useInvasions,
+      masteredWeapons: masteredWeapons,
+    },
+  };
+}
+
+export type CraftData = {
+  craftList: ReadonlySignal<Lazy<CraftList>>;
+  ingredientsFlat: ReadonlySignal<Lazy<ReturnType<CraftList["flattened"]>>>;
+  ownedIngredients: Signal<Record<string, number>>;
+};
+
+function useCraftList(items: ReadonlySignal<string[]>, useInvasions: ReadonlySignal<boolean>): CraftData {
+  const { manifest } = useContext(AppState);
   const craftList = useSignal<Lazy<CraftList>>(pending());
   const ingredientsFlat = useSignal<Lazy<ReturnType<CraftList["flattened"]>>>(pending());
 
@@ -85,18 +121,12 @@ function createBrowserContext(): TBrowserContext {
 
   useSignalEffect(() => {
     useInvasions.value;
-    weapons.value;
+    items.value;
     craftList.value = pending();
     ingredientsFlat.value = pending();
     setTimeout(() => {
       console.log("assembling craft list...");
-      craftList.value = completed(
-        new CraftList(
-          manifest,
-          useInvasions.value,
-          weapons.value.map((w) => w.uniqueName),
-        ),
-      );
+      craftList.value = completed(new CraftList(manifest, useInvasions.value, items.value));
     });
   });
 
@@ -111,29 +141,16 @@ function createBrowserContext(): TBrowserContext {
     }
   });
 
-  return {
-    _allWeapons: allWeapons,
-    weapons,
-
-    category,
-
-    craftList,
-    ingredientsFlat,
-    ownedIngredients,
-
-    options: {
-      showImages: showImage,
-      showMastered: showMastered,
-      useInvasions: useInvasions,
-      masteredWeapons: masteredWeapons,
-    },
-  };
+  return { craftList, ingredientsFlat, ownedIngredients };
 }
 
 export function BrowseWeapons() {
   const vContext = createBrowserContext();
 
   const { weapons } = vContext;
+  const weaponNames = useComputed(() => weapons.value.map((v) => v.uniqueName));
+
+  const cd = useCraftList(weaponNames, vContext.options.useInvasions);
 
   return (
     <BrowserContext value={vContext}>
@@ -148,9 +165,9 @@ export function BrowseWeapons() {
       </nav>
       <div className={cx("container")}>
         <div className={cx("grid")}>
-          <IngredientsCard style={{ height: "320px" }} />
+          <IngredientsCard craftData={cd} style={{ height: "320px" }} />
           {weapons.value.map((c, i) => (
-            <WeaponCard weapon={c} key={i} />
+            <WeaponCard weapon={c} key={c.uniqueName} />
           ))}
         </div>
       </div>
@@ -276,10 +293,13 @@ function WeaponCard(
   );
 }
 
-export function IngredientsCard(attrs: HTMLAttributes<HTMLDivElement>) {
-  const vContext = useContext(BrowserContext);
-
-  const { ingredientsFlat: ingredients } = vContext;
+export function IngredientsCard({
+  craftData,
+  ...attrs
+}: {
+  craftData: CraftData;
+} & HTMLAttributes<HTMLDivElement>) {
+  const { ingredientsFlat: ingredients, ownedIngredients } = craftData;
 
   return (
     <div className={cx("card", "overflow-y-scroll", "g-col-12", "mt-2", "mb-2")} {...attrs}>
@@ -297,7 +317,14 @@ export function IngredientsCard(attrs: HTMLAttributes<HTMLDivElement>) {
             <Deferred
               value={ingredients.value}
               ok={(is) =>
-                is.map(([uniqueName, req], i) => <IngredientRow uniqueName={uniqueName} requirement={req} key={i} />)
+                is.map(([uniqueName, req], i) => (
+                  <IngredientRow
+                    uniqueName={uniqueName}
+                    requirement={req}
+                    key={uniqueName}
+                    ownedIngredients={ownedIngredients}
+                  />
+                ))
               }
               pending={
                 <tr>
@@ -315,18 +342,16 @@ export function IngredientsCard(attrs: HTMLAttributes<HTMLDivElement>) {
 function IngredientRow({
   uniqueName,
   requirement,
-  key,
+  ownedIngredients,
 }: {
   uniqueName: string;
   requirement: CraftRequirement;
-  key: number;
+  ownedIngredients: CraftData["ownedIngredients"];
 }) {
   if (requirement.quantity == 0 || requirement.toplevel) return null;
 
-  const { ownedIngredients } = useContext(BrowserContext);
-
   return (
-    <tr key={key}>
+    <tr>
       <td>
         <Texture id={uniqueName} width="32px" /> {HumanName(uniqueName)}
       </td>

@@ -1,11 +1,11 @@
-import { useComputed, useSignal } from "@preact/signals";
+import { signal, useComputed, useSignal } from "@preact/signals";
 import { useRoute } from "preact-iso";
-import { useContext } from "preact/hooks";
+import { useContext, useRef } from "preact/hooks";
 import { completed } from "../components/Deferred";
 import { AppState } from "../data";
 import { CraftList, ShowCraftList } from "../data/craftList";
 import cx from "../style";
-import { IngredientsCard } from "./BrowseWeapons";
+import { CraftData, IngredientsCard } from "./BrowseWeapons";
 
 export function SingleItem() {
   const rte = useRoute();
@@ -16,16 +16,21 @@ export function SingleItem() {
   if (item == null) return <div>Unknown item</div>;
 
   const itemsOwned = useSignal({});
-  const cl = new CraftList(manifest, true, [item.uniqueName]);
-  const ing = useComputed(() => completed(cl.flattened(itemsOwned.value)));
+  const cl = useRef(new CraftList(manifest, true, [item.uniqueName]));
+
+  const cd: CraftData = {
+    craftList: signal(completed(cl.current)),
+    ingredientsFlat: useComputed(() => completed(cl.current.flattened(itemsOwned.value))),
+    ownedIngredients: itemsOwned,
+  };
 
   return (
     <div className={cx("container")}>
-      <IngredientsCard />
+      <IngredientsCard craftData={cd} />
       <div className={cx("card")}>
         <div className={cx("card-body")}>
           <h5 className={cx("card-title")}>Recipe tree</h5>
-          <ShowCraftList list={cl.items} />
+          <ShowCraftList list={cl.current.items} />
         </div>
       </div>
     </div>
