@@ -18,18 +18,20 @@ export type SelectedCategory = keyof typeof categoryMap;
 
 export type BrowserWeapon = ExportWeapon & { archwing: boolean };
 
+export type BrowserOptions = {
+  showImages: boolean;
+  showMastered: boolean;
+  useInvasions: boolean;
+};
+
 export type TBrowserContext = {
   _allWeapons: ReadonlySignal<List<ExportWeapon>>;
   weapons: ReadonlySignal<Array<BrowserWeapon>>;
 
   category: Signal<SelectedCategory>;
 
-  options: {
-    showImages: Signal<boolean>;
-    showMastered: Signal<boolean>;
-    useInvasions: Signal<boolean>;
-    masteredWeapons: Signal<Set<string>>;
-  };
+  options: Signal<BrowserOptions>;
+  masteredWeapons: Signal<Set<string>>;
 };
 
 const modularPattern = [
@@ -53,8 +55,6 @@ const modularPattern = [
 const isModular = (weapon: ExportWeapon) =>
   modularPattern.some((p) => (typeof p == "string" ? weapon.uniqueName.startsWith(p) : weapon.uniqueName.match(p)));
 
-const excludeModular = (weapons: ExportWeapon[]) => weapons.filter((w) => !isModular(w));
-
 function isCategory(weapon: ExportWeapon, categories: string[]): boolean {
   if (categories.length == 0) return true;
 
@@ -70,23 +70,25 @@ function isCategory(weapon: ExportWeapon, categories: string[]): boolean {
     weapon.uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers") ||
     weapon.uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers")
   )
-    return categories.includes("LongGun");
+    return categories.includes("OperatorAmps");
 
   return categories.includes(weapon.productCategory);
 }
 
 export function createBrowserContext(): TBrowserContext {
   const { manifest } = useContext(AppState);
-  const allWeapons = useSignal(List(excludeModular(manifest.exports["ExportWeapons"])));
+  const allWeapons = useSignal(List(manifest.exports["ExportWeapons"].filter((w) => !isModular(w))));
 
   const urlHash = window.location.hash.length == 0 ? "#Primary" : window.location.hash.slice(1);
   const initialCategory = urlHash in categoryMap ? (urlHash as SelectedCategory) : "Primary";
 
   const category = useSignal<SelectedCategory>(initialCategory);
 
-  const showImage = useStored("wfListShowImage", true);
-  const showMastered = useStored("wfListShowMastered", true);
-  const useInvasions = useStored("wfListUseInvasions", true);
+  const options = useStored<BrowserOptions>("wfListFilters", {
+    showImages: true,
+    showMastered: true,
+    useInvasions: true,
+  });
 
   const masteredWeapons = useStoredWith<Set<string>>(
     "wfListMastered",
@@ -100,7 +102,7 @@ export function createBrowserContext(): TBrowserContext {
         (weapon) =>
           !allVaulted.includes(weapon.uniqueName) &&
           isCategory(weapon, categoryMap[category.value]) &&
-          (showMastered.value || !masteredWeapons.value.get(weapon.uniqueName, false)),
+          (options.value.showMastered || !masteredWeapons.value.get(weapon.uniqueName, false)),
       )
       .map((w) => {
         return {
@@ -117,13 +119,9 @@ export function createBrowserContext(): TBrowserContext {
     _allWeapons: allWeapons,
     weapons,
     category,
+    masteredWeapons,
 
-    options: {
-      showImages: showImage,
-      showMastered: showMastered,
-      useInvasions: useInvasions,
-      masteredWeapons: masteredWeapons,
-    },
+    options,
   };
 }
 

@@ -1,27 +1,20 @@
-import { ReadonlySignal, Signal } from "@preact/signals";
+import { Signal } from "@preact/signals";
 import { Set } from "immutable";
 import cx from "../style";
+import { slugify } from "./util";
 
-export function Checkbox(props: { value: Signal<boolean>; name: string; label?: string }) {
-  return <CheckboxF onChange={(v) => (props.value.value = v)} {...props} />;
-}
-
-export function CheckboxF(props: {
-  value: ReadonlySignal<boolean>;
-  onChange: (arg: boolean) => void;
-  name: string;
-  label?: string;
-}) {
+export function Checkbox(props: { value: Signal<boolean>; label: string; name?: string }) {
+  const name = props.name ?? slugify(props.label);
   return (
     <div className={cx("form-check", "mb-2")}>
       <input
         type="checkbox"
-        id={props.name}
+        id={name}
         className={cx("form-check-input")}
-        checked={props.value.value}
-        onChange={(e) => props.onChange(e.currentTarget.checked)}
+        checked={props.value}
+        onChange={(e) => (props.value.value = e.currentTarget.checked)}
       />
-      <label className={cx("form-check-label")} for={props.name}>
+      <label className={cx("form-check-label")} for={name}>
         {props.label}
       </label>
     </div>

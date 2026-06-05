@@ -4,8 +4,8 @@ import { useContext } from "preact/hooks";
 import FilterOptions from "../../components/browser/FilterOptions";
 import Tab from "../../components/browser/Tab";
 import IngredientsCard from "../../components/crafting/Ingredients";
-import { CheckboxF, toggle } from "../../components/input";
-import { Texture } from "../../components/util";
+import { Checkbox } from "../../components/input";
+import { Texture, useMapped } from "../../components/util";
 import cx from "../../style";
 import BrowserContext, { BrowserWeapon, createBrowserContext } from "./BrowserContext";
 import { useCraftList } from "./CraftData";
@@ -13,10 +13,11 @@ import { useCraftList } from "./CraftData";
 export default function Browse() {
   const vContext = createBrowserContext();
 
-  const { weapons } = vContext;
+  const { weapons, options } = vContext;
   const weaponNames = useComputed(() => weapons.value.map((v) => v.uniqueName));
+  const useInvasions = useComputed(() => options.value.useInvasions);
 
-  const cd = useCraftList(weaponNames, vContext.options.useInvasions);
+  const cd = useCraftList(weaponNames, useInvasions);
 
   return (
     <BrowserContext value={vContext}>
@@ -32,7 +33,7 @@ export default function Browse() {
       <div className={cx("container")}>
         <div className={cx("grid")}>
           <IngredientsCard craftData={cd} style={{ height: "320px" }} />
-          {weapons.value.map((c, i) => (
+          {weapons.value.map((c) => (
             <WeaponCard weapon={c} key={c.uniqueName} />
           ))}
         </div>
@@ -47,24 +48,20 @@ function WeaponCard(
   } & HTMLAttributes<HTMLDivElement>,
 ) {
   const { weapon, ...rest } = props;
-  const {
-    options: { showImages: showImage, masteredWeapons },
-  } = useContext(BrowserContext);
-
-  const isChecked = useComputed(() => masteredWeapons.value.has(weapon.uniqueName));
+  const { options, masteredWeapons } = useContext(BrowserContext);
 
   const prettyName = weapon.archwing ? `[A] ${weapon.name}` : weapon.name;
 
   return (
     <div
       className={cx("card", {
-        "g-col-3": showImage.value,
-        "g-col-2": !showImage.value,
+        "g-col-3": options.value.showImages,
+        "g-col-2": !options.value.showImages,
       })}
       {...rest}
     >
       <div className={cx("card-body")}>
-        {showImage.value ? (
+        {options.value.showImages ? (
           <>
             <a href={`/item${weapon.uniqueName}`}>
               <Texture id={weapon.uniqueName} className={cx("img-fluid")} />
@@ -77,9 +74,12 @@ function WeaponCard(
           </div>
         )}
         <form>
-          <CheckboxF
-            value={isChecked}
-            onChange={(_) => toggle(masteredWeapons, weapon.uniqueName)}
+          <Checkbox
+            value={useMapped(
+              masteredWeapons,
+              (w) => w.has(weapon.uniqueName),
+              (m, v) => m[v ? "add" : "remove"](weapon.uniqueName),
+            )}
             name={`${weapon.uniqueName}_ma`}
             label="Mastered"
           />

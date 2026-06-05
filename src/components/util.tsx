@@ -35,3 +35,25 @@ export function useStored<T>(key: string, def: T): Signal<T> {
     (v) => JSON.stringify(v),
   );
 }
+
+export function slugify(input: string): string {
+  return input.replace(/\W+/, "-").toLowerCase();
+}
+
+export function useField<T extends {}, N extends keyof T>(input: Signal<T>, field: N): Signal<T[N]> {
+  return useMapped<T, T[N]>(
+    input,
+    (v) => v[field],
+    (s, v) => ({ ...s, [field]: v }),
+  );
+}
+
+export function useMapped<T, V>(input: Signal<T>, get: (arg: T) => V, set: (arg: T, value: V) => T) {
+  const copied = useSignal(get(input.peek()));
+
+  useSignalEffect(() => {
+    input.value = set(input.peek(), copied.value);
+  });
+
+  return copied;
+}

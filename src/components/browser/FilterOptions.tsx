@@ -1,16 +1,17 @@
+import { useSignal } from "@preact/signals";
+import { Show } from "@preact/signals/utils";
 import { Set } from "immutable";
 import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
 import BrowserContext from "../../pages/itemBrowser/BrowserContext";
 import cx from "../../style";
 import { Checkbox } from "../input";
+import { useField } from "../util";
 
 export default function FilterOptions() {
-  const {
-    options: { showImages, showMastered, useInvasions, masteredWeapons },
-  } = useContext(BrowserContext);
+  const { options, masteredWeapons } = useContext(BrowserContext);
 
-  const [visible, setVisible] = useState(false);
+  const visible = useSignal(false);
 
   const [refEl, setRefEl] = useState<HTMLButtonElement | null>(null);
   const [popEl, setPopEl] = useState<HTMLDivElement | null>(null);
@@ -27,26 +28,25 @@ export default function FilterOptions() {
   });
 
   return (
-    <div className={cx(visible ? "dropup" : "dropdown")}>
+    <div className={cx(visible.value ? "dropup" : "dropdown")}>
       <button
         className={cx("btn", "btn-primary", "dropdown-toggle")}
         ref={setRefEl}
-        onClick={() => setVisible((v) => !v)}
+        onClick={() => (visible.value = !visible.value)}
       >
         Options
       </button>
 
-      {visible && (
-        <div
-          ref={setPopEl}
-          className={cx("dropdown-menu", { show: visible })}
-          style={styles.popper}
-          {...attributes.popper}
-        >
+      <Show when={visible}>
+        <div ref={setPopEl} className={cx("dropdown-menu", "show")} style={styles.popper} {...attributes.popper}>
           <form className={cx("px-3", "py-2")} style={{ width: "400px" }}>
-            <Checkbox name="useInv" value={useInvasions} label="Research components come from invasions" />
-            <Checkbox name="showIm" value={showImages} label="Enable images" />
-            <Checkbox name="showMa" value={showMastered} label="Show mastered" />
+            <Checkbox
+              name="useInv"
+              value={useField(options, "useInvasions")}
+              label="Research components come from invasions"
+            />
+            <Checkbox name="showIm" value={useField(options, "showImages")} label="Enable images" />
+            <Checkbox name="showMa" value={useField(options, "showMastered")} label="Include mastered weapons" />
             <hr />
             <button onClick={() => (masteredWeapons.value = Set())} className={cx("btn", "btn-danger", "btn-sm")}>
               Clear mastery
@@ -55,7 +55,7 @@ export default function FilterOptions() {
 
           <div ref={setArrowEl} style={styles.arrow} />
         </div>
-      )}
+      </Show>
     </div>
   );
 }
