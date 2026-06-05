@@ -1,5 +1,5 @@
 import { ReadonlySignal, Signal, useComputed, useSignal } from "@preact/signals";
-import { List, Set } from "immutable";
+import { List, Map, Set } from "immutable";
 import { createContext } from "preact";
 import { useContext } from "preact/hooks";
 import { useStored, useStoredWith } from "../../components/util";
@@ -77,7 +77,10 @@ function isCategory(weapon: ExportWeapon, categories: string[]): boolean {
 
 export function createBrowserContext(): TBrowserContext {
   const { manifest } = useContext(AppState);
-  const allWeapons = useSignal(List(manifest.exports["ExportWeapons"].filter((w) => !isModular(w))));
+  // dedup weapons. the export contains 3 identical copies of Mausolon. cause why not
+  const allWeapons = useSignal(
+    List(Map(manifest.exports["ExportWeapons"].filter((w) => !isModular(w)).map((w) => [w.uniqueName, w])).values()),
+  );
 
   const urlHash = window.location.hash.length == 0 ? "#Primary" : window.location.hash.slice(1);
   const initialCategory = urlHash in categoryMap ? (urlHash as SelectedCategory) : "Primary";
