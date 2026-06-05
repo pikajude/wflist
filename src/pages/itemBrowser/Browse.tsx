@@ -32,7 +32,7 @@ export default function Browse() {
       </nav>
       <div className={cx("container")}>
         <div className={cx("grid")}>
-          <IngredientsCard craftData={cd} style={{ height: "320px" }} />
+          <IngredientsCard startOpen={true} craftData={cd} maxHeight={300} />
           {weapons.value.map((c) => (
             <WeaponCard weapon={c} key={c.uniqueName} />
           ))}

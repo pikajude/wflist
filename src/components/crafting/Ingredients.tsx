@@ -1,3 +1,4 @@
+import { useSignal } from "@preact/signals";
 import { HTMLAttributes } from "preact";
 import { CraftRequirement } from "../../data/craftList";
 import { CraftData } from "../../pages/itemBrowser/CraftData";
@@ -7,45 +8,65 @@ import { HumanName, Texture } from "../util";
 
 export default function IngredientsCard({
   craftData,
+  startOpen,
+  maxHeight,
   ...attrs
 }: {
   craftData: CraftData;
+  startOpen: boolean;
+  maxHeight?: number;
 } & HTMLAttributes<HTMLDivElement>) {
   const { ingredientsFlat: ingredients, ownedIngredients } = craftData;
 
+  const expanded = useSignal(startOpen);
+  const extra: HTMLAttributes<HTMLDivElement> = {};
+
+  if (maxHeight != null) extra.style = { maxHeight: maxHeight, overflowY: "scroll" };
+
   return (
-    <div className={cx("card", "overflow-y-scroll", "g-col-12", "mt-2", "mb-2")} {...attrs}>
-      <div className={cx("card-body")}>
-        <h5 className={cx("card-title")}>Total required resources</h5>
-        <table className={cx("table", "table-striped")}>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Needed</th>
-              <th>Owned</th>
-            </tr>
-          </thead>
-          <tbody>
-            <Deferred
-              value={ingredients.value}
-              ok={(is) =>
-                is.map(([uniqueName, req], i) => (
-                  <IngredientRow
-                    uniqueName={uniqueName}
-                    requirement={req}
-                    key={uniqueName}
-                    ownedIngredients={ownedIngredients}
-                  />
-                ))
-              }
-              pending={
+    <div className={cx("accordion", "g-col-12", "mt-2")} {...attrs}>
+      <div className={cx("accordion-item")}>
+        <h2 className={cx("accordion-header")}>
+          <button
+            className={cx("accordion-button", { collapsed: !expanded.value })}
+            onClick={() => (expanded.value = !expanded.value)}
+          >
+            Ingredients
+          </button>
+        </h2>
+        <div className={cx("accordion-collapse", "collapse", { show: expanded.value })}>
+          <div className={cx("accordion-body")} {...extra}>
+            <table className={cx("table", "table-striped")}>
+              <thead>
                 <tr>
-                  <td colSpan={3}>Calculating...</td>
+                  <th>Name</th>
+                  <th>Needed</th>
+                  <th>Owned</th>
                 </tr>
-              }
-            />
-          </tbody>
-        </table>
+              </thead>
+              <tbody>
+                <Deferred
+                  value={ingredients.value}
+                  ok={(is) =>
+                    is.map(([uniqueName, req], i) => (
+                      <IngredientRow
+                        uniqueName={uniqueName}
+                        requirement={req}
+                        key={uniqueName}
+                        ownedIngredients={ownedIngredients}
+                      />
+                    ))
+                  }
+                  pending={
+                    <tr>
+                      <td colSpan={3}>Calculating...</td>
+                    </tr>
+                  }
+                />
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

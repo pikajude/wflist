@@ -20,7 +20,7 @@ export default function ViewItem() {
 
   return (
     <div className={cx("container")}>
-      <IngredientsCard craftData={craftData} />
+      <IngredientsCard startOpen={true} craftData={craftData} />
       <div className={cx("card")}>
         <div className={cx("card-body")}>
           <h5 className={cx("card-title")}>Recipe tree</h5>

@@ -34,26 +34,43 @@ export type TBrowserContext = {
   masteredWeapons: Signal<Set<string>>;
 };
 
-const modularPattern = [
-  "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos",
+const excludedWeapons = [
+  // exalted weapons
+  "/Lotus/Powersuits",
+
+  // moa/hound
   "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts",
   "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts",
   "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetMeleeWeapon",
+
+  // vulp/predasite
+  "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos",
   "/Lotus/Types/Items/Deimos/WoundedInfested",
+
+  // kdrive
   "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts",
+
+  // wtf is this? extra grimoire
   "/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire",
+
+  // mote amp
   "/Lotus/Weapons/Sentients/OperatorAmplifiers/SentTrainingAmplifier",
+  // other amp components
   new RegExp("^/Lotus/Weapons/(Sentients|Corpus)/OperatorAmplifiers/Set\\d+/(Grip|Chassis)"),
+
+  // kitgun components
   new RegExp(
     "^/Lotus/Weapons/SolarisUnited/(Secondary/SUModularSecondarySet|Primary/SUModularPrimarySet)\\d+/(Clip|Handle)",
   ),
   new RegExp("^/Lotus/Weapons/Infested/Pistols/InfKitGun/(Clip|Handle)"),
+
+  // zaw components
   new RegExp("^/Lotus/Weapons/Ostron/Melee/ModularMelee\\w+/(Balance|Handle)"),
   /PvPVariant/,
 ] as const;
 
-const isModular = (weapon: ExportWeapon) =>
-  modularPattern.some((p) => (typeof p == "string" ? weapon.uniqueName.startsWith(p) : weapon.uniqueName.match(p)));
+const shouldExclude = (weapon: ExportWeapon) =>
+  excludedWeapons.some((p) => (typeof p == "string" ? weapon.uniqueName.startsWith(p) : weapon.uniqueName.match(p)));
 
 function isCategory(weapon: ExportWeapon, categories: string[]): boolean {
   if (categories.length == 0) return true;
@@ -79,7 +96,9 @@ export function createBrowserContext(): TBrowserContext {
   const { manifest } = useContext(AppState);
   // dedup weapons. the export contains 3 identical copies of Mausolon. cause why not
   const allWeapons = useSignal(
-    List(Map(manifest.exports["ExportWeapons"].filter((w) => !isModular(w)).map((w) => [w.uniqueName, w])).values()),
+    List(
+      Map(manifest.exports["ExportWeapons"].filter((w) => !shouldExclude(w)).map((w) => [w.uniqueName, w])).values(),
+    ),
   );
 
   const urlHash = window.location.hash.length == 0 ? "#Primary" : window.location.hash.slice(1);
