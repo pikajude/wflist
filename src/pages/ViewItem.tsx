@@ -19,9 +19,9 @@ export default function ViewItem() {
   const craftData = useCraftList(signal([item.uniqueName]), signal(true));
 
   return (
-    <div className={cx("container")}>
+    <div className={cx("container", "grid")}>
       <IngredientsCard startOpen={true} craftData={craftData} />
-      <div className={cx("card")}>
+      <div className={cx("card", "g-col-12")}>
         <div className={cx("card-body")}>
           <h5 className={cx("card-title")}>Recipe tree</h5>
           <Deferred value={craftData.craftList.value} ok={(cl) => <ShowCraftList list={cl.items} />} />

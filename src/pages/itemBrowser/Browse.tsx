@@ -1,4 +1,5 @@
 import { useComputed } from "@preact/signals";
+import { For } from "@preact/signals/utils";
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
 import FilterOptions from "../../components/browser/FilterOptions";
@@ -38,13 +39,9 @@ export default function Browse() {
         <Tab label="All" />
         <FilterOptions />
       </nav>
-      <div className={cx("container", "mt-4")}>
-        <div className={cx("grid")}>
-          <IngredientsCard startOpen={true} craftData={cd} maxHeight={300} />
-          {weapons.value.map((c) => (
-            <WeaponCard weapon={c} key={c.uniqueName} />
-          ))}
-        </div>
+      <div className={cx("container", "mt-4", "grid")}>
+        <IngredientsCard startOpen={true} craftData={cd} maxHeight={300} />
+        <For each={weapons}>{(item) => <WeaponCard weapon={item} key={item.uniqueName} />}</For>
       </div>
     </BrowserContext>
   );

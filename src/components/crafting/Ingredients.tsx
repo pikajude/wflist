@@ -36,7 +36,7 @@ export default function IngredientsCard({
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: expanded.value })}>
           <div className={cx("accordion-body")} {...extra}>
-            <table className={cx("table", "table-striped")}>
+            <table className={cx("table", "table-striped", "table-sm", "align-middle")}>
               <thead>
                 <tr>
                   <th>Name</th>
@@ -86,7 +86,7 @@ export function IngredientRow({
   return (
     <tr>
       <td>
-        <Texture id={uniqueName} width="32px" /> {HumanName(uniqueName)}
+        <Texture id={uniqueName} width="24px" /> {HumanName(uniqueName)}
       </td>
       <td>{requirement.quantity}</td>
       <td>
