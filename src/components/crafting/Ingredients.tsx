@@ -24,7 +24,7 @@ export default function IngredientsCard({
   if (maxHeight != null) extra.style = { maxHeight: maxHeight, overflowY: "scroll" };
 
   return (
-    <div className={cx("accordion", "g-col-12", "mt-2")} {...attrs}>
+    <div className={cx("accordion", "g-col-12")} {...attrs}>
       <div className={cx("accordion-item")}>
         <h2 className={cx("accordion-header")}>
           <button

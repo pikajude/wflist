@@ -13,7 +13,7 @@ export default function FilterOptions() {
 
   const visible = useSignal(false);
 
-  const [refEl, setRefEl] = useState<HTMLButtonElement | null>(null);
+  const [refEl, setRefEl] = useState<HTMLAnchorElement | null>(null);
   const [popEl, setPopEl] = useState<HTMLDivElement | null>(null);
   const [arrowEl, setArrowEl] = useState<HTMLDivElement | null>(null);
 
@@ -28,14 +28,15 @@ export default function FilterOptions() {
   });
 
   return (
-    <div className={cx(visible.value ? "dropup" : "dropdown")}>
-      <button
-        className={cx("btn", "btn-primary", "dropdown-toggle")}
+    <div className={cx("nav-item", visible.value ? "dropup" : "dropdown")} style={{ marginLeft: "auto" }}>
+      <a
+        className={cx("nav-link", "dropdown-toggle")}
         ref={setRefEl}
+        role="button"
         onClick={() => (visible.value = !visible.value)}
       >
         Options
-      </button>
+      </a>
 
       <Show when={visible}>
         <div ref={setPopEl} className={cx("dropdown-menu", "show")} style={styles.popper} {...attributes.popper}>

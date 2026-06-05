@@ -1,26 +1,22 @@
 import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "preact-iso";
 
 import { Attributes } from "preact";
-import { Header } from "./components/Header.js";
 import { AppState, createAppState, TState } from "./data/index.js";
 import { NotFound } from "./pages/_404.jsx";
 import Browse from "./pages/itemBrowser/Browse.js";
 import ViewItem from "./pages/ViewItem.js";
-import cx from "./style.js";
 import "./style.module.scss";
 
 export function App(props: { state: TState }) {
   return (
     <AppState.Provider value={props.state}>
       <LocationProvider>
-        <Header />
-        <main className={cx("container")}>
-          <Router>
-            <Route path="/" component={Browse} />
-            <Route path="/item/:path*" component={ViewItem} />
-            <Route default component={NotFound} />
-          </Router>
-        </main>
+        {/* <Header /> */}
+        <Router>
+          <Route path="/" component={Browse} />
+          <Route path="/item/:path*" component={ViewItem} />
+          <Route default component={NotFound} />
+        </Router>
       </LocationProvider>
     </AppState.Provider>
   );

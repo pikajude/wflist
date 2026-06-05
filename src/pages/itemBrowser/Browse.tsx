@@ -21,16 +21,24 @@ export default function Browse() {
 
   return (
     <BrowserContext value={vContext}>
-      <nav className={cx("navbar")}>
-        <ul className={cx("nav", "nav-underline", "mb-2")}>
-          <Tab label="Primary" />
-          <Tab label="Secondary" />
-          <Tab label="Melee" />
-          <Tab label="All" />
-        </ul>
+      <nav
+        className={cx(
+          "navbar",
+          "navbar-expand-lg",
+          "bg-body-tertiary",
+          "nav",
+          "nav-pills",
+          "flex-column",
+          "flex-sm-row",
+        )}
+      >
+        <Tab label="Primary" />
+        <Tab label="Secondary" />
+        <Tab label="Melee" />
+        <Tab label="All" />
         <FilterOptions />
       </nav>
-      <div className={cx("container")}>
+      <div className={cx("container", "mt-4")}>
         <div className={cx("grid")}>
           <IngredientsCard startOpen={true} craftData={cd} maxHeight={300} />
           {weapons.value.map((c) => (

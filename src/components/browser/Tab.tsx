@@ -7,14 +7,12 @@ export default function Tab(props: { label: SelectedCategory }) {
   const { label } = props;
 
   return (
-    <li className={cx("nav-item")}>
-      <a
-        className={cx("nav-link", { active: category.value == label })}
-        onClick={() => (category.value = label)}
-        href={`#${label}`}
-      >
-        {label}
-      </a>
-    </li>
+    <a
+      className={cx("nav-link", "text-sm-center", { active: category.value == label })}
+      onClick={() => (category.value = label)}
+      href={`#${label}`}
+    >
+      {label}
+    </a>
   );
 }
