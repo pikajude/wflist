@@ -12,13 +12,13 @@ export function pending<T>(): Lazy<T> {
 
 export function Deferred<T>(props: {
   value: Lazy<T>;
-  ok: (arg: T) => ComponentChildren;
+  children: (arg: T) => ComponentChildren;
   err?: (arg: Error) => ComponentChildren;
   pending?: ComponentChildren;
 }) {
   const { value } = props;
 
-  if (value.state == "done") return props.ok(value.value);
+  if (value.state == "done") return props.children(value.value);
 
   if (value.state == "error") {
     if (props.err != null) return props.err(value.error);

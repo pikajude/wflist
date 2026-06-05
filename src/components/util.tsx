@@ -37,7 +37,7 @@ export function useStored<T>(key: string, def: T): Signal<T> {
 }
 
 export function slugify(input: string): string {
-  return input.replace(/\W+/, "-").toLowerCase();
+  return input.replace(/\W+/g, "-").toLowerCase();
 }
 
 export function useField<T extends {}, N extends keyof T>(input: Signal<T>, field: N): Signal<T[N]> {

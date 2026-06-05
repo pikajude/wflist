@@ -1,5 +1,4 @@
 import { Signal } from "@preact/signals";
-import { Set } from "immutable";
 import cx from "../style";
 import { slugify } from "./util";
 
@@ -19,11 +18,4 @@ export function Checkbox(props: { value: Signal<boolean>; label: string; name?: 
       </label>
     </div>
   );
-}
-
-export function toggle<T>(signal: Signal<Set<T>>, value: T) {
-  signal.value = signal.value.withMutations((s) => {
-    if (s.has(value)) s.remove(value);
-    else s.add(value);
-  });
 }

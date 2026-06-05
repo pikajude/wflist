@@ -6,25 +6,18 @@ import cx from "../../style";
 import { Deferred } from "../Deferred";
 import { HumanName, Texture } from "../util";
 
-export default function IngredientsCard({
-  craftData,
-  startOpen,
-  maxHeight,
-  ...attrs
-}: {
-  craftData: CraftData;
-  startOpen: boolean;
-  maxHeight?: number;
-} & HTMLAttributes<HTMLDivElement>) {
-  const { ingredientsFlat: ingredients, ownedIngredients } = craftData;
+export default function IngredientsCard(props: { craftData: CraftData; startOpen: boolean; maxHeight?: number }) {
+  const {
+    craftData: { ingredientsFlat: ingredients, ownedIngredients },
+    startOpen,
+    maxHeight,
+  } = props;
 
   const expanded = useSignal(startOpen);
-  const extra: HTMLAttributes<HTMLDivElement> = {};
-
-  if (maxHeight != null) extra.style = { maxHeight: maxHeight, overflowY: "scroll" };
+  const extra: HTMLAttributes<HTMLDivElement> = maxHeight == null ? {} : { style: { maxHeight, overflowY: "scroll" } };
 
   return (
-    <div className={cx("accordion", "g-col-12")} {...attrs}>
+    <div className={cx("accordion", "g-col-12")}>
       <div className={cx("accordion-item")}>
         <h2 className={cx("accordion-header")}>
           <button
@@ -47,8 +40,14 @@ export default function IngredientsCard({
               <tbody>
                 <Deferred
                   value={ingredients.value}
-                  ok={(is) =>
-                    is.map(([uniqueName, req], i) => (
+                  pending={
+                    <tr>
+                      <td colSpan={3}>Calculating...</td>
+                    </tr>
+                  }
+                >
+                  {(is) =>
+                    is.map(([uniqueName, req]) => (
                       <IngredientRow
                         uniqueName={uniqueName}
                         requirement={req}
@@ -57,12 +56,7 @@ export default function IngredientsCard({
                       />
                     ))
                   }
-                  pending={
-                    <tr>
-                      <td colSpan={3}>Calculating...</td>
-                    </tr>
-                  }
-                />
+                </Deferred>
               </tbody>
             </table>
           </div>

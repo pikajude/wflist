@@ -41,15 +41,16 @@ export default function FilterOptions() {
       <Show when={visible}>
         <div ref={setPopEl} className={cx("dropdown-menu", "show")} style={styles.popper} {...attributes.popper}>
           <form className={cx("px-3", "py-2")} style={{ width: "400px" }}>
-            <Checkbox
-              name="useInv"
-              value={useField(options, "useInvasions")}
-              label="Research components come from invasions"
-            />
-            <Checkbox name="showIm" value={useField(options, "showImages")} label="Enable images" />
-            <Checkbox name="showMa" value={useField(options, "showMastered")} label="Include mastered weapons" />
+            <Checkbox value={useField(options, "useInvasions")} label="Research components come from invasions" />
+            <Checkbox value={useField(options, "showImages")} label="Enable images" />
+            <Checkbox value={useField(options, "showMastered")} label="Include mastered weapons" />
             <hr />
-            <button onClick={() => (masteredWeapons.value = Set())} className={cx("btn", "btn-danger", "btn-sm")}>
+            <button
+              onClick={() => {
+                if (confirm("Are you sure you want to reset mastery history?")) masteredWeapons.value = Set();
+              }}
+              className={cx("btn", "btn-danger", "btn-sm")}
+            >
               Clear mastery
             </button>
           </form>

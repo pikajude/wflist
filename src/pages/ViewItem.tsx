@@ -24,7 +24,7 @@ export default function ViewItem() {
       <div className={cx("card", "g-col-12")}>
         <div className={cx("card-body")}>
           <h5 className={cx("card-title")}>Recipe tree</h5>
-          <Deferred value={craftData.craftList.value} ok={(cl) => <ShowCraftList list={cl.items} />} />
+          <Deferred value={craftData.craftList.value}>{(cl) => <ShowCraftList list={cl.items} />}</Deferred>
         </div>
       </div>
     </div>
