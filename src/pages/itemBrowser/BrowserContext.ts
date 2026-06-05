@@ -12,13 +12,15 @@ const categoryMap = {
   Secondary: ["Pistols"],
   Melee: ["Melee", "SpaceMelee"],
   All: [],
-} as const;
+};
 
 export type SelectedCategory = keyof typeof categoryMap;
 
+export type BrowserWeapon = ExportWeapon & { archwing: boolean };
+
 export type TBrowserContext = {
   _allWeapons: ReadonlySignal<List<ExportWeapon>>;
-  weapons: ReadonlySignal<Array<ExportWeapon>>;
+  weapons: ReadonlySignal<Array<BrowserWeapon>>;
 
   category: Signal<SelectedCategory>;
 
@@ -39,9 +41,10 @@ const modularPattern = [
   "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts",
   "/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire",
   "/Lotus/Weapons/Sentients/OperatorAmplifiers/SentTrainingAmplifier",
-  new RegExp("^/Lotus/Weapons/(Sentients|Corpus)/OperatorAmplifiers/Set./(Grip|Chassis)"),
-  new RegExp("^/Lotus/Weapons/SolarisUnited/Secondary/SUModularSecondarySet./(Clip|Handle)"),
-  new RegExp("^/Lotus/Weapons/SolarisUnited/Primary/SUModularPrimarySet./(Clip|Handle)"),
+  new RegExp("^/Lotus/Weapons/(Sentients|Corpus)/OperatorAmplifiers/Set\\d+/(Grip|Chassis)"),
+  new RegExp(
+    "^/Lotus/Weapons/SolarisUnited/(Secondary/SUModularSecondarySet|Primary/SUModularPrimarySet)\\d+/(Clip|Handle)",
+  ),
   new RegExp("^/Lotus/Weapons/Infested/Pistols/InfKitGun/(Clip|Handle)"),
   new RegExp("^/Lotus/Weapons/Ostron/Melee/ModularMelee\\w+/(Balance|Handle)"),
   /PvPVariant/,
@@ -52,8 +55,25 @@ const isModular = (weapon: ExportWeapon) =>
 
 const excludeModular = (weapons: ExportWeapon[]) => weapons.filter((w) => !isModular(w));
 
-const BrowserContext = createContext({} as TBrowserContext);
-export default BrowserContext;
+function isCategory(weapon: ExportWeapon, categories: string[]): boolean {
+  if (categories.length == 0) return true;
+
+  if (weapon.uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee")) return categories.includes("Melee");
+
+  if (
+    weapon.uniqueName.startsWith("/Lotus/Weapons/Infested/Pistols/InfKitGun") ||
+    weapon.uniqueName.includes("SUModular")
+  )
+    return categories.some((c) => c == "LongGuns" || c == "Pistols");
+
+  if (
+    weapon.uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers") ||
+    weapon.uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers")
+  )
+    return categories.includes("LongGun");
+
+  return categories.includes(weapon.productCategory);
+}
 
 export function createBrowserContext(): TBrowserContext {
   const { manifest } = useContext(AppState);
@@ -79,9 +99,16 @@ export function createBrowserContext(): TBrowserContext {
       .filter(
         (weapon) =>
           !allVaulted.includes(weapon.uniqueName) &&
-          (category.value == "All" || categoryMap[category.value].includes(weapon.productCategory as never)) &&
+          isCategory(weapon, categoryMap[category.value]) &&
           (showMastered.value || !masteredWeapons.value.get(weapon.uniqueName, false)),
       )
+      .map((w) => {
+        return {
+          ...w,
+          archwing: w.name.startsWith("<ARCHWING>"),
+          name: w.name.replace("<ARCHWING> ", ""),
+        };
+      })
       .sort((a, b) => a.name.localeCompare(b.name))
       .toArray(),
   );
@@ -99,3 +126,6 @@ export function createBrowserContext(): TBrowserContext {
     },
   };
 }
+
+const BrowserContext = createContext({} as TBrowserContext);
+export default BrowserContext;

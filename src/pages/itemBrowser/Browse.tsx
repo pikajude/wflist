@@ -6,9 +6,8 @@ import Tab from "../../components/browser/Tab";
 import IngredientsCard from "../../components/crafting/Ingredients";
 import { CheckboxF, toggle } from "../../components/input";
 import { Texture } from "../../components/util";
-import { ExportWeapon } from "../../data/schema";
 import cx from "../../style";
-import BrowserContext, { createBrowserContext } from "./BrowserContext";
+import BrowserContext, { BrowserWeapon, createBrowserContext } from "./BrowserContext";
 import { useCraftList } from "./CraftData";
 
 export default function Browse() {
@@ -44,7 +43,7 @@ export default function Browse() {
 
 function WeaponCard(
   props: {
-    weapon: ExportWeapon;
+    weapon: BrowserWeapon;
   } & HTMLAttributes<HTMLDivElement>,
 ) {
   const { weapon, ...rest } = props;
@@ -53,6 +52,8 @@ function WeaponCard(
   } = useContext(BrowserContext);
 
   const isChecked = useComputed(() => masteredWeapons.value.has(weapon.uniqueName));
+
+  const prettyName = weapon.archwing ? `[A] ${weapon.name}` : weapon.name;
 
   return (
     <div
@@ -68,11 +69,11 @@ function WeaponCard(
             <a href={`/item${weapon.uniqueName}`}>
               <Texture id={weapon.uniqueName} className={cx("img-fluid")} />
             </a>
-            <div className={cx("card-text")}>{weapon.name}</div>
+            <div className={cx("card-text")}>{prettyName}</div>
           </>
         ) : (
           <div className={cx("card-text")}>
-            <a href={`/item${weapon.uniqueName}`}>{weapon.name}</a>
+            <a href={`/item${weapon.uniqueName}`}>{prettyName}</a>
           </div>
         )}
         <form>
