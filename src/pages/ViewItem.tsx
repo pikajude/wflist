@@ -2,10 +2,11 @@ import { signal } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext } from "preact/hooks";
 import { Deferred } from "../components/Deferred";
-import IngredientsCard from "../components/Ingredients";
+import IngredientTable from "../components/IngredientTable";
+import IngredientTree from "../components/IngredientTree";
 import BrowserNav from "../components/weapons/BrowserNav";
 import { AppState } from "../data";
-import { ShowCraftList, useCraftList } from "../data/craftList";
+import { useCraftList } from "../data/craftList";
 import cx from "../style";
 
 export default function ViewItem() {
@@ -25,10 +26,10 @@ export default function ViewItem() {
         <div className={cx("card", "g-col-12")}>
           <div className={cx("card-body")}>
             <h5 className={cx("card-title")}>Recipe tree</h5>
-            <Deferred value={craftData.craftList.value}>{(cl) => <ShowCraftList list={cl.items} />}</Deferred>
+            <Deferred value={craftData.craftList.value}>{(cl) => <IngredientTree list={cl} />}</Deferred>
           </div>
         </div>
-        <IngredientsCard startOpen={true} craftData={craftData} />
+        <IngredientTable startOpen={true} craftData={craftData} />
       </div>
     </>
   );

@@ -3,6 +3,7 @@ import { useContext } from "preact/hooks";
 import { AppState } from ".";
 import { completed, Lazy, pending } from "../components/Deferred";
 import { humanName, HumanName, Texture } from "../components/util";
+import cx from "../style";
 import { Wanifest } from "./wanifest";
 
 // apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
@@ -45,7 +46,7 @@ export class CraftList {
   add(uniqueName: string) {
     const cr = new CraftRecipe(uniqueName);
     cr.resolve(this.manifest, this.invasion);
-    this.items.push(new CraftItem(cr, 1));
+    this.items.push(new CraftItem(cr, 1, this.manifest));
   }
 
   flattened(ownedItemsIn: Record<string, number>) {
@@ -86,9 +87,11 @@ export class CraftList {
 
 export class CraftItem {
   recipe: CraftRecipe;
+  name: string;
   quantity: number;
 
-  constructor(recipe: CraftRecipe, quantity: number) {
+  constructor(recipe: CraftRecipe, quantity: number, manifest: Wanifest) {
+    this.name = humanName(recipe.uniqueName, manifest);
     this.recipe = recipe;
     this.quantity = quantity;
   }
@@ -116,18 +119,18 @@ export class CraftRecipe {
     for (const { ItemType, ItemCount } of recipe.ingredients) {
       const cr = new CraftRecipe(ItemType);
       cr.resolve(manifest, excludeInvasionMaterials, multiplier * ItemCount);
-      this.requires.push(new CraftItem(cr, Math.ceil(multiplier * ItemCount)));
+      this.requires.push(new CraftItem(cr, Math.ceil(multiplier * ItemCount), manifest));
     }
   }
 }
 
 export function ShowCraftList({ list }: { list: CraftItem[] }) {
   return (
-    <ul>
+    <div className={cx("grid")}>
       {list.map((i, v) => (
         <ShowCraftItem key={`${i.recipe.uniqueName}${v}`} item={i} />
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -135,13 +138,15 @@ export function ShowCraftItem(props: { item: CraftItem }) {
   const { item } = props;
 
   return (
-    <li>
-      <p>
+    <>
+      <div className={cx("g-col-3")}>
         <Texture id={item.recipe.uniqueName} width="32px" />
         {HumanName(item.recipe.uniqueName)} x{item.quantity}
-      </p>
-      <ShowCraftList list={item.recipe.requires} />
-    </li>
+      </div>
+      <div className={cx("g-col-9")}>
+        <ShowCraftList list={item.recipe.requires} />
+      </div>
+    </>
   );
 }
 

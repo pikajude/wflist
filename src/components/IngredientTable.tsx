@@ -6,7 +6,7 @@ import cx from "../style";
 import { Deferred } from "./Deferred";
 import { HumanName, Texture, useField } from "./util";
 
-export default function IngredientsCard(props: { craftData: CraftData; startOpen: boolean; maxHeight?: number }) {
+export default function IngredientTable(props: { craftData: CraftData; startOpen: boolean; maxHeight?: number }) {
   const {
     craftData: { ingredientsFlat: ingredients },
     startOpen,
