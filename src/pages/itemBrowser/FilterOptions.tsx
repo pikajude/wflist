@@ -3,10 +3,10 @@ import { Show } from "@preact/signals/utils";
 import { Set } from "immutable";
 import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
-import BrowserContext from "../../pages/itemBrowser/BrowserContext";
+import { Checkbox } from "../../components/input";
+import { useField } from "../../components/util";
 import cx from "../../style";
-import { Checkbox } from "../input";
-import { useField } from "../util";
+import BrowserContext from "./BrowserContext";
 
 export default function FilterOptions() {
   const { options, masteredWeapons } = useContext(BrowserContext);
@@ -42,7 +42,7 @@ export default function FilterOptions() {
         <div ref={setPopEl} className={cx("dropdown-menu", "show")} style={styles.popper} {...attributes.popper}>
           <form className={cx("px-3", "py-2")} style={{ width: "400px" }}>
             <Checkbox value={useField(options, "useInvasions")} label="Research components come from invasions" />
-            <Checkbox value={useField(options, "showImages")} label="Enable images" />
+            <Checkbox value={useField(options, "showImages")} label="Show images" />
             <Checkbox value={useField(options, "showMastered")} label="Include mastered weapons" />
             <hr />
             <button

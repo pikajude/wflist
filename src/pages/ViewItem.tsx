@@ -1,8 +1,8 @@
 import { signal } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext } from "preact/hooks";
-import IngredientsCard from "../components/crafting/Ingredients";
 import { Deferred } from "../components/Deferred";
+import IngredientsCard from "../components/Ingredients";
 import { AppState } from "../data";
 import { ShowCraftList } from "../data/craftList";
 import cx from "../style";

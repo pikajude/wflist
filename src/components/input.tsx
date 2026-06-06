@@ -5,7 +5,7 @@ import { slugify } from "./util";
 export function Checkbox(props: { value: Signal<boolean>; label: string; name?: string }) {
   const name = props.name ?? slugify(props.label);
   return (
-    <div className={cx("form-check", "mb-2")}>
+    <div className={cx("form-check")}>
       <input
         type="checkbox"
         id={name}

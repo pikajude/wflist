@@ -101,8 +101,8 @@ export function createBrowserContext(): TBrowserContext {
     ),
   );
 
-  const urlHash = window.location.hash.length == 0 ? "#Primary" : window.location.hash.slice(1);
-  const initialCategory = urlHash in categoryMap ? (urlHash as SelectedCategory) : "Primary";
+  const urlHash = window.location.hash.length == 0 ? "#All" : window.location.hash.slice(1);
+  const initialCategory = urlHash in categoryMap ? (urlHash as SelectedCategory) : "All";
 
   const category = useSignal<SelectedCategory>(initialCategory);
 

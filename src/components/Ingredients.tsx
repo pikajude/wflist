@@ -1,10 +1,9 @@
 import { useSignal } from "@preact/signals";
-import { HTMLAttributes } from "preact";
-import { CraftRequirement } from "../../data/craftList";
-import { CraftData } from "../../pages/itemBrowser/CraftData";
-import cx from "../../style";
-import { Deferred } from "../Deferred";
-import { HumanName, Texture } from "../util";
+import { CraftRequirement } from "../data/craftList";
+import { CraftData } from "../pages/itemBrowser/CraftData";
+import cx from "../style";
+import { Deferred } from "./Deferred";
+import { HumanName, Texture } from "./util";
 
 export default function IngredientsCard(props: { craftData: CraftData; startOpen: boolean; maxHeight?: number }) {
   const {
@@ -14,7 +13,7 @@ export default function IngredientsCard(props: { craftData: CraftData; startOpen
   } = props;
 
   const expanded = useSignal(startOpen);
-  const extra: HTMLAttributes<HTMLDivElement> = maxHeight == null ? {} : { style: { maxHeight, overflowY: "scroll" } };
+  const extra = maxHeight == null ? {} : { style: { maxHeight, overflowY: "scroll" } };
 
   return (
     <div className={cx("accordion", "g-col-12")}>

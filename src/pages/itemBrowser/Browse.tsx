@@ -2,14 +2,14 @@ import { useComputed } from "@preact/signals";
 import { For } from "@preact/signals/utils";
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
-import FilterOptions from "../../components/browser/FilterOptions";
-import Tab from "../../components/browser/Tab";
-import IngredientsCard from "../../components/crafting/Ingredients";
+import IngredientsCard from "../../components/Ingredients";
 import { Checkbox } from "../../components/input";
 import { Texture, useMapped } from "../../components/util";
 import cx from "../../style";
 import BrowserContext, { BrowserWeapon, createBrowserContext } from "./BrowserContext";
 import { useCraftList } from "./CraftData";
+import FilterOptions from "./FilterOptions";
+import Tab from "./Tab";
 
 export default function Browse() {
   const vContext = createBrowserContext();
@@ -22,22 +22,14 @@ export default function Browse() {
 
   return (
     <BrowserContext value={vContext}>
-      <nav
-        className={cx(
-          "navbar",
-          "navbar-expand-lg",
-          "bg-body-tertiary",
-          "nav",
-          "nav-pills",
-          "flex-column",
-          "flex-sm-row",
-        )}
-      >
-        <Tab label="Primary" />
-        <Tab label="Secondary" />
-        <Tab label="Melee" />
-        <Tab label="All" />
-        <FilterOptions />
+      <nav className={cx("navbar", "navbar-expand-lg", "sticky-top", "bg-body-tertiary", "nav", "nav-pills")}>
+        <div className={cx("container-fluid")}>
+          <Tab label="All" />
+          <Tab label="Primary" />
+          <Tab label="Secondary" />
+          <Tab label="Melee" />
+          <FilterOptions />
+        </div>
       </nav>
       <div className={cx("container", "mt-4", "grid")}>
         <IngredientsCard startOpen={true} craftData={cd} maxHeight={300} />
