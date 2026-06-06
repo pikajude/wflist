@@ -3,7 +3,7 @@ import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "prea
 import { Attributes } from "preact";
 import { AppState, createAppState, TState } from "./data/index.js";
 import { NotFound } from "./pages/_404.jsx";
-import Browse from "./pages/itemBrowser/Browse.js";
+import Browse from "./pages/Browse.js";
 import ViewItem from "./pages/ViewItem.js";
 import "./style.module.scss";
 

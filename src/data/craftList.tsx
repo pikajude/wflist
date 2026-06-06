@@ -1,4 +1,8 @@
-import { human_name, HumanName, Texture } from "../components/util";
+import { ReadonlySignal, Signal, useSignal, useSignalEffect } from "@preact/signals";
+import { useContext } from "preact/hooks";
+import { AppState } from ".";
+import { completed, Lazy, pending } from "../components/Deferred";
+import { humanName, HumanName, Texture } from "../components/util";
 import { Wanifest } from "./wanifest";
 
 // apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
@@ -54,7 +58,7 @@ export class CraftList {
 
       if (!(uniqueName in allItems))
         allItems[uniqueName] = {
-          name: human_name(uniqueName, this.manifest),
+          name: humanName(uniqueName, this.manifest),
           quantity: 0,
           toplevel,
         };
@@ -139,4 +143,43 @@ export function ShowCraftItem(props: { item: CraftItem }) {
       <ShowCraftList list={item.recipe.requires} />
     </li>
   );
+}
+
+export type CraftData = {
+  craftList: ReadonlySignal<Lazy<CraftList>>;
+  ingredientsFlat: ReadonlySignal<Lazy<ReturnType<CraftList["flattened"]>>>;
+};
+
+export function useCraftList(
+  items: ReadonlySignal<string[]>,
+  useInvasions: ReadonlySignal<boolean>,
+  ingredientsOwned: Signal<Record<string, number>>,
+): CraftData {
+  const { manifest } = useContext(AppState);
+  const craftList = useSignal<Lazy<CraftList>>(pending());
+  const ingredientsFlat = useSignal<Lazy<ReturnType<CraftList["flattened"]>>>(pending());
+
+  useSignalEffect(() => {
+    useInvasions.value;
+    items.value;
+    craftList.value = pending();
+    ingredientsFlat.value = pending();
+    setTimeout(() => {
+      console.log("assembling craft list...");
+      craftList.value = completed(new CraftList(manifest, useInvasions.value, items.value));
+    });
+  });
+
+  useSignalEffect(() => {
+    ingredientsOwned.value;
+    if (craftList.value.state == "done") {
+      const ref_ = craftList.value.value;
+      setTimeout(() => {
+        console.log("calculating flat materials list...");
+        ingredientsFlat.value = completed(ref_.flattened(ingredientsOwned.value));
+      });
+    }
+  });
+
+  return { craftList, ingredientsFlat };
 }

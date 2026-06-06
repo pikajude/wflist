@@ -9,8 +9,8 @@ export default function Tab(props: { label: SelectedCategory }) {
   return (
     <a
       className={cx("nav-link", "text-sm-center", { active: category.value == label })}
+      href={`/?category=${label}`}
       onClick={() => (category.value = label)}
-      href={`#${label}`}
     >
       {label}
     </a>

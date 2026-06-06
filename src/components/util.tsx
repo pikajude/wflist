@@ -1,4 +1,4 @@
-import { Signal, useSignal, useSignalEffect } from "@preact/signals";
+import { effect, signal, Signal, useSignal, useSignalEffect } from "@preact/signals";
 import { ImgHTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
 import { AppState } from "../data";
@@ -15,10 +15,24 @@ export function Texture(props: { id: string } & ImgHTMLAttributes) {
 export function HumanName(id: string) {
   const { manifest } = useContext(AppState);
 
-  return <>{human_name(id, manifest)}</>;
+  return <>{humanName(id, manifest)}</>;
 }
 
-export const human_name = (id: string, manifest: Wanifest) => manifest.names[id];
+export const humanName = (id: string, manifest: Wanifest) => manifest.names[id];
+
+export function storedWith<T>(key: string, fromRaw: (k: string | null) => T, toRaw: (v: T) => string): Signal<T> {
+  const underlying = signal<T>(fromRaw(localStorage.getItem(key)));
+  effect(() => localStorage.setItem(key, toRaw(underlying.value)));
+  return underlying;
+}
+
+export function stored<T>(key: string, def: T): Signal<T> {
+  return storedWith(
+    key,
+    (k) => (k == null ? def : JSON.parse(k)),
+    (v) => JSON.stringify(v),
+  );
+}
 
 export function useStoredWith<T>(key: string, fromRaw: (k: string | null) => T, toRaw: (v: T) => string): Signal<T> {
   const underlying = useSignal<T>(fromRaw(localStorage.getItem(key)));
@@ -40,10 +54,14 @@ export function slugify(input: string): string {
   return input.replace(/\W+/g, "-").toLowerCase();
 }
 
-export function useField<T extends {}, N extends keyof T>(input: Signal<T>, field: N): Signal<T[N]> {
+export function useField<T extends {}, N extends keyof T>(
+  input: Signal<T>,
+  field: N,
+  defaultValue: T[N],
+): Signal<T[N]> {
   return useMapped<T, T[N]>(
     input,
-    (v) => v[field],
+    (v) => v[field] ?? defaultValue,
     (s, v) => ({ ...s, [field]: v }),
   );
 }
@@ -52,7 +70,9 @@ export function useMapped<T, V>(input: Signal<T>, get: (arg: T) => V, set: (arg:
   const copied = useSignal(get(input.peek()));
 
   useSignalEffect(() => {
-    input.value = set(input.peek(), copied.value);
+    const val = set(input.peek(), copied.value);
+    console.log("updating signal...");
+    input.value = val;
   });
 
   return copied;

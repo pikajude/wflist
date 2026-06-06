@@ -1,17 +1,18 @@
 import { useSignal } from "@preact/signals";
-import { CraftRequirement } from "../data/craftList";
-import { CraftData } from "../pages/itemBrowser/CraftData";
+import { useContext } from "preact/hooks";
+import { AppState } from "../data";
+import { CraftData, CraftRequirement } from "../data/craftList";
 import cx from "../style";
 import { Deferred } from "./Deferred";
-import { HumanName, Texture } from "./util";
+import { HumanName, Texture, useField } from "./util";
 
 export default function IngredientsCard(props: { craftData: CraftData; startOpen: boolean; maxHeight?: number }) {
   const {
-    craftData: { ingredientsFlat: ingredients, ownedIngredients },
+    craftData: { ingredientsFlat: ingredients },
     startOpen,
     maxHeight,
   } = props;
-
+  const { ingredientsOwned } = useContext(AppState);
   const expanded = useSignal(startOpen);
   const extra = maxHeight == null ? {} : { style: { maxHeight, overflowY: "scroll" } };
 
@@ -28,6 +29,9 @@ export default function IngredientsCard(props: { craftData: CraftData; startOpen
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: expanded.value })}>
           <div className={cx("accordion-body")} {...extra}>
+            <button className={cx("btn", "btn-sm", "btn-danger")} onClick={() => (ingredientsOwned.value = {})}>
+              Clear inventory
+            </button>
             <table className={cx("table", "table-striped", "table-sm", "align-middle")}>
               <thead>
                 <tr>
@@ -47,12 +51,7 @@ export default function IngredientsCard(props: { craftData: CraftData; startOpen
                 >
                   {(is) =>
                     is.map(([uniqueName, req]) => (
-                      <IngredientRow
-                        uniqueName={uniqueName}
-                        requirement={req}
-                        key={uniqueName}
-                        ownedIngredients={ownedIngredients}
-                      />
+                      <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
                     ))
                   }
                 </Deferred>
@@ -65,16 +64,12 @@ export default function IngredientsCard(props: { craftData: CraftData; startOpen
   );
 }
 
-export function IngredientRow({
-  uniqueName,
-  requirement,
-  ownedIngredients,
-}: {
-  uniqueName: string;
-  requirement: CraftRequirement;
-  ownedIngredients: CraftData["ownedIngredients"];
-}) {
+export function IngredientRow({ uniqueName, requirement }: { uniqueName: string; requirement: CraftRequirement }) {
   if (requirement.quantity == 0 || requirement.toplevel) return null;
+
+  const { ingredientsOwned } = useContext(AppState);
+
+  const quantity = useField(ingredientsOwned, uniqueName, 0);
 
   return (
     <tr>
@@ -87,22 +82,14 @@ export function IngredientRow({
           <input
             type="number"
             className={cx("form-control")}
-            value={ownedIngredients.value[uniqueName] || 0}
+            value={quantity.value}
             min={0}
-            onChange={(evt) => {
-              const x = { ...ownedIngredients.value };
-              x[uniqueName] = Math.max(0, evt.currentTarget.valueAsNumber);
-              ownedIngredients.value = x;
-            }}
+            onChange={(evt) => (quantity.value = Math.max(0, evt.currentTarget.valueAsNumber))}
           />
-          <button
-            className={cx("btn", "btn-outline-danger")}
-            onClick={(evt) => {
-              const x = { ...ownedIngredients.value };
-              x[uniqueName] = 0;
-              ownedIngredients.value = x;
-            }}
-          >
+          <button className={cx("btn", "btn-primary")} onClick={(_) => (quantity.value = requirement.quantity)}>
+            Fill
+          </button>
+          <button className={cx("btn", "btn-danger")} onClick={(_) => (quantity.value = 0)}>
             Reset
           </button>
         </div>
