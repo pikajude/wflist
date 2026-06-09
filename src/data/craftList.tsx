@@ -80,9 +80,29 @@ export class CraftList {
     for (const item of this.items) insertItem(item, true);
 
     const paired = Object.entries(allItems);
-    paired.sort((a, b) => (a[1].toplevel ? -1 : b[1].toplevel ? 1 : a[1].name.localeCompare(b[1].name)));
-    return paired;
+    return paired.sort(CraftList.orderIngredients);
   }
+
+  static sortKey = (a: [string, CraftRequirement]) => [!a[1].toplevel, this.categorize(a[0]), a[1].name];
+
+  static orderIngredients = (a: [string, CraftRequirement], b: [string, CraftRequirement]): number => {
+    var ak = this.sortKey(a);
+    var bk = this.sortKey(b);
+
+    if (ak > bk) return 1;
+    if (ak < bk) return -1;
+
+    return 0;
+  };
+
+  static categorize = (a: string) => {
+    if (a.startsWith("/Lotus/Types/Items/Gems")) return 0;
+    if (a.startsWith("/Lotus/Types/Items/MiscItems") || a.startsWith("/Lotus/Types/Items/Research")) return 1;
+
+    if (a.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts") || a.startsWith("/Lotus/Weapons")) return 200;
+
+    return 10;
+  };
 }
 
 export class CraftItem {

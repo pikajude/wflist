@@ -46,7 +46,7 @@ export default function WeaponCard(
               (m, v) => m[v ? "add" : "remove"](weapon.uniqueName),
             )}
             name={`${weapon.uniqueName}_ma`}
-            label="Mastered"
+            label="Crafted"
           />
         </form>
       </div>

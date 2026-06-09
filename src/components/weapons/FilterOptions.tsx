@@ -45,7 +45,7 @@ export default function FilterOptions() {
           <form className={cx("px-3", "py-2")} style={{ width: "400px" }}>
             <Checkbox value={useField(options, "useInvasions", true)} label="Research components come from invasions" />
             <Checkbox value={useField(options, "showImages", true)} label="Show images" />
-            <Checkbox value={useField(options, "showMastered", true)} label="Include mastered weapons" />
+            <Checkbox value={useField(options, "showCrafted", true)} label="Show already-crafted weapons" />
             <hr />
             <button
               onClick={() => {

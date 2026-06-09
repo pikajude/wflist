@@ -6,18 +6,18 @@ import cx from "../style";
 
 export default function IngredientTree(props: { list: CraftList }) {
   const { manifest } = useContext(AppState);
-  const data = hierarchy(props.list.items[0], (i) => i.recipe.requires);
+  const itemTree = hierarchy(props.list.items[0], (i) => i.recipe.requires);
 
   const padding = 1.3;
   const width = 1000;
   const dx = 40;
-  const dy = width / (data.height + padding);
+  const dy = width / (itemTree.height + padding);
 
-  tree<CraftItem>().nodeSize([dx, dy])(data);
+  tree<CraftItem>().nodeSize([dx, dy])(itemTree);
 
   var x0 = Infinity;
   var x1 = -x0;
-  data.each((d) => {
+  itemTree.each((d) => {
     if (d.x == null) return;
     if (d.x > x1) x1 = d.x;
     if (d.x < x0) x0 = d.x;
@@ -25,8 +25,11 @@ export default function IngredientTree(props: { list: CraftList }) {
 
   const height = x1 - x0 + dx * 2;
 
-  const links = data.links();
-  const desc = data.descendants();
+  const links = itemTree.links();
+  const desc = itemTree.descendants();
+  const linkF = link<HierarchyLink<CraftItem>, HierarchyNode<CraftItem>>(curveBumpX)
+    .x((d) => d.y ?? 0)
+    .y((d) => d.x ?? 0);
 
   return (
     <div className={cx("justify-content-center", "d-flex")}>
@@ -38,41 +41,26 @@ export default function IngredientTree(props: { list: CraftList }) {
       >
         <g fill="none" stroke="#ccc" strokeWidth={1.5} strokeOpacity={0.6}>
           {links.map((l, i) => (
-            <path
-              key={i}
-              d={
-                link<HierarchyLink<CraftItem>, HierarchyNode<CraftItem>>(curveBumpX)
-                  .x((d) => d.y ?? 0)
-                  .y((d) => d.x ?? 0)(l) || undefined
-              }
-            ></path>
+            <path key={i} d={linkF(l) || undefined}></path>
           ))}
         </g>
         <g>
-          {desc.map((d, i) => {
-            const extra = { transform: `translate(${d.y},${d.x})` };
-            return (
-              <a key={i} style={{ textDecoration: "none" }} {...extra}>
-                <image
-                  href={manifest.image_url(d.data.recipe.uniqueName)}
-                  width={32}
-                  x={d.children ? -36 : 4}
-                  y={-16}
-                />
-                <text
-                  dy="0.32em"
-                  paint-order="stroke"
-                  stroke-width={6}
-                  x={d.children ? -38 : 38}
-                  text-anchor={d.children ? "end" : "start"}
-                  fill="#eee"
-                  fontSize="1.2rem"
-                >
-                  {d.data.name} x{d.data.quantity}
-                </text>
-              </a>
-            );
-          })}
+          {desc.map((d, i) => (
+            <a key={i} style={{ textDecoration: "none" }} {...{ transform: `translate(${d.y},${d.x})` }}>
+              <image href={manifest.image_url(d.data.recipe.uniqueName)} width={32} x={d.children ? -36 : 4} y={-16} />
+              <text
+                dy="0.32em"
+                paint-order="stroke"
+                stroke-width={6}
+                x={d.children ? -38 : 38}
+                text-anchor={d.children ? "end" : "start"}
+                fill="#eee"
+                fontSize="1.2rem"
+              >
+                {d.data.name} x{d.data.quantity}
+              </text>
+            </a>
+          ))}
         </g>
       </svg>
     </div>

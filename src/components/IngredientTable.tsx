@@ -1,20 +1,24 @@
-import { useSignal } from "@preact/signals";
-import { useContext } from "preact/hooks";
+import { useSignal, useSignalEffect } from "@preact/signals";
+import { useContext, useState } from "preact/hooks";
 import { AppState } from "../data";
 import { CraftData, CraftRequirement } from "../data/craftList";
 import cx from "../style";
-import { Deferred } from "./Deferred";
 import { HumanName, Texture, useField } from "./util";
 
-export default function IngredientTable(props: { craftData: CraftData; startOpen: boolean; maxHeight?: number }) {
+export default function IngredientTable(props: { craftData: CraftData; startOpen: boolean }) {
   const {
     craftData: { ingredientsFlat: ingredients },
     startOpen,
-    maxHeight,
   } = props;
   const { ingredientsOwned } = useContext(AppState);
   const expanded = useSignal(startOpen);
-  const extra = maxHeight == null ? {} : { style: { maxHeight, overflowY: "scroll" } };
+
+  const [lastIngredients, setLastIngredients] = useState<[string, CraftRequirement][]>([]);
+
+  useSignalEffect(() => {
+    const i = ingredients.value;
+    if (i.state == "done") setLastIngredients(i.value);
+  });
 
   return (
     <div className={cx("accordion", "g-col-12")}>
@@ -28,7 +32,7 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
           </button>
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: expanded.value })}>
-          <div className={cx("accordion-body")} {...extra}>
+          <div className={cx("accordion-body")}>
             <button className={cx("btn", "btn-sm", "btn-danger")} onClick={() => (ingredientsOwned.value = {})}>
               Clear inventory
             </button>
@@ -41,20 +45,9 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
                 </tr>
               </thead>
               <tbody>
-                <Deferred
-                  value={ingredients.value}
-                  pending={
-                    <tr>
-                      <td colSpan={3}>Calculating...</td>
-                    </tr>
-                  }
-                >
-                  {(is) =>
-                    is.map(([uniqueName, req]) => (
-                      <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
-                    ))
-                  }
-                </Deferred>
+                {lastIngredients.map(([uniqueName, req]) => (
+                  <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
+                ))}
               </tbody>
             </table>
           </div>
@@ -86,7 +79,7 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
             min={0}
             onChange={(evt) => (quantity.value = Math.max(0, evt.currentTarget.valueAsNumber))}
           />
-          <button className={cx("btn", "btn-primary")} onClick={(_) => (quantity.value = requirement.quantity)}>
+          <button className={cx("btn", "btn-primary")} onClick={(_) => (quantity.value += requirement.quantity)}>
             Fill
           </button>
           <button className={cx("btn", "btn-danger")} onClick={(_) => (quantity.value = 0)}>
