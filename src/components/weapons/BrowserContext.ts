@@ -6,7 +6,7 @@ import { useContext } from "preact/hooks";
 import { AppState } from "../../data";
 import { ExportWeapon } from "../../data/schema";
 import allVaulted from "../../data/vaulted.json";
-import { useStored } from "../util";
+import { useStored } from "../../util";
 
 const categoryMap = {
   Primary: ["LongGuns", "OperatorAmps", "SentinelWeapons", "SpaceGuns"],

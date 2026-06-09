@@ -2,8 +2,8 @@ import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
 import { AppState } from "../../data";
 import cx from "../../style";
+import { Texture, useMapped } from "../../util";
 import { Checkbox } from "../input";
-import { Texture, useMapped } from "../util";
 import BrowserContext, { WeaponEx } from "./BrowserContext";
 
 export default function WeaponCard(

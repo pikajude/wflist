@@ -1,7 +1,7 @@
 import { Signal } from "@preact/signals";
 import { Set } from "immutable";
 import { createContext } from "preact";
-import { stored, storedWith } from "../components/util";
+import { stored, storedWith } from "../util";
 import { Wanifest } from "./wanifest";
 
 export type TState = {

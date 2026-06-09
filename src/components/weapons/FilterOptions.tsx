@@ -5,8 +5,8 @@ import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
 import { AppState } from "../../data";
 import cx from "../../style";
+import { useField } from "../../util";
 import { Checkbox } from "../input";
-import { useField } from "../util";
 import BrowserContext from "./BrowserContext";
 
 export default function FilterOptions() {

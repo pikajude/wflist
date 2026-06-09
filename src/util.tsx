@@ -1,8 +1,8 @@
 import { effect, signal, Signal, useSignal, useSignalEffect } from "@preact/signals";
 import { ImgHTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
-import { AppState } from "../data";
-import { Wanifest } from "../data/wanifest";
+import { AppState } from "./data";
+import { Wanifest } from "./data/wanifest";
 
 export function Texture(props: { id: string } & ImgHTMLAttributes) {
   const { manifest } = useContext(AppState);
@@ -52,6 +52,17 @@ export function useStored<T>(key: string, def: T): Signal<T> {
 
 export function slugify(input: string): string {
   return input.replace(/\W+/g, "-").toLowerCase();
+}
+
+export function sortWith<T, V>(arr: T[], fn: (v: T) => V) {
+  return arr
+    .map((v) => ({ key: fn(v), value: v }))
+    .sort((a, b) => {
+      if (a.key < b.key) return -1;
+      if (a.key > b.key) return 1;
+      return 0;
+    })
+    .map((a) => a.value);
 }
 
 export function useField<T extends {}, N extends keyof T>(

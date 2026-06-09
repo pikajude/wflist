@@ -2,8 +2,8 @@ import { ReadonlySignal, Signal, useSignal, useSignalEffect } from "@preact/sign
 import { useContext } from "preact/hooks";
 import { AppState } from ".";
 import { completed, Lazy, pending } from "../components/Deferred";
-import { humanName, HumanName, Texture } from "../components/util";
 import cx from "../style";
+import { humanName, HumanName, sortWith, Texture } from "../util";
 import { Wanifest } from "./wanifest";
 
 // apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
@@ -28,7 +28,8 @@ export const InvasionResources = [
 
 export type CraftRequirement = {
   name: string;
-  quantity: number;
+  quantityTotal: number;
+  quantityNeeded: number;
   toplevel: boolean;
 };
 
@@ -54,52 +55,43 @@ export class CraftList {
 
     const ownedItems = { ...ownedItemsIn };
 
-    const insertItem = (item: CraftItem, toplevel = false, multiplier = 1) => {
+    const insertItem = (item: CraftItem, toplevel = false, parentOwned = 0) => {
       const uniqueName = item.recipe.uniqueName;
 
       if (!(uniqueName in allItems))
         allItems[uniqueName] = {
           name: humanName(uniqueName, this.manifest),
-          quantity: 0,
+          quantityTotal: 0,
+          quantityNeeded: 0,
           toplevel,
         };
       if (!(uniqueName in ownedItems)) ownedItems[uniqueName] = 0;
 
-      var adjQuantity = Math.ceil(item.quantity * multiplier);
+      allItems[uniqueName].quantityTotal += item.quantity;
 
-      var ownedQuantity = Math.min(adjQuantity, ownedItems[uniqueName]);
-      var remainingNeeded = adjQuantity - ownedQuantity;
-      var newMulti = multiplier * (remainingNeeded / adjQuantity);
+      var ownedQuantity = Math.min(item.quantity, ownedItems[uniqueName]);
+      var remainingNeeded = Math.max(0, item.quantity - ownedQuantity - parentOwned);
 
       ownedItems[uniqueName] -= ownedQuantity;
-      allItems[uniqueName].quantity += remainingNeeded;
+      allItems[uniqueName].quantityNeeded += remainingNeeded;
 
-      if (remainingNeeded > 0) for (const req of item.recipe.requires) insertItem(req, false, newMulti);
+      for (const req of item.recipe.requires) insertItem(req, false, ownedQuantity);
     };
 
     for (const item of this.items) insertItem(item, true);
 
     const paired = Object.entries(allItems);
-    return paired.sort(CraftList.orderIngredients);
+    return sortWith(paired, CraftList.sortKey);
   }
 
-  static sortKey = (a: [string, CraftRequirement]) => [!a[1].toplevel, this.categorize(a[0]), a[1].name];
-
-  static orderIngredients = (a: [string, CraftRequirement], b: [string, CraftRequirement]): number => {
-    var ak = this.sortKey(a);
-    var bk = this.sortKey(b);
-
-    if (ak > bk) return 1;
-    if (ak < bk) return -1;
-
-    return 0;
-  };
+  static sortKey = (a: [string, CraftRequirement]) => [a[1].toplevel ? 0 : 1, this.categorize(a[0]), a[1].name];
 
   static categorize = (a: string) => {
     if (a.startsWith("/Lotus/Types/Items/Gems")) return 0;
     if (a.startsWith("/Lotus/Types/Items/MiscItems") || a.startsWith("/Lotus/Types/Items/Research")) return 1;
 
-    if (a.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts") || a.startsWith("/Lotus/Weapons")) return 200;
+    if (a.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts")) return 100;
+    if (a.startsWith("/Lotus/Weapons")) return 200;
 
     return 10;
   };

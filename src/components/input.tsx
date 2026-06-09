@@ -1,6 +1,6 @@
 import { Signal } from "@preact/signals";
 import cx from "../style";
-import { slugify } from "./util";
+import { slugify } from "../util";
 
 export function Checkbox(props: { value: Signal<boolean>; label: string; name?: string }) {
   const name = props.name ?? slugify(props.label);

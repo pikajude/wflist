@@ -3,7 +3,8 @@ import { useContext, useState } from "preact/hooks";
 import { AppState } from "../data";
 import { CraftData, CraftRequirement } from "../data/craftList";
 import cx from "../style";
-import { HumanName, Texture, useField } from "./util";
+import { HumanName, Texture, useField } from "../util";
+import { Checkbox } from "./input";
 
 export default function IngredientTable(props: { craftData: CraftData; startOpen: boolean }) {
   const {
@@ -12,12 +13,16 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
   } = props;
   const { ingredientsOwned } = useContext(AppState);
   const expanded = useSignal(startOpen);
+  const onlyMissing = useSignal(true);
 
   const [lastIngredients, setLastIngredients] = useState<[string, CraftRequirement][]>([]);
 
   useSignalEffect(() => {
     const i = ingredients.value;
-    if (i.state == "done") setLastIngredients(i.value);
+    const filt = onlyMissing.value;
+    if (i.state == "done") {
+      setLastIngredients(i.value.filter((v) => !filt || v[1].quantityNeeded > 0));
+    }
   });
 
   return (
@@ -33,14 +38,23 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: expanded.value })}>
           <div className={cx("accordion-body")}>
-            <button className={cx("btn", "btn-sm", "btn-danger")} onClick={() => (ingredientsOwned.value = {})}>
-              Clear inventory
-            </button>
+            <div className={cx("d-flex", "justify-content-between")}>
+              <Checkbox value={onlyMissing} label="Only show missing items" />
+              <button
+                className={cx("btn", "btn-sm", "btn-danger")}
+                onClick={() => {
+                  if (confirm("This operation cannot be undone!")) ingredientsOwned.value = {};
+                }}
+              >
+                Clear inventory
+              </button>
+            </div>
             <table className={cx("table", "table-striped", "table-sm", "align-middle")}>
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Needed</th>
+                  <th>Total</th>
+                  <th>Missing</th>
                   <th>Owned</th>
                 </tr>
               </thead>
@@ -58,7 +72,10 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
 }
 
 export function IngredientRow({ uniqueName, requirement }: { uniqueName: string; requirement: CraftRequirement }) {
-  if (requirement.quantity == 0 || requirement.toplevel) return null;
+  if (requirement.toplevel) return null;
+
+  const faded = requirement.quantityNeeded == 0;
+  const fadedClass = cx({ "text-secondary": faded, "text-decoration-line-through": faded });
 
   const { ingredientsOwned } = useContext(AppState);
 
@@ -67,9 +84,14 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
   return (
     <tr>
       <td>
-        <Texture id={uniqueName} width="24px" /> {HumanName(uniqueName)}
+        <Texture id={uniqueName} width="24px" /> <span className={fadedClass}>{HumanName(uniqueName)}</span>
       </td>
-      <td>{requirement.quantity}</td>
+      <td>
+        <span className={fadedClass}>{requirement.quantityTotal}</span>
+      </td>
+      <td>
+        <span className={fadedClass}>{requirement.quantityNeeded}</span>
+      </td>
       <td>
         <div className={cx("input-group", "input-group-sm")}>
           <input
@@ -77,9 +99,13 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
             className={cx("form-control")}
             value={quantity.value}
             min={0}
-            onChange={(evt) => (quantity.value = Math.max(0, evt.currentTarget.valueAsNumber))}
+            onChange={(evt) => {
+              var newQ = evt.currentTarget.valueAsNumber;
+              if (isNaN(newQ)) newQ = 0;
+              quantity.value = Math.max(0, newQ);
+            }}
           />
-          <button className={cx("btn", "btn-primary")} onClick={(_) => (quantity.value += requirement.quantity)}>
+          <button className={cx("btn", "btn-primary")} onClick={(_) => (quantity.value = requirement.quantityTotal)}>
             Fill
           </button>
           <button className={cx("btn", "btn-danger")} onClick={(_) => (quantity.value = 0)}>

@@ -2,13 +2,13 @@ import { useComputed } from "@preact/signals";
 import { For } from "@preact/signals/utils";
 import { useContext } from "preact/hooks";
 import IngredientTable from "../components/IngredientTable";
-import { useField } from "../components/util";
 import BrowserContext, { createBrowserContext } from "../components/weapons/BrowserContext";
 import BrowserNav from "../components/weapons/BrowserNav";
 import WeaponCard from "../components/weapons/WeaponCard";
 import { AppState } from "../data";
 import { useCraftList } from "../data/craftList";
 import cx from "../style";
+import { useField } from "../util";
 
 export default function Browse() {
   const vContext = createBrowserContext();
@@ -24,7 +24,7 @@ export default function Browse() {
     <BrowserContext value={vContext}>
       <BrowserNav />
       <div className={cx("container", "grid")}>
-        <IngredientTable startOpen={false} craftData={cd} />
+        <IngredientTable startOpen={true} craftData={cd} />
         <For each={weapons}>{(item) => <WeaponCard weapon={item} key={item.uniqueName} />}</For>
       </div>
     </BrowserContext>
