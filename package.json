@@ -19,11 +19,13 @@
     "preact": "^10.26.9",
     "preact-iso": "^2.12.0",
     "preact-render-to-string": "^6.6.7",
-    "react-popper": "^2.3.0"
+    "react-popper": "^2.3.0",
+    "toposort": "^2.0.2"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.10.2",
     "@types/d3": "^7.4.3",
+    "@types/toposort": "^2.0.7",
     "eslint": "^8.57.1",
     "eslint-config-preact": "^2.0.0",
     "sass": "^1.100.0",

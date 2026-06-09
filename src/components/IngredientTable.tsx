@@ -87,7 +87,10 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
         <Texture id={uniqueName} width="24px" /> <span className={fadedClass}>{HumanName(uniqueName)}</span>
       </td>
       <td>
-        <span className={fadedClass}>{requirement.quantityTotal}</span>
+        <span className={fadedClass}>
+          {requirement.quantityTotal}
+          {requirement.batchSize > 1 && ` (${requirement.batchSize})`}
+        </span>
       </td>
       <td>
         <span className={fadedClass}>{requirement.quantityNeeded}</span>
