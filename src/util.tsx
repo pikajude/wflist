@@ -9,7 +9,7 @@ export function Texture(props: { id: string } & ImgHTMLAttributes) {
 
   const { id, ...rest } = props;
 
-  return <img src={manifest.image_url(id)} {...rest} />;
+  return <img src={manifest.imageUrl(id)} {...rest} />;
 }
 
 export function HumanName(id: string) {

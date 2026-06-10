@@ -7,26 +7,6 @@ import { humanName, sortWith } from "../util";
 import { ExportRecipe } from "./schema";
 import { Wanifest } from "./wanifest";
 
-// apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
-export const ResourcesLegacyCraftable = [
-  "/Lotus/Types/Items/MiscItems/Morphic",
-  "/Lotus/Types/Items/MiscItems/Neurode",
-  "/Lotus/Types/Items/MiscItems/OrokinCell",
-  "/Lotus/Types/Items/MiscItems/ControlModule",
-  "/Lotus/Types/Items/MiscItems/NeuralSensor",
-  "/Lotus/Types/Items/MiscItems/Gallium",
-  "/Lotus/Types/Items/RailjackMiscItems/CubicsRailjackItem",
-  "/Lotus/Types/Items/RailjackMiscItems/CarbidesRailjackItem",
-  "/Lotus/Types/Items/RailjackMiscItems/IsosRailjackItem",
-  "/Lotus/Types/Items/RailjackMiscItems/GallosRailjackItem",
-];
-
-export const InvasionResources = [
-  "/Lotus/Types/Items/Research/BioComponent",
-  "/Lotus/Types/Items/Research/ChemComponent",
-  "/Lotus/Types/Items/Research/EnergyComponent",
-];
-
 export type CraftRequirement = {
   name: string;
   quantityTotal: number;
@@ -37,37 +17,38 @@ export type CraftRequirement = {
 
 export class CraftList {
   private manifest: Wanifest;
-  private invasion: boolean;
-  items: CraftItem[] = [];
+  private includeResearchComponents: boolean;
+  private recipes: Record<string, ExportRecipe | undefined> = {};
+  private edges: [string, string][] = [];
 
-  constructor(manifest: Wanifest, invasion = true, items: string[] = []) {
+  constructor(manifest: Wanifest, includeResearchComponents = false, items: string[] = []) {
     this.manifest = manifest;
-    this.invasion = invasion;
+    this.includeResearchComponents = includeResearchComponents;
     for (const it of items) this.add(it);
   }
 
-  add(uniqueName: string) {
-    const cr = new CraftRecipe(uniqueName);
-    cr.resolve(this.manifest, this.invasion);
-    this.items.push(new CraftItem(cr, 1, this.manifest));
+  getRecipe(uniqueName: string) {
+    if (uniqueName in this.recipes) return this.recipes[uniqueName];
+
+    return (this.recipes[uniqueName] = this.manifest.findRecipe(uniqueName, this.includeResearchComponents));
+  }
+
+  add(uniqueName: string, toplevel: boolean = true) {
+    if (toplevel) this.edges.push(["<root>", uniqueName]);
+
+    const recipe = this.getRecipe(uniqueName);
+    if (recipe != null) {
+      for (const { ItemType } of recipe.ingredients) {
+        this.edges.push([uniqueName, ItemType]);
+        this.add(ItemType, false);
+      }
+    }
   }
 
   flattened(ownedItems: Record<string, number>) {
     const allItems: Record<string, CraftRequirement & { recipe: ExportRecipe }> = {};
 
-    const edges: Array<[string, string]> = [];
-
-    // build graph
-    const addEdges = (item: CraftItem) => {
-      for (const req of item.recipe.requires) {
-        edges.push([item.recipe.uniqueName, req.recipe.uniqueName]);
-        addEdges(req);
-      }
-    };
-
-    const roots = this.items.map((i) => i.recipe.uniqueName);
-
-    for (const item of this.items) addEdges(item);
+    const roots = this.edges.filter((e) => e[0] == "<root>").map((e) => e[1]);
 
     const addOrInsert = (key: string, quantity: number) => {
       if (key in allItems) {
@@ -76,7 +57,7 @@ export class CraftList {
         return;
       }
 
-      var recipe = this.manifest.find_recipe(key);
+      var recipe = this.manifest.findRecipe(key, this.includeResearchComponents);
       return (allItems[key] = {
         name: humanName(key, this.manifest),
         toplevel: roots.includes(key),
@@ -87,9 +68,13 @@ export class CraftList {
       });
     };
 
-    for (const key of toposort(edges)) {
+    // iterate top down
+    for (const key of toposort(this.edges)) {
+      // if we run into a key that's already present, that means all of this item's dependents have been processed already, so this quantity is the final needed for the top-level list
+      // so now we can safely round it up to the nearest batch size (though the rounding is only applied to the descendants, otherwise you get weird stuff like Exceptional Sentient Core requiring 3 Heart Nyth instead of 1)
       if (allItems[key] != null) {
         const { recipe } = allItems[key];
+        // subtract owned items
         allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - ownedItems[key]);
         if (recipe != null) {
           var batchSize = Math.ceil(allItems[key].quantityNeeded / recipe.num) * recipe.num;
@@ -99,7 +84,7 @@ export class CraftList {
         }
       } else {
         addOrInsert(key, 1);
-        var recipe = this.manifest.find_recipe(key);
+        var recipe = this.manifest.findRecipe(key, this.includeResearchComponents);
         if (recipe != null) {
           for (const { ItemType, ItemCount } of recipe.ingredients) {
             addOrInsert(ItemType, ItemCount);
@@ -107,6 +92,8 @@ export class CraftList {
         }
       }
     }
+
+    delete allItems["<root>"];
 
     const paired = Object.entries(allItems);
     return sortWith(paired, CraftList.sortKey);
@@ -123,45 +110,6 @@ export class CraftList {
 
     return 10;
   };
-}
-
-export class CraftItem {
-  recipe: CraftRecipe;
-  name: string;
-  quantity: number;
-
-  constructor(recipe: CraftRecipe, quantity: number, manifest: Wanifest) {
-    this.name = humanName(recipe.uniqueName, manifest);
-    this.recipe = recipe;
-    this.quantity = quantity;
-  }
-}
-
-export class CraftRecipe {
-  uniqueName: string;
-  output = 1;
-  requires: CraftItem[] = [];
-
-  constructor(uniqueName: string) {
-    this.uniqueName = uniqueName;
-  }
-
-  resolve(manifest: Wanifest, excludeInvasionMaterials: boolean, multiplier: number = 1) {
-    if (ResourcesLegacyCraftable.includes(this.uniqueName)) return;
-    if (excludeInvasionMaterials && InvasionResources.includes(this.uniqueName)) return;
-
-    const recipe = manifest.find_recipe(this.uniqueName);
-    if (recipe == null) return;
-
-    this.output = recipe.num;
-    multiplier /= this.output;
-
-    for (const { ItemType, ItemCount } of recipe.ingredients) {
-      const cr = new CraftRecipe(ItemType);
-      cr.resolve(manifest, excludeInvasionMaterials, multiplier * ItemCount);
-      this.requires.push(new CraftItem(cr, Math.ceil(multiplier * ItemCount), manifest));
-    }
-  }
 }
 
 export type CraftData = {
@@ -185,7 +133,7 @@ export function useCraftList(
     ingredientsFlat.value = pending();
     setTimeout(() => {
       console.log("assembling craft list...");
-      craftList.value = completed(new CraftList(manifest, useInvasions.value, items.value));
+      craftList.value = completed(new CraftList(manifest, !useInvasions.value, items.value));
     });
   });
 
