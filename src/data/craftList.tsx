@@ -19,7 +19,11 @@ export class CraftList {
   private manifest: Wanifest;
   private includeResearchComponents: boolean;
   private recipes: Record<string, ExportRecipe | undefined> = {};
-  private edges: [string, string][] = [];
+  private _edges: [string, string][] = [];
+
+  get edges(): ReadonlyArray<[string, string]> {
+    return this._edges;
+  }
 
   constructor(manifest: Wanifest, includeResearchComponents = false, items: string[] = []) {
     this.manifest = manifest;
@@ -34,12 +38,12 @@ export class CraftList {
   }
 
   add(uniqueName: string, toplevel: boolean = true) {
-    if (toplevel) this.edges.push(["<root>", uniqueName]);
+    if (toplevel) this._edges.push(["<root>", uniqueName]);
 
     const recipe = this.getRecipe(uniqueName);
     if (recipe != null) {
       for (const { ItemType } of recipe.ingredients) {
-        this.edges.push([uniqueName, ItemType]);
+        this._edges.push([uniqueName, ItemType]);
         this.add(ItemType, false);
       }
     }
@@ -48,7 +52,7 @@ export class CraftList {
   flattened(ownedItems: Record<string, number>) {
     const allItems: Record<string, CraftRequirement & { recipe: ExportRecipe }> = {};
 
-    const roots = this.edges.filter((e) => e[0] == "<root>").map((e) => e[1]);
+    const roots = this._edges.filter((e) => e[0] == "<root>").map((e) => e[1]);
 
     const addOrInsert = (key: string, quantity: number) => {
       if (key in allItems) {
@@ -69,7 +73,7 @@ export class CraftList {
     };
 
     // iterate top down
-    for (const key of toposort(this.edges)) {
+    for (const key of toposort(this._edges)) {
       // if we run into a key that's already present, that means all of this item's dependents have been processed already, so this quantity is the final needed for the top-level list
       // so now we can safely round it up to the nearest batch size (though the rounding is only applied to the descendants, otherwise you get weird stuff like Exceptional Sentient Core requiring 3 Heart Nyth instead of 1)
       if (allItems[key] != null) {
