@@ -1,9 +1,10 @@
-import { signal } from "@preact/signals";
+import { signal, useComputed } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext } from "preact/hooks";
 import { Deferred } from "../components/Deferred";
 import IngredientTable from "../components/IngredientTable";
 import IngredientTree from "../components/IngredientTree";
+import BrowserContext from "../components/weapons/BrowserContext";
 import BrowserNav from "../components/weapons/BrowserNav";
 import { AppState } from "../data";
 import { useCraftList } from "../data/craftList";
@@ -12,12 +13,15 @@ import cx from "../style";
 export default function ViewItem() {
   const rte = useRoute();
   const { manifest, ingredientsOwned } = useContext(AppState);
+  const opts = useContext(BrowserContext);
+  const inv = useComputed(() => opts.options.value.useInvasions);
+  const img = useComputed(() => opts.options.value.showImages);
 
   const item = manifest.exports["ExportWeapons"].find((w) => w.uniqueName.slice(1) == rte.params["path"]);
 
   if (item == null) return <div>Unknown item</div>;
 
-  const craftData = useCraftList(signal([item.uniqueName]), signal(true), ingredientsOwned);
+  const craftData = useCraftList(signal([item.uniqueName]), inv, ingredientsOwned);
 
   return (
     <>
@@ -25,7 +29,9 @@ export default function ViewItem() {
       <div className={cx("container", "grid")}>
         <div className={cx("card", "g-col-12")}>
           <div className={cx("card-body")}>
-            <Deferred value={craftData.craftList.value}>{(cl) => <IngredientTree list={cl} />}</Deferred>
+            <Deferred value={craftData.craftList.value}>
+              {(cl) => <IngredientTree list={cl} showImages={img.value} />}
+            </Deferred>
           </div>
         </div>
         <IngredientTable startOpen={true} craftData={craftData} />

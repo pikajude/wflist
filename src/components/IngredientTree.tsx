@@ -7,8 +7,9 @@ import { HumanName } from "../util";
 
 type Datum = string;
 
-export default function IngredientTree(props: { list: CraftList }) {
+export default function IngredientTree(props: { list: CraftList; showImages?: boolean }) {
   const { manifest } = useContext(AppState);
+  const showImages = props.showImages ?? true;
 
   const tree2: Record<string, string[]> = {};
 
@@ -59,12 +60,12 @@ export default function IngredientTree(props: { list: CraftList }) {
         <g>
           {desc.map((d, i) => (
             <a key={i} style={{ textDecoration: "none" }} {...{ transform: `translate(${d.y},${d.x})` }}>
-              <image href={manifest.imageUrl(d.data)} width={32} x={d.children ? -36 : 4} y={-16} />
+              {showImages && <image href={manifest.imageUrl(d.data)} width={32} x={d.children ? -36 : 4} y={-16} />}
               <text
                 dy="0.32em"
                 paint-order="stroke"
                 stroke-width={6}
-                x={d.children ? -38 : 38}
+                x={(showImages ? 38 : 6) * (d.children ? -1 : 1)}
                 text-anchor={d.children ? "end" : "start"}
                 fill="#eee"
                 fontSize="1.2rem"
