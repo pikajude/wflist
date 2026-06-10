@@ -80,6 +80,7 @@ export class Wanifest {
 
     const self = new Wanifest();
 
+    console.log(`Wanifest: fetching index`);
     const response = await fetch(url);
     const lines = new TextDecoder()
       .decode(decompress(await response.bytes()))

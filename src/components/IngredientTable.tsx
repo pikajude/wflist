@@ -1,7 +1,7 @@
 import { useSignal, useSignalEffect } from "@preact/signals";
 import { useContext, useState } from "preact/hooks";
-import { AppState } from "..";
 import { CraftData, CraftRequirement } from "../data/craftList";
+import { AppState } from "../data/state";
 import cx from "../style";
 import { HumanName, Texture, useField } from "../util";
 import { Checkbox } from "./input";
@@ -21,7 +21,7 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
     const i = ingredients.value;
     const filt = onlyMissing.value;
     if (i.state == "done") {
-      setLastIngredients(i.value.filter((v) => !filt || v[1].quantityNeeded > 0));
+      setLastIngredients(i.value.filter((v) => !v[1].toplevel && (!filt || v[1].quantityNeeded > 0)));
     }
   });
 
@@ -62,6 +62,11 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
                 {lastIngredients.map(([uniqueName, req]) => (
                   <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
                 ))}
+                {lastIngredients.length == 0 && (
+                  <tr>
+                    <td colspan={4}>All ingredients collected</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

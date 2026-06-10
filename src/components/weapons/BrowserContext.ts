@@ -2,8 +2,8 @@ import { computed, ReadonlySignal, signal, Signal } from "@preact/signals";
 import { List, Map } from "immutable";
 import { createContext } from "preact";
 import { LocationHook } from "preact-iso";
-import { TState } from "../..";
 import { ExportWeapon } from "../../data/schema";
+import { TState } from "../../data/state";
 import allVaulted from "../../data/vaulted.json";
 import { stored } from "../../util";
 

@@ -1,7 +1,7 @@
 import { curveBumpX, hierarchy, HierarchyLink, HierarchyNode, link, tree } from "d3";
 import { useContext } from "preact/hooks";
-import { AppState } from "..";
 import { CraftList } from "../data/craftList";
+import { AppState } from "../data/state";
 import cx from "../style";
 import { HumanName } from "../util";
 

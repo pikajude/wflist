@@ -1,7 +1,7 @@
 import { effect, signal, Signal, useSignal, useSignalEffect } from "@preact/signals";
 import { ImgHTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
-import { AppState } from ".";
+import { AppState } from "./data/state";
 import { Wanifest } from "./data/wanifest";
 
 export function Texture(props: { id: string } & ImgHTMLAttributes) {

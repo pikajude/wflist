@@ -22,7 +22,7 @@ export const ALL_EXPORTS = [
 const tmp = [...ALL_EXPORTS];
 export type Export = (typeof tmp)[0];
 
-export async function fetch_index() {
+export async function fetchIndex() {
   console.log("fetching index...");
 
   const url = "https://origin.warframe.com/PublicExport/index_en.txt.lzma";
@@ -48,7 +48,7 @@ export async function fetch_index() {
   return entries;
 }
 
-export async function fetch_export(name: string) {
+export async function fetchExport(name: string) {
   const cached = await localforage.getItem<string>(name);
   if (cached != null) return cached;
 

@@ -3,7 +3,7 @@ import { Show } from "@preact/signals/utils";
 import { Set } from "immutable";
 import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
-import { AppState } from "../..";
+import { AppState } from "../../data/state";
 import cx from "../../style";
 import { useField } from "../../util";
 import { Checkbox } from "../input";

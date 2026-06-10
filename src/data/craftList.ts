@@ -2,10 +2,10 @@ import { ReadonlySignal, useSignal, useSignalEffect } from "@preact/signals";
 import { Set } from "immutable";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
-import { AppState } from "..";
 import { completed, Lazy, pending } from "../components/Deferred";
 import { humanName, sortWith } from "../util";
 import { ExportRecipe } from "./schema";
+import { AppState } from "./state";
 import { Wanifest } from "./wanifest";
 
 export type CraftRequirement = {
