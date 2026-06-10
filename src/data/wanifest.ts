@@ -103,7 +103,7 @@ export class Wanifest {
   }
 
   static async getExportText(filename: string) {
-    var existing = await localforage.getItem<string>(filename);
+    const existing = await localforage.getItem<string>(filename);
     if (existing != null) return existing;
 
     const src = `http://content.warframe.com/PublicExport/Manifest/${filename}`;

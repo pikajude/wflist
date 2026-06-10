@@ -1,19 +1,22 @@
 import { useComputed } from "@preact/signals";
 import { For } from "@preact/signals/utils";
+import { useLocation } from "preact-iso";
 import { useContext } from "preact/hooks";
+import { AppState } from "..";
 import IngredientTable from "../components/IngredientTable";
 import BrowserContext, { createBrowserContext } from "../components/weapons/BrowserContext";
 import BrowserNav from "../components/weapons/BrowserNav";
 import WeaponCard from "../components/weapons/WeaponCard";
-import { AppState } from "../data";
 import { useCraftList } from "../data/craftList";
 import cx from "../style";
 import { useField } from "../util";
 
 export default function Browse() {
-  const vContext = createBrowserContext();
+  const as_ = useContext(AppState);
+  const loc = useLocation();
+  const vContext = createBrowserContext(as_, loc);
 
-  const { ingredientsOwned } = useContext(AppState);
+  const { ingredientsOwned } = as_;
   const { weapons, options } = vContext;
   const weaponNames = useComputed(() => weapons.value.map((v) => v.uniqueName));
   const useInvasions = useField(options, "useInvasions", false);

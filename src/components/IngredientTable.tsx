@@ -1,6 +1,6 @@
 import { useSignal, useSignalEffect } from "@preact/signals";
 import { useContext, useState } from "preact/hooks";
-import { AppState } from "../data";
+import { AppState } from "..";
 import { CraftData, CraftRequirement } from "../data/craftList";
 import cx from "../style";
 import { HumanName, Texture, useField } from "../util";
@@ -72,14 +72,14 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
 }
 
 export function IngredientRow({ uniqueName, requirement }: { uniqueName: string; requirement: CraftRequirement }) {
-  if (requirement.toplevel) return null;
-
   const faded = requirement.quantityNeeded == 0;
   const fadedClass = cx({ "text-secondary": faded, "text-decoration-line-through": faded });
 
   const { ingredientsOwned } = useContext(AppState);
 
   const quantity = useField(ingredientsOwned, uniqueName, 0);
+
+  if (requirement.toplevel) return null;
 
   return (
     <tr>
@@ -104,7 +104,7 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
             value={quantity.value}
             min={0}
             onChange={(evt) => {
-              var newQ = evt.currentTarget.valueAsNumber;
+              let newQ = evt.currentTarget.valueAsNumber;
               if (isNaN(newQ)) newQ = 0;
               quantity.value = Math.max(0, newQ);
             }}

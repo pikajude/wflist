@@ -1,7 +1,8 @@
 import { ReadonlySignal, Signal, useSignal, useSignalEffect } from "@preact/signals";
+import { Set } from "immutable";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
-import { AppState } from ".";
+import { AppState } from "..";
 import { completed, Lazy, pending } from "../components/Deferred";
 import { humanName, sortWith } from "../util";
 import { ExportRecipe } from "./schema";
@@ -21,14 +22,14 @@ export class CraftList {
   private recipes: Record<string, ExportRecipe | undefined> = {};
   private _edges: [string, string][] = [];
 
-  get edges(): ReadonlyArray<[string, string]> {
-    return this._edges;
-  }
-
   constructor(manifest: Wanifest, includeResearchComponents = false, items: string[] = []) {
     this.manifest = manifest;
     this.includeResearchComponents = includeResearchComponents;
     for (const it of items) this.add(it);
+  }
+
+  get edges(): ReadonlyArray<[string, string]> {
+    return this._edges;
   }
 
   getRecipe(uniqueName: string) {
@@ -52,7 +53,7 @@ export class CraftList {
   flattened(ownedItems: Record<string, number>) {
     const allItems: Record<string, CraftRequirement & { recipe: ExportRecipe }> = {};
 
-    const roots = this._edges.filter((e) => e[0] == "<root>").map((e) => e[1]);
+    const roots = Set(this._edges.filter((e) => e[0] == "<root>").map((e) => e[1]));
 
     const addOrInsert = (key: string, quantity: number) => {
       if (key in allItems) {
@@ -61,14 +62,14 @@ export class CraftList {
         return;
       }
 
-      var recipe = this.manifest.findRecipe(key, this.includeResearchComponents);
+      const recipe = this.getRecipe(key);
       return (allItems[key] = {
         name: humanName(key, this.manifest),
         toplevel: roots.includes(key),
         quantityNeeded: quantity,
         quantityTotal: quantity,
         batchSize: recipe?.num ?? 1,
-        recipe: recipe as any as ExportRecipe,
+        recipe: recipe!,
       });
     };
 
@@ -79,16 +80,16 @@ export class CraftList {
       if (allItems[key] != null) {
         const { recipe } = allItems[key];
         // subtract owned items
-        allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - ownedItems[key]);
+        allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key] ?? 0));
         if (recipe != null) {
-          var batchSize = Math.ceil(allItems[key].quantityNeeded / recipe.num) * recipe.num;
+          const batchSize = Math.ceil(allItems[key].quantityNeeded / recipe.num) * recipe.num;
           for (const { ItemType, ItemCount } of recipe.ingredients) {
             addOrInsert(ItemType, (ItemCount * batchSize) / recipe.num);
           }
         }
       } else {
         addOrInsert(key, 1);
-        var recipe = this.manifest.findRecipe(key, this.includeResearchComponents);
+        const recipe = this.getRecipe(key);
         if (recipe != null) {
           for (const { ItemType, ItemCount } of recipe.ingredients) {
             addOrInsert(ItemType, ItemCount);
@@ -131,8 +132,8 @@ export function useCraftList(
   const ingredientsFlat = useSignal<Lazy<ReturnType<CraftList["flattened"]>>>(pending());
 
   useSignalEffect(() => {
-    useInvasions.value;
-    items.value;
+    void useInvasions.value;
+    void items.value;
     craftList.value = pending();
     ingredientsFlat.value = pending();
     setTimeout(() => {
@@ -142,7 +143,7 @@ export function useCraftList(
   });
 
   useSignalEffect(() => {
-    ingredientsOwned.value;
+    void ingredientsOwned.value;
     if (craftList.value.state == "done") {
       const ref_ = craftList.value.value;
       setTimeout(() => {

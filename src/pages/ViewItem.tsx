@@ -1,12 +1,12 @@
 import { signal, useComputed } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext } from "preact/hooks";
+import { AppState } from "..";
 import { Deferred } from "../components/Deferred";
 import IngredientTable from "../components/IngredientTable";
 import IngredientTree from "../components/IngredientTree";
 import BrowserContext from "../components/weapons/BrowserContext";
 import BrowserNav from "../components/weapons/BrowserNav";
-import { AppState } from "../data";
 import { useCraftList } from "../data/craftList";
 import cx from "../style";
 
@@ -19,9 +19,9 @@ export default function ViewItem() {
 
   const item = manifest.exports["ExportWeapons"].find((w) => w.uniqueName.slice(1) == rte.params["path"]);
 
-  if (item == null) return <div>Unknown item</div>;
+  const craftData = useCraftList(signal(item == null ? [] : [item.uniqueName]), inv, ingredientsOwned);
 
-  const craftData = useCraftList(signal([item.uniqueName]), inv, ingredientsOwned);
+  if (item == null) return <div>Unknown item</div>;
 
   return (
     <>

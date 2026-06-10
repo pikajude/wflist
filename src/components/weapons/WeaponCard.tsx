@@ -1,6 +1,6 @@
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
-import { AppState } from "../../data";
+import { AppState } from "../..";
 import cx from "../../style";
 import { Texture, useMapped } from "../../util";
 import { Checkbox } from "../input";

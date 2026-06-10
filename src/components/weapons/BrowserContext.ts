@@ -1,12 +1,11 @@
-import { ReadonlySignal, signal, Signal, useComputed, useSignal } from "@preact/signals";
+import { computed, ReadonlySignal, signal, Signal } from "@preact/signals";
 import { List, Map } from "immutable";
 import { createContext } from "preact";
-import { useLocation } from "preact-iso";
-import { useContext } from "preact/hooks";
-import { AppState } from "../../data";
+import { LocationHook } from "preact-iso";
+import { TState } from "../..";
 import { ExportWeapon } from "../../data/schema";
 import allVaulted from "../../data/vaulted.json";
-import { useStored } from "../../util";
+import { stored } from "../../util";
 
 const categoryMap = {
   Primary: ["LongGuns", "OperatorAmps", "SentinelWeapons", "SpaceGuns"],
@@ -95,28 +94,28 @@ function isCategory(weapon: ExportWeapon, categoryName: SelectedCategory): boole
   return categories.includes(weapon.productCategory);
 }
 
-export function createBrowserContext(): TBrowserContext {
-  const { manifest, masteredWeapons } = useContext(AppState);
+export function createBrowserContext(appState: TState, location: LocationHook): TBrowserContext {
+  const { manifest, masteredWeapons } = appState;
   // dedup weapons. the export contains 3 identical copies of Mausolon. cause why not
-  const allWeapons = useSignal(
+  const allWeapons = signal(
     List(
       Map(manifest.exports["ExportWeapons"].filter((w) => !shouldExclude(w)).map((w) => [w.uniqueName, w])).values(),
     ),
   );
 
-  const { query } = useLocation();
+  const { query } = location;
   const initialWanted = query["category"] ?? "All";
   const initialCategory = initialWanted in categoryMap ? (initialWanted as SelectedCategory) : "All";
 
-  const category = useSignal<SelectedCategory>(initialCategory);
+  const category = signal<SelectedCategory>(initialCategory);
 
-  const options = useStored<BrowserOptions>("wfListFilters", {
+  const options = stored<BrowserOptions>("wfListFilters", {
     showImages: true,
     showCrafted: true,
     useInvasions: true,
   });
 
-  const weapons = useComputed(() =>
+  const weapons = computed(() =>
     allWeapons.value
       .filter(
         (weapon) =>
@@ -142,7 +141,7 @@ export function createBrowserContext(): TBrowserContext {
   };
 }
 
-const BrowserContext = createContext({
+const BrowserContext = createContext<TBrowserContext>({
   category: signal(""),
   weapons: signal([]),
   options: signal({
@@ -150,5 +149,5 @@ const BrowserContext = createContext({
     showCrafted: true,
     useInvasions: true,
   }),
-} as TBrowserContext);
+});
 export default BrowserContext;

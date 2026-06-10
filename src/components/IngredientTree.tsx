@@ -1,6 +1,6 @@
 import { curveBumpX, hierarchy, HierarchyLink, HierarchyNode, link, tree } from "d3";
 import { useContext } from "preact/hooks";
-import { AppState } from "../data";
+import { AppState } from "..";
 import { CraftList } from "../data/craftList";
 import cx from "../style";
 import { HumanName } from "../util";
@@ -28,8 +28,8 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
 
   tree<string>().nodeSize([dx, dy])(itemTree);
 
-  var x0 = Infinity;
-  var x1 = -x0;
+  let x0 = Infinity;
+  let x1 = -x0;
   itemTree.each((d) => {
     if (d.x == null) return;
     if (d.x > x1) x1 = d.x;
@@ -54,7 +54,7 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
       >
         <g fill="none" stroke="#ccc" strokeWidth={1.5} strokeOpacity={0.6}>
           {links.map((l, i) => (
-            <path key={i} d={linkF(l) || undefined}></path>
+            <path key={i} d={linkF(l) || undefined} />
           ))}
         </g>
         <g>

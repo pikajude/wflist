@@ -37,9 +37,9 @@ export async function fetch_index() {
 
   lines.split(/\s+/m).forEach((line) => {
     const start = line.split("!")[0];
-    for (var i in tmp) {
-      if (start.startsWith(`Export${tmp[i]}`)) {
-        entries[tmp[i]] = line;
+    for (const i of tmp) {
+      if (start.startsWith(`Export${i}`)) {
+        entries[i] = line;
         break;
       }
     }

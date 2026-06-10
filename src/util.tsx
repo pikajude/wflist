@@ -1,7 +1,7 @@
 import { effect, signal, Signal, useSignal, useSignalEffect } from "@preact/signals";
 import { ImgHTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
-import { AppState } from "./data";
+import { AppState } from ".";
 import { Wanifest } from "./data/wanifest";
 
 export function Texture(props: { id: string } & ImgHTMLAttributes) {
@@ -29,7 +29,7 @@ export function storedWith<T>(key: string, fromRaw: (k: string | null) => T, toR
 export function stored<T>(key: string, def: T): Signal<T> {
   return storedWith(
     key,
-    (k) => (k == null ? def : JSON.parse(k)),
+    (k) => (k == null ? def : (JSON.parse(k) as T)),
     (v) => JSON.stringify(v),
   );
 }
@@ -45,7 +45,7 @@ export function useStoredWith<T>(key: string, fromRaw: (k: string | null) => T, 
 export function useStored<T>(key: string, def: T): Signal<T> {
   return useStoredWith(
     key,
-    (k) => (k == null ? def : JSON.parse(k)),
+    (k) => (k == null ? def : (JSON.parse(k) as T)),
     (v) => JSON.stringify(v),
   );
 }
@@ -65,7 +65,7 @@ export function sortWith<T, V>(arr: T[], fn: (v: T) => V) {
     .map((a) => a.value);
 }
 
-export function useField<T extends {}, N extends keyof T>(
+export function useField<T extends object, N extends keyof T>(
   input: Signal<T>,
   field: N,
   defaultValue: T[N],

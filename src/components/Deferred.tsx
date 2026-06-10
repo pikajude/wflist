@@ -3,7 +3,7 @@ import { ComponentChildren } from "preact";
 export type Lazy<T> = { state: "done"; value: T } | { state: "error"; error: Error } | { state: "pending" };
 
 export function completed<T>(value: T): Lazy<T> {
-  return { state: "done", value: value };
+  return { state: "done", value };
 }
 
 export function pending<T>(): Lazy<T> {
