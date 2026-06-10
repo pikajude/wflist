@@ -3,8 +3,8 @@ import { useContext } from "preact/hooks";
 import toposort from "toposort";
 import { AppState } from ".";
 import { completed, Lazy, pending } from "../components/Deferred";
-import cx from "../style";
-import { humanName, HumanName, sortWith, Texture } from "../util";
+import { humanName, sortWith } from "../util";
+import { ExportRecipe } from "./schema";
 import { Wanifest } from "./wanifest";
 
 // apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
@@ -53,52 +53,60 @@ export class CraftList {
   }
 
   flattened(ownedItems: Record<string, number>) {
-    const allItems: Record<string, CraftRequirement> = {};
+    const allItems: Record<string, CraftRequirement & { recipe: ExportRecipe }> = {};
 
     const edges: Array<[string, string]> = [];
 
-    // flatten recipe tree into a list
-    const insertItem = (item: CraftItem, toplevel = false) => {
-      const uniqueName = item.recipe.uniqueName;
-
-      if (!(uniqueName in allItems))
-        allItems[uniqueName] = {
-          name: humanName(uniqueName, this.manifest),
-          quantityTotal: 0,
-          quantityNeeded: 0,
-          batchSize: item.recipe.output,
-          toplevel,
-        };
-      else allItems[uniqueName].toplevel = toplevel;
-      if (!(uniqueName in ownedItems)) ownedItems[uniqueName] = 0;
-
-      allItems[uniqueName].quantityTotal += item.quantity;
-
+    // build graph
+    const addEdges = (item: CraftItem) => {
       for (const req of item.recipe.requires) {
-        edges.push([uniqueName, req.recipe.uniqueName]);
-        insertItem(req);
+        edges.push([item.recipe.uniqueName, req.recipe.uniqueName]);
+        addEdges(req);
       }
     };
 
-    for (const item of this.items) insertItem(item, true);
+    const roots = this.items.map((i) => i.recipe.uniqueName);
 
-    // iterate over finalized list, round up quantities of items where recipe output != 1
-    // this can't be done in the previous step since it would overcount every instance of, e.g., single gemstones which are a very common crafting requirement
+    for (const item of this.items) addEdges(item);
+
+    const addOrInsert = (key: string, quantity: number) => {
+      if (key in allItems) {
+        allItems[key].quantityTotal += quantity;
+        allItems[key].quantityNeeded += quantity;
+        return;
+      }
+
+      var recipe = this.manifest.find_recipe(key);
+      return (allItems[key] = {
+        name: humanName(key, this.manifest),
+        toplevel: roots.includes(key),
+        quantityNeeded: quantity,
+        quantityTotal: quantity,
+        batchSize: recipe?.num ?? 1,
+        recipe: recipe as any as ExportRecipe,
+      });
+    };
+
     for (const key of toposort(edges)) {
-      if (allItems[key].quantityTotal % allItems[key].batchSize != 0) {
-        var batchedQuantity =
-          Math.ceil((allItems[key].quantityTotal - ownedItems[key]) / allItems[key].batchSize) *
-          allItems[key].batchSize;
-        var itemRecipe = this.manifest.find_recipe(key);
-        if (itemRecipe != null) {
-          for (const { ItemCount, ItemType } of itemRecipe.ingredients) {
-            allItems[ItemType].quantityTotal = (batchedQuantity * ItemCount) / allItems[key].batchSize;
+      if (allItems[key] != null) {
+        const { recipe } = allItems[key];
+        allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - ownedItems[key]);
+        if (recipe != null) {
+          var batchSize = Math.ceil(allItems[key].quantityNeeded / recipe.num) * recipe.num;
+          for (const { ItemType, ItemCount } of recipe.ingredients) {
+            addOrInsert(ItemType, (ItemCount * batchSize) / recipe.num);
+          }
+        }
+      } else {
+        addOrInsert(key, 1);
+        var recipe = this.manifest.find_recipe(key);
+        if (recipe != null) {
+          for (const { ItemType, ItemCount } of recipe.ingredients) {
+            addOrInsert(ItemType, ItemCount);
           }
         }
       }
     }
-
-    for (var key in allItems) allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - ownedItems[key]);
 
     const paired = Object.entries(allItems);
     return sortWith(paired, CraftList.sortKey);
@@ -154,32 +162,6 @@ export class CraftRecipe {
       this.requires.push(new CraftItem(cr, Math.ceil(multiplier * ItemCount), manifest));
     }
   }
-}
-
-export function ShowCraftList({ list }: { list: CraftItem[] }) {
-  return (
-    <div className={cx("grid")}>
-      {list.map((i, v) => (
-        <ShowCraftItem key={`${i.recipe.uniqueName}${v}`} item={i} />
-      ))}
-    </div>
-  );
-}
-
-export function ShowCraftItem(props: { item: CraftItem }) {
-  const { item } = props;
-
-  return (
-    <>
-      <div className={cx("g-col-3")}>
-        <Texture id={item.recipe.uniqueName} width="32px" />
-        {HumanName(item.recipe.uniqueName)} x{item.quantity}
-      </div>
-      <div className={cx("g-col-9")}>
-        <ShowCraftList list={item.recipe.requires} />
-      </div>
-    </>
-  );
 }
 
 export type CraftData = {

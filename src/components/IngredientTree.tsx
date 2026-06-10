@@ -57,7 +57,7 @@ export default function IngredientTree(props: { list: CraftList }) {
                 fill="#eee"
                 fontSize="1.2rem"
               >
-                {d.data.name} x{d.data.quantity}
+                {d.data.name}
               </text>
             </a>
           ))}

@@ -89,7 +89,8 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
       <td>
         <span className={fadedClass}>
           {requirement.quantityTotal}
-          {requirement.batchSize > 1 && ` (${requirement.batchSize})`}
+          {requirement.quantityTotal % requirement.batchSize != 0 &&
+            ` (${Math.ceil(requirement.quantityTotal / requirement.batchSize) * requirement.batchSize})`}
         </span>
       </td>
       <td>

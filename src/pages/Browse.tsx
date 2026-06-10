@@ -24,7 +24,7 @@ export default function Browse() {
     <BrowserContext value={vContext}>
       <BrowserNav />
       <div className={cx("container", "grid")}>
-        <IngredientTable startOpen={true} craftData={cd} />
+        <IngredientTable startOpen={false} craftData={cd} />
         <For each={weapons}>{(item) => <WeaponCard weapon={item} key={item.uniqueName} />}</For>
       </div>
     </BrowserContext>
