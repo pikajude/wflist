@@ -41,7 +41,6 @@ export function App(props: { state: TState }) {
   return (
     <AppState.Provider value={props.state}>
       <LocationProvider>
-        {/* <Header /> */}
         <Router>
           <Route path="/" component={Browse} />
           <Route path="/item/:path*" component={ViewItem} />

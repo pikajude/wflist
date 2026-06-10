@@ -12,14 +12,14 @@ import cx from "../style";
 
 export default function ViewItem() {
   const rte = useRoute();
-  const { manifest, ingredientsOwned } = useContext(AppState);
+  const { manifest } = useContext(AppState);
   const opts = useContext(BrowserContext);
   const inv = useComputed(() => opts.options.value.useInvasions);
   const img = useComputed(() => opts.options.value.showImages);
 
   const item = manifest.exports["ExportWeapons"].find((w) => w.uniqueName.slice(1) == rte.params["path"]);
 
-  const craftData = useCraftList(signal(item == null ? [] : [item.uniqueName]), inv, ingredientsOwned);
+  const craftData = useCraftList(signal(item == null ? [] : [item.uniqueName]), inv);
 
   if (item == null) return <div>Unknown item</div>;
 

@@ -1,4 +1,4 @@
-import { ReadonlySignal, Signal, useSignal, useSignalEffect } from "@preact/signals";
+import { ReadonlySignal, useSignal, useSignalEffect } from "@preact/signals";
 import { Set } from "immutable";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
@@ -122,12 +122,8 @@ export type CraftData = {
   ingredientsFlat: ReadonlySignal<Lazy<ReturnType<CraftList["flattened"]>>>;
 };
 
-export function useCraftList(
-  items: ReadonlySignal<string[]>,
-  useInvasions: ReadonlySignal<boolean>,
-  ingredientsOwned: Signal<Record<string, number>>,
-): CraftData {
-  const { manifest } = useContext(AppState);
+export function useCraftList(items: ReadonlySignal<string[]>, useInvasions: ReadonlySignal<boolean>): CraftData {
+  const { manifest, ingredientsOwned } = useContext(AppState);
   const craftList = useSignal<Lazy<CraftList>>(pending());
   const ingredientsFlat = useSignal<Lazy<ReturnType<CraftList["flattened"]>>>(pending());
 

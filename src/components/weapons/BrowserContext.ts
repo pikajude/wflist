@@ -117,21 +117,19 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 
   const weapons = computed(() =>
     allWeapons.value
+      .toArray()
       .filter(
         (weapon) =>
           !allVaulted.includes(weapon.uniqueName) &&
           isCategory(weapon, category.value) &&
           (options.value.showCrafted || !masteredWeapons.value.get(weapon.uniqueName, false)),
       )
-      .map((w) => {
-        return {
-          ...w,
-          archwing: w.name.startsWith("<ARCHWING>"),
-          name: w.name.replace("<ARCHWING> ", ""),
-        };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .toArray(),
+      .map((w) => ({
+        ...w,
+        archwing: w.name.startsWith("<ARCHWING>"),
+        name: w.name.replace("<ARCHWING> ", ""),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name)),
   );
 
   return {

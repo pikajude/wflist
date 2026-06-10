@@ -81,9 +81,7 @@ export function useMapped<T, V>(input: Signal<T>, get: (arg: T) => V, set: (arg:
   const copied = useSignal(get(input.peek()));
 
   useSignalEffect(() => {
-    const val = set(input.peek(), copied.value);
-    console.log("updating signal...");
-    input.value = val;
+    input.value = set(input.peek(), copied.value);
   });
 
   return copied;

@@ -16,12 +16,11 @@ export default function Browse() {
   const loc = useLocation();
   const vContext = createBrowserContext(as_, loc);
 
-  const { ingredientsOwned } = as_;
   const { weapons, options } = vContext;
   const weaponNames = useComputed(() => weapons.value.map((v) => v.uniqueName));
   const useInvasions = useField(options, "useInvasions", false);
 
-  const cd = useCraftList(weaponNames, useInvasions, ingredientsOwned);
+  const cd = useCraftList(weaponNames, useInvasions);
 
   return (
     <BrowserContext value={vContext}>

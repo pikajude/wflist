@@ -10,7 +10,7 @@ import { Checkbox } from "../input";
 import BrowserContext from "./BrowserContext";
 
 export default function FilterOptions() {
-  const { masteredWeapons } = useContext(AppState);
+  const { masteredWeapons, ingredientsOwned } = useContext(AppState);
   const { options } = useContext(BrowserContext);
 
   const visible = useSignal(false);
@@ -47,14 +47,28 @@ export default function FilterOptions() {
             <Checkbox value={useField(options, "showImages", true)} label="Show images" />
             <Checkbox value={useField(options, "showCrafted", true)} label="Show already-crafted weapons" />
             <hr />
-            <button
-              onClick={() => {
-                if (confirm("Are you sure you want to reset mastery history?")) masteredWeapons.value = Set();
-              }}
-              className={cx("btn", "btn-danger", "btn-sm")}
-            >
-              Clear mastery
-            </button>
+            <div className={cx("mb-2")}>
+              <button
+                className={cx("btn", "btn-primary", "btn-sm")}
+                onClick={(evt) => {
+                  evt.preventDefault();
+                  void window.navigator.clipboard.writeText(JSON.stringify(ingredientsOwned.value, null, 2));
+                }}
+              >
+                Export inventory (to clipboard)
+              </button>
+            </div>
+            <div>
+              <button
+                onClick={(evt) => {
+                  evt.preventDefault();
+                  if (confirm("Are you sure you want to reset your crafted items?")) masteredWeapons.value = Set();
+                }}
+                className={cx("btn", "btn-danger", "btn-sm")}
+              >
+                Forget crafted items
+              </button>
+            </div>
           </form>
 
           <div ref={setArrowEl} style={styles.arrow} />
