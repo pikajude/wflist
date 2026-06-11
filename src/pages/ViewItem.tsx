@@ -1,7 +1,6 @@
 import { signal, useComputed } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext } from "preact/hooks";
-import { Deferred } from "../components/Deferred";
 import IngredientTable from "../components/IngredientTable";
 import IngredientTree from "../components/IngredientTree";
 import BrowserContext from "../components/weapons/BrowserContext";
@@ -29,12 +28,10 @@ export default function ViewItem() {
       <div className={cx("container", "grid")}>
         <div className={cx("card", "g-col-12")}>
           <div className={cx("card-body")}>
-            <Deferred value={craftData.craftList.value}>
-              {(cl) => <IngredientTree list={cl} showImages={img.value} />}
-            </Deferred>
+            <IngredientTree list={craftData.craftList.value} showImages={img.value} />
           </div>
         </div>
-        <IngredientTable startOpen={true} craftData={craftData} />
+        <IngredientTable craftData={craftData} />
       </div>
     </>
   );

@@ -1,12 +1,11 @@
-import { ReadonlySignal, useSignal, useSignalEffect } from "@preact/signals";
+import { ReadonlySignal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { Set } from "immutable";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
-import { completed, Lazy, pending } from "../components/Deferred";
 import { humanName, sortWith } from "../util";
 import { ExportRecipe } from "./schema";
 import { AppState } from "./state";
-import { Wanifest } from "./wanifest";
+import { DuviriWeapons, Wanifest } from "./wanifest";
 
 export type CraftRequirement = {
   name: string;
@@ -43,11 +42,24 @@ export class CraftList {
 
     const recipe = this.getRecipe(uniqueName);
     if (recipe != null) {
-      for (const { ItemType } of recipe.ingredients) {
+      for (const { ItemType } of this.iterIngredients(recipe)) {
         this._edges.push([uniqueName, ItemType]);
         this.add(ItemType, false);
       }
     }
+  }
+
+  iterIngredients(recipe: ExportRecipe): ExportRecipe["ingredients"] {
+    const regularItems = [...recipe.ingredients];
+
+    if (DuviriWeapons.includes(recipe.resultType))
+      regularItems.push({
+        ItemType: "/Lotus/Types/Gameplay/Duviri/Resource/DuviriDragonDropItem",
+        ItemCount: 60,
+        ProductCategory: "MiscItems",
+      });
+
+    return regularItems;
   }
 
   flattened(ownedItems: Record<string, number>) {
@@ -83,7 +95,7 @@ export class CraftList {
         allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key] ?? 0));
         if (recipe != null) {
           const batchSize = Math.ceil(allItems[key].quantityNeeded / recipe.num) * recipe.num;
-          for (const { ItemType, ItemCount } of recipe.ingredients) {
+          for (const { ItemType, ItemCount } of this.iterIngredients(recipe)) {
             addOrInsert(ItemType, (ItemCount * batchSize) / recipe.num);
           }
         }
@@ -91,7 +103,7 @@ export class CraftList {
         addOrInsert(key, 1);
         const recipe = this.getRecipe(key);
         if (recipe != null) {
-          for (const { ItemType, ItemCount } of recipe.ingredients) {
+          for (const { ItemType, ItemCount } of this.iterIngredients(recipe)) {
             addOrInsert(ItemType, ItemCount);
           }
         }
@@ -118,35 +130,22 @@ export class CraftList {
 }
 
 export type CraftData = {
-  craftList: ReadonlySignal<Lazy<CraftList>>;
-  ingredientsFlat: ReadonlySignal<Lazy<ReturnType<CraftList["flattened"]>>>;
+  craftList: ReadonlySignal<CraftList>;
+  ingredientsFlat: ReadonlySignal<ReturnType<CraftList["flattened"]>>;
 };
 
 export function useCraftList(items: ReadonlySignal<string[]>, useInvasions: ReadonlySignal<boolean>): CraftData {
   const { manifest, ingredientsOwned } = useContext(AppState);
-  const craftList = useSignal<Lazy<CraftList>>(pending());
-  const ingredientsFlat = useSignal<Lazy<ReturnType<CraftList["flattened"]>>>(pending());
+  const craftList = useComputed(() => new CraftList(manifest, !useInvasions.value, items.value));
+  const ingredientsFlat = useSignal<ReturnType<CraftList["flattened"]>>([]);
 
   useSignalEffect(() => {
-    void useInvasions.value;
-    void items.value;
-    craftList.value = pending();
-    ingredientsFlat.value = pending();
+    const cl = craftList.value;
+    const ing = ingredientsOwned.value;
     setTimeout(() => {
-      console.log("assembling craft list...");
-      craftList.value = completed(new CraftList(manifest, !useInvasions.value, items.value));
+      console.log("calculating flat materials list...");
+      ingredientsFlat.value = cl.flattened(ing);
     });
-  });
-
-  useSignalEffect(() => {
-    void ingredientsOwned.value;
-    if (craftList.value.state == "done") {
-      const ref_ = craftList.value.value;
-      setTimeout(() => {
-        console.log("calculating flat materials list...");
-        ingredientsFlat.value = completed(ref_.flattened(ingredientsOwned.value));
-      });
-    }
   });
 
   return { craftList, ingredientsFlat };

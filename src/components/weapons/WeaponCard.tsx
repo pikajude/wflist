@@ -2,7 +2,7 @@ import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
 import { AppState } from "../../data/state";
 import cx from "../../style";
-import { Texture, useMapped } from "../../util";
+import { Texture } from "../../util";
 import { Checkbox } from "../input";
 import BrowserContext, { WeaponEx } from "./BrowserContext";
 
@@ -40,11 +40,8 @@ export default function WeaponCard(
         )}
         <form>
           <Checkbox
-            value={useMapped(
-              masteredWeapons,
-              (w) => w.has(weapon.uniqueName),
-              (m, v) => m[v ? "add" : "remove"](weapon.uniqueName),
-            )}
+            initialValue={masteredWeapons.value.has(weapon.uniqueName)}
+            onChange={(e) => (masteredWeapons.value = masteredWeapons.value[e ? "add" : "remove"](weapon.uniqueName))}
             name={`${weapon.uniqueName}_ma`}
             label="Crafted"
           />

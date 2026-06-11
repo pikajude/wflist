@@ -9,8 +9,10 @@ export type TState = {
 
   masteredWeapons: Signal<Set<string>>;
 
-  ingredientsOwned: Signal<Record<string, number>>;
+  ingredientsOwned: Signal<Inventory>;
 };
+
+export type Inventory = Record<string, number>;
 
 export async function createAppState(): Promise<TState> {
   const manifest = await Wanifest.create();
@@ -21,7 +23,7 @@ export async function createAppState(): Promise<TState> {
     (m) => JSON.stringify(m.toArray()),
   );
 
-  const ingredientsOwned = stored<Record<string, number>>("wfListIngredients", {});
+  const ingredientsOwned = stored<Inventory>("wfListIngredients", {});
 
   return {
     manifest,

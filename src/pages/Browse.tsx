@@ -9,14 +9,15 @@ import WeaponCard from "../components/weapons/WeaponCard";
 import { useCraftList } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
-import { useField } from "../util";
+import { useStored } from "../util";
 
 export default function Browse() {
   const vContext = createBrowserContext(useContext(AppState), useLocation());
 
   const { weapons, options } = vContext;
   const weaponNames = useComputed(() => weapons.value.map((v) => v.uniqueName));
-  const useInvasions = useField(options, "useInvasions", false);
+  const useInvasions = useComputed(() => options.value.useInvasions);
+  const expanded = useStored("wfBrowserIngredients", false);
 
   const cd = useCraftList(weaponNames, useInvasions);
 
@@ -24,7 +25,7 @@ export default function Browse() {
     <BrowserContext value={vContext}>
       <BrowserNav />
       <div className={cx("container", "grid")}>
-        <IngredientTable startOpen={false} craftData={cd} />
+        <IngredientTable isOpen={expanded} craftData={cd} />
         <For each={weapons}>{(item) => <WeaponCard weapon={item} key={item.uniqueName} />}</For>
       </div>
     </BrowserContext>

@@ -32,5 +32,11 @@ export default defineConfig({
         ignoreRestSiblings: true,
       },
     ],
+    "prefer-const": [
+      "error",
+      {
+        destructuring: "all",
+      },
+    ],
   },
 });

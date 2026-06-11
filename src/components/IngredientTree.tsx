@@ -1,4 +1,5 @@
 import { curveBumpX, hierarchy, HierarchyLink, HierarchyNode, link, tree } from "d3";
+import { Set } from "immutable";
 import { useContext } from "preact/hooks";
 import { CraftList } from "../data/craftList";
 import { AppState } from "../data/state";
@@ -13,7 +14,11 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
 
   const tree2: Record<string, string[]> = {};
 
-  for (const [from, to] of props.list.edges) {
+  const edges = Set(props.list.edges.map((e) => `${e[0]}!${e[1]}`))
+    .toArray()
+    .map((e) => e.split("!", 2));
+
+  for (const [from, to] of edges) {
     if (tree2[from] == null) tree2[from] = [];
     tree2[from].push(to);
   }
@@ -60,6 +65,7 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
         <g>
           {desc.map((d, i) => (
             <a key={i} style={{ textDecoration: "none" }} {...{ transform: `translate(${d.y},${d.x})` }}>
+              <circle fill="#ccc" r="3" />
               {showImages && <image href={manifest.imageUrl(d.data)} width={32} x={d.children ? -36 : 4} y={-16} />}
               <text
                 dy="0.32em"
@@ -68,7 +74,7 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
                 x={(showImages ? 38 : 6) * (d.children ? -1 : 1)}
                 text-anchor={d.children ? "end" : "start"}
                 fill="#eee"
-                fontSize="1.2rem"
+                fontSize="0.8rem"
               >
                 {HumanName(d.data)}
               </text>

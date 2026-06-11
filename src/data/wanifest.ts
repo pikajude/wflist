@@ -59,6 +59,17 @@ export const InvasionResources = [
   "/Lotus/Types/Items/Research/EnergyComponent",
 ];
 
+export const BadRecipes = ["/Lotus/Types/Recipes/Weapons/CorpusHandcannonBlueprint"];
+
+export const DuviriWeapons = [
+  "/Lotus/Types/Friendly/PlayerControllable/Weapons/DuviriDualSwordsWeapon",
+  "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriTwoHandedKatana/DaxDuviriTwoHandedKatanaWeapon",
+  "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriKatana/DaxDuviriKatanaWeapon",
+  "/Lotus/Weapons/Tenno/Melee/Polearms/DaxDuviriPolearm/DaxDuviriPolearmWeapon",
+  "/Lotus/Weapons/Tenno/Melee/Hammer/DaxDuviriHammer/DaxDuviriHammerWeapon",
+  "/Lotus/Weapons/Tenno/Melee/SwordsAndBoards/DaxDuviriMaceShieldWeapon",
+];
+
 export class Wanifest {
   exports = {} as Exports;
   textures: { [name: string]: string } = {};
@@ -70,7 +81,7 @@ export class Wanifest {
     if (ResourcesLegacyCraftable.includes(name)) return undefined;
     if (!includeResearchComponents && InvasionResources.includes(name)) return undefined;
 
-    return this.exports.ExportRecipes.find((c) => c.resultType == name);
+    return this.exports.ExportRecipes.find((c) => !BadRecipes.includes(c.uniqueName) && c.resultType == name);
   };
 
   imageUrl = (name: string) => `http://content.warframe.com/PublicExport/${this.textures[name]}`;

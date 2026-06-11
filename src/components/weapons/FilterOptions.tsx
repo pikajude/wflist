@@ -5,7 +5,6 @@ import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
 import { AppState } from "../../data/state";
 import cx from "../../style";
-import { useField } from "../../util";
 import { Checkbox } from "../input";
 import BrowserContext from "./BrowserContext";
 
@@ -43,9 +42,21 @@ export default function FilterOptions() {
       <Show when={visible}>
         <div ref={setPopEl} className={cx("dropdown-menu", "show")} style={styles.popper} {...attributes.popper}>
           <form className={cx("px-3", "py-2")} style={{ width: "400px" }}>
-            <Checkbox value={useField(options, "useInvasions", true)} label="Research components come from invasions" />
-            <Checkbox value={useField(options, "showImages", true)} label="Show images" />
-            <Checkbox value={useField(options, "showCrafted", true)} label="Show already-crafted weapons" />
+            <Checkbox
+              initialValue={options.value.useInvasions}
+              onChange={(e) => (options.value = { ...options.value, useInvasions: e })}
+              label="Research components come from invasions"
+            />
+            <Checkbox
+              initialValue={options.value.showImages}
+              onChange={(e) => (options.value = { ...options.value, showImages: e })}
+              label="Show images"
+            />
+            <Checkbox
+              initialValue={options.value.hideCrafted}
+              onChange={(e) => (options.value = { ...options.value, hideCrafted: e })}
+              label="Hide already crafted weapons"
+            />
             <hr />
             <div className={cx("mb-2")}>
               <button

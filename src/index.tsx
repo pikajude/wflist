@@ -35,8 +35,7 @@ function App() {
 }
 
 if (typeof window !== "undefined") {
-  const el = document.getElementById("app")!;
-  hydrate(<App />, el);
+  hydrate(<App />, document.getElementById("app")!);
 }
 
 export async function prerender(data: Attributes) {

@@ -20,7 +20,7 @@ export type WeaponEx = ExportWeapon & { archwing: boolean };
 
 export type BrowserOptions = {
   showImages: boolean;
-  showCrafted: boolean;
+  hideCrafted: boolean;
   useInvasions: boolean;
 };
 
@@ -111,7 +111,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 
   const options = stored<BrowserOptions>("wfListFilters", {
     showImages: true,
-    showCrafted: true,
+    hideCrafted: true,
     useInvasions: true,
   });
 
@@ -122,7 +122,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
         (weapon) =>
           !allVaulted.includes(weapon.uniqueName) &&
           isCategory(weapon, category.value) &&
-          (options.value.showCrafted || !masteredWeapons.value.get(weapon.uniqueName, false)),
+          (!options.value.hideCrafted || !masteredWeapons.value.get(weapon.uniqueName, false)),
       )
       .map((w) => ({
         ...w,
@@ -144,7 +144,7 @@ const BrowserContext = createContext<TBrowserContext>({
   weapons: signal([]),
   options: signal({
     showImages: true,
-    showCrafted: true,
+    hideCrafted: true,
     useInvasions: true,
   }),
 });

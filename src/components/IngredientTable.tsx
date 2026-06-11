@@ -1,28 +1,23 @@
-import { useSignal, useSignalEffect } from "@preact/signals";
-import { useContext, useState } from "preact/hooks";
+import { signal, Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import { useContext } from "preact/hooks";
 import { CraftData, CraftRequirement } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
-import { HumanName, Texture, useField } from "../util";
-import { Checkbox } from "./input";
+import { HumanName, Texture } from "../util";
+import { Signalbox } from "./input";
 
-export default function IngredientTable(props: { craftData: CraftData; startOpen: boolean }) {
-  const {
+export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean> }) {
+  let {
     craftData: { ingredientsFlat: ingredients },
-    startOpen,
+    isOpen,
   } = props;
   const { ingredientsOwned } = useContext(AppState);
-  const expanded = useSignal(startOpen);
   const onlyMissing = useSignal(true);
+  isOpen ??= signal(true);
 
-  const [lastIngredients, setLastIngredients] = useState<[string, CraftRequirement][]>([]);
-
-  useSignalEffect(() => {
-    const i = ingredients.value;
+  const lastIngredients = useComputed(() => {
     const filt = onlyMissing.value;
-    if (i.state == "done") {
-      setLastIngredients(i.value.filter((v) => !v[1].toplevel && (!filt || v[1].quantityNeeded > 0)));
-    }
+    return ingredients.value.filter((v) => !v[1].toplevel && (!filt || v[1].quantityNeeded > 0));
   });
 
   return (
@@ -30,16 +25,16 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
       <div className={cx("accordion-item")}>
         <h2 className={cx("accordion-header")}>
           <button
-            className={cx("accordion-button", { collapsed: !expanded.value })}
-            onClick={() => (expanded.value = !expanded.value)}
+            className={cx("accordion-button", { collapsed: !isOpen.value })}
+            onClick={() => (isOpen.value = !isOpen.value)}
           >
             Ingredients
           </button>
         </h2>
-        <div className={cx("accordion-collapse", "collapse", { show: expanded.value })}>
+        <div className={cx("accordion-collapse", "collapse", { show: isOpen.value })}>
           <div className={cx("accordion-body")}>
             <div className={cx("d-flex", "justify-content-between")}>
-              <Checkbox value={onlyMissing} label="Only show missing items" />
+              <Signalbox value={onlyMissing} label="Only show missing items" />
               <button
                 className={cx("btn", "btn-sm", "btn-danger")}
                 onClick={() => {
@@ -59,12 +54,12 @@ export default function IngredientTable(props: { craftData: CraftData; startOpen
                 </tr>
               </thead>
               <tbody>
-                {lastIngredients.map(([uniqueName, req]) => (
+                {lastIngredients.value.map(([uniqueName, req]) => (
                   <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
                 ))}
-                {lastIngredients.length == 0 && (
+                {lastIngredients.value.length == 0 && (
                   <tr>
-                    <td colspan={4}>All ingredients collected</td>
+                    <td colspan={4}>List complete!</td>
                   </tr>
                 )}
               </tbody>
@@ -82,9 +77,13 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
 
   const { ingredientsOwned } = useContext(AppState);
 
-  const quantity = useField(ingredientsOwned, uniqueName, 0);
+  const quantity = useSignal(ingredientsOwned.value[uniqueName] ?? 0);
 
-  if (requirement.toplevel) return null;
+  useSignalEffect(() => {
+    const q = quantity.value;
+    const ing = ingredientsOwned.peek();
+    if (ing[uniqueName] != q) ingredientsOwned.value = { ...ing, [uniqueName]: q };
+  });
 
   return (
     <tr>

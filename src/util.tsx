@@ -7,6 +7,8 @@ import { Wanifest } from "./data/wanifest";
 export function Texture(props: { id: string } & ImgHTMLAttributes) {
   const { manifest } = useContext(AppState);
 
+  if (typeof manifest === "undefined") return <></>;
+
   const { id, ...rest } = props;
 
   return <img src={manifest.imageUrl(id)} {...rest} />;
@@ -63,26 +65,4 @@ export function sortWith<T, V>(arr: T[], fn: (v: T) => V) {
       return 0;
     })
     .map((a) => a.value);
-}
-
-export function useField<T extends object, N extends keyof T>(
-  input: Signal<T>,
-  field: N,
-  defaultValue: T[N],
-): Signal<T[N]> {
-  return useMapped<T, T[N]>(
-    input,
-    (v) => v[field] ?? defaultValue,
-    (s, v) => ({ ...s, [field]: v }),
-  );
-}
-
-export function useMapped<T, V>(input: Signal<T>, get: (arg: T) => V, set: (arg: T, value: V) => T) {
-  const copied = useSignal(get(input.peek()));
-
-  useSignalEffect(() => {
-    input.value = set(input.peek(), copied.value);
-  });
-
-  return copied;
 }
