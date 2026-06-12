@@ -60,22 +60,29 @@ export const InvasionResources = [
   "/Lotus/Types/Items/Research/EnergyComponent",
 ];
 
-// blueprints for obtainable items that are no longer obtainable themselves
+// unobtainable blueprints
 export const BadRecipes = ["/Lotus/Types/Recipes/Weapons/CorpusHandcannonBlueprint"];
 
 export class Wanifest {
   exports = {} as Exports;
   textures: { [name: string]: string } = {};
   names: { [uniqueName: string]: string } = {};
+  nameKeys: { [name: string]: string } = {};
 
   private constructor() {}
 
-  findRecipe = (name: string, includeResearchComponents: boolean) => {
+  findRecipe(name: string, includeResearchComponents: boolean) {
     if (ResourcesLegacyCraftable.includes(name)) return undefined;
     if (!includeResearchComponents && InvasionResources.includes(name)) return undefined;
 
     return this.exports.ExportRecipes.find((c) => !BadRecipes.includes(c.uniqueName) && c.resultType == name);
-  };
+  }
+
+  getKey(nameOrKey: string): string {
+    if (!nameOrKey.startsWith("/Lotus") && nameOrKey in this.nameKeys) return this.nameKeys[nameOrKey];
+
+    return nameOrKey;
+  }
 
   imageUrl = (name: string) => `http://content.warframe.com/PublicExport/${this.textures[name]}`;
 
@@ -100,12 +107,24 @@ export class Wanifest {
       self.textures[uniqueName] = textureLocation;
     }
 
-    for (const k of self.exports["ExportWeapons"]) self.names[k.uniqueName] = k.name;
-    for (const k of self.exports["ExportResources"]) self.names[k.uniqueName] = k.name;
-    for (const k of self.exports["ExportGear"]) self.names[k.uniqueName] = k.name;
+    self.addNames(self.exports["ExportWeapons"]);
+    self.addNames(self.exports["ExportResources"]);
+    self.addNames(self.exports["ExportGear"]);
 
     return self;
   }
+
+  addNames = (objects: { uniqueName: string; name: string }[]) => {
+    for (const { uniqueName, name } of objects) this.addName(uniqueName, name);
+  };
+
+  addName = (uniqueName: string, humanName: string) => {
+    if (humanName.length == 0) return;
+    this.names[uniqueName] = humanName;
+    if (humanName in this.nameKeys)
+      console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
+    else this.nameKeys[humanName] = uniqueName;
+  };
 
   static async getExportText(filename: string) {
     const existing = await localforage.getItem<string>(filename);

@@ -16,7 +16,10 @@ export default function ViewItem() {
   const inv = useComputed(() => opts.options.value.useInvasions);
   const img = useComputed(() => opts.options.value.showImages);
 
-  const item = manifest.exports["ExportWeapons"].find((w) => w.uniqueName.slice(1) == rte.params["path"]);
+  const path = rte.params["path"];
+  const isKey = path.startsWith("Lotus/");
+
+  const item = manifest.exports["ExportWeapons"].find((w) => (isKey ? w.uniqueName.slice(1) == path : w.name == path));
 
   const craftData = useCraftList(signal(item == null ? [] : [item.uniqueName]), inv);
 

@@ -3,67 +3,10 @@ import { Set } from "immutable";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
 import { humanName, sortWith } from "../util";
+import BlueprintExchange from "./blueprintExchange";
 import { ExportRecipe } from "./schema";
 import { AppState } from "./state";
 import { Wanifest } from "./wanifest";
-
-const ExtraBlueprintRequirements: [string | string[], ExportRecipe["ingredients"][0]][] = [
-  [
-    // duviri weapons each require 60 pathos clamp
-    [
-      "/Lotus/Types/Friendly/PlayerControllable/Weapons/DuviriDualSwordsWeapon",
-      "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriTwoHandedKatana/DaxDuviriTwoHandedKatanaWeapon",
-      "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriKatana/DaxDuviriKatanaWeapon",
-      "/Lotus/Weapons/Tenno/Melee/Polearms/DaxDuviriPolearm/DaxDuviriPolearmWeapon",
-      "/Lotus/Weapons/Tenno/Melee/Hammer/DaxDuviriHammer/DaxDuviriHammerWeapon",
-      "/Lotus/Weapons/Tenno/Melee/SwordsAndBoards/DaxDuviriMaceShieldWeapon",
-    ],
-    {
-      ItemType: "/Lotus/Types/Gameplay/Duviri/Resource/DuviriDragonDropItem",
-      ItemCount: 60,
-      ProductCategory: "MiscItems",
-    },
-  ],
-  [
-    "/Lotus/Weapons/Tenno/LongGuns/TnHopliteSpear/TnHopliteSpearGunWeapon",
-    {
-      ItemType: "/Lotus/Types/Items/MiscItems/KahlCreds",
-      ItemCount: 60,
-      ProductCategory: "MiscItems",
-    },
-  ],
-  [
-    [
-      "/Lotus/Weapons/Grineer/ThrowingWeapons/GrnVorStickyBomb/GrnVorStickyBomb",
-      "/Lotus/Weapons/Grineer/Melee/GrnSharbola/GrnSharbolaWeapon",
-    ],
-    {
-      ItemType: "/Lotus/Types/Items/MiscItems/KahlCreds",
-      ItemCount: 30,
-      ProductCategory: "MiscItems",
-    },
-  ],
-  [
-    "/Lotus/Weapons/Tenno/LongGuns/PaxDuviricusShotgun/PaxDuviricusShotgun",
-    {
-      ItemType: "/Lotus/Types/Gameplay/Duviri/Resource/DuviriKullervoDropItem",
-      ItemCount: 30,
-      ProductCategory: "MiscItems",
-    },
-  ],
-  [
-    [
-      "/Lotus/Weapons/Tenno/ThrowingWeapons/TnOraxiaFlechette/TnOraxiaFlechette",
-      "/Lotus/Weapons/Tenno/Melee/Whips/SpiderWhip/SpiderWhipWeapon",
-      "/Lotus/Weapons/Tenno/Zariman/Melee/HeavyScythe/ZarimanHeavyScythe/ZarimanHeavyScytheWeapon",
-    ],
-    {
-      ItemType: "/Lotus/Types/Gameplay/DuviriMITW/Resources/DuviriMurmurItemB",
-      ItemCount: 96,
-      ProductCategory: "MiscItems",
-    },
-  ],
-];
 
 export type CraftRequirement = {
   name: string;
@@ -98,22 +41,29 @@ export class CraftList {
   add(uniqueName: string, toplevel: boolean = true) {
     if (toplevel) this._edges.push(["<root>", uniqueName]);
 
-    const recipe = this.getRecipe(uniqueName);
-    if (recipe != null) {
-      for (const { ItemType } of this.iterIngredients(recipe)) {
-        this._edges.push([uniqueName, ItemType]);
-        this.add(ItemType, false);
-      }
+    for (const { ItemType } of this.iterIngredients(uniqueName)) {
+      this._edges.push([uniqueName, ItemType]);
+      this.add(ItemType, false);
     }
   }
 
-  iterIngredients(recipe: ExportRecipe): ExportRecipe["ingredients"] {
-    const regularItems = [...recipe.ingredients];
+  iterIngredients(uniqueName: string): ExportRecipe["ingredients"] {
+    const recipe = this.getRecipe(uniqueName);
+    const regularItems = [...(recipe?.ingredients ?? [])];
 
-    for (const [blueprints, dependencies] of ExtraBlueprintRequirements) {
-      const matches =
-        typeof blueprints === "string" ? blueprints == recipe.resultType : blueprints.includes(recipe.resultType);
-      if (matches) regularItems.push(dependencies);
+    for (const dep in BlueprintExchange) {
+      for (const [bps, quantity] of BlueprintExchange[dep]) {
+        const matches =
+          typeof bps === "string"
+            ? this.manifest.getKey(bps) == uniqueName
+            : bps.some((b) => this.manifest.getKey(b) == uniqueName);
+        if (matches)
+          regularItems.push({
+            ItemType: this.manifest.getKey(dep),
+            ItemCount: quantity,
+            ProductCategory: "MiscItems",
+          });
+      }
     }
 
     return regularItems;
@@ -150,19 +100,15 @@ export class CraftList {
         const { recipe } = allItems[key];
         // subtract owned items
         allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key] ?? 0));
-        if (recipe != null) {
-          const batchSize = Math.ceil(allItems[key].quantityNeeded / recipe.num) * recipe.num;
-          for (const { ItemType, ItemCount } of this.iterIngredients(recipe)) {
-            addOrInsert(ItemType, (ItemCount * batchSize) / recipe.num);
-          }
+        const output = recipe?.num ?? 1;
+        const batchSize = Math.ceil(allItems[key].quantityNeeded / output) * output;
+        for (const { ItemType, ItemCount } of this.iterIngredients(key)) {
+          addOrInsert(ItemType, (ItemCount * batchSize) / output);
         }
       } else {
         addOrInsert(key, 1);
-        const recipe = this.getRecipe(key);
-        if (recipe != null) {
-          for (const { ItemType, ItemCount } of this.iterIngredients(recipe)) {
-            addOrInsert(ItemType, ItemCount);
-          }
+        for (const { ItemType, ItemCount } of this.iterIngredients(key)) {
+          addOrInsert(ItemType, ItemCount);
         }
       }
     }
