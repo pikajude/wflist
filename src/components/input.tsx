@@ -29,13 +29,11 @@ export function Checkbox(props: {
   );
 }
 
-export function Signalbox(props: { value: Signal<boolean>; label: string; name?: string }) {
-  return (
-    <Checkbox
-      initialValue={props.value.value}
-      onChange={(e) => (props.value.value = e)}
-      label={props.label}
-      name={props.name}
-    />
-  );
-}
+export const Signalbox = (props: { value: Signal<boolean>; label: string; name?: string }) => (
+  <Checkbox
+    initialValue={props.value.value}
+    onChange={(e) => (props.value.value = e)}
+    label={props.label}
+    name={props.name}
+  />
+);

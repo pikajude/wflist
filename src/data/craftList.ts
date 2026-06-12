@@ -5,7 +5,65 @@ import toposort from "toposort";
 import { humanName, sortWith } from "../util";
 import { ExportRecipe } from "./schema";
 import { AppState } from "./state";
-import { DuviriWeapons, Wanifest } from "./wanifest";
+import { Wanifest } from "./wanifest";
+
+const ExtraBlueprintRequirements: [string | string[], ExportRecipe["ingredients"][0]][] = [
+  [
+    // duviri weapons each require 60 pathos clamp
+    [
+      "/Lotus/Types/Friendly/PlayerControllable/Weapons/DuviriDualSwordsWeapon",
+      "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriTwoHandedKatana/DaxDuviriTwoHandedKatanaWeapon",
+      "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriKatana/DaxDuviriKatanaWeapon",
+      "/Lotus/Weapons/Tenno/Melee/Polearms/DaxDuviriPolearm/DaxDuviriPolearmWeapon",
+      "/Lotus/Weapons/Tenno/Melee/Hammer/DaxDuviriHammer/DaxDuviriHammerWeapon",
+      "/Lotus/Weapons/Tenno/Melee/SwordsAndBoards/DaxDuviriMaceShieldWeapon",
+    ],
+    {
+      ItemType: "/Lotus/Types/Gameplay/Duviri/Resource/DuviriDragonDropItem",
+      ItemCount: 60,
+      ProductCategory: "MiscItems",
+    },
+  ],
+  [
+    "/Lotus/Weapons/Tenno/LongGuns/TnHopliteSpear/TnHopliteSpearGunWeapon",
+    {
+      ItemType: "/Lotus/Types/Items/MiscItems/KahlCreds",
+      ItemCount: 60,
+      ProductCategory: "MiscItems",
+    },
+  ],
+  [
+    [
+      "/Lotus/Weapons/Grineer/ThrowingWeapons/GrnVorStickyBomb/GrnVorStickyBomb",
+      "/Lotus/Weapons/Grineer/Melee/GrnSharbola/GrnSharbolaWeapon",
+    ],
+    {
+      ItemType: "/Lotus/Types/Items/MiscItems/KahlCreds",
+      ItemCount: 30,
+      ProductCategory: "MiscItems",
+    },
+  ],
+  [
+    "/Lotus/Weapons/Tenno/LongGuns/PaxDuviricusShotgun/PaxDuviricusShotgun",
+    {
+      ItemType: "/Lotus/Types/Gameplay/Duviri/Resource/DuviriKullervoDropItem",
+      ItemCount: 30,
+      ProductCategory: "MiscItems",
+    },
+  ],
+  [
+    [
+      "/Lotus/Weapons/Tenno/ThrowingWeapons/TnOraxiaFlechette/TnOraxiaFlechette",
+      "/Lotus/Weapons/Tenno/Melee/Whips/SpiderWhip/SpiderWhipWeapon",
+      "/Lotus/Weapons/Tenno/Zariman/Melee/HeavyScythe/ZarimanHeavyScythe/ZarimanHeavyScytheWeapon",
+    ],
+    {
+      ItemType: "/Lotus/Types/Gameplay/DuviriMITW/Resources/DuviriMurmurItemB",
+      ItemCount: 96,
+      ProductCategory: "MiscItems",
+    },
+  ],
+];
 
 export type CraftRequirement = {
   name: string;
@@ -52,12 +110,11 @@ export class CraftList {
   iterIngredients(recipe: ExportRecipe): ExportRecipe["ingredients"] {
     const regularItems = [...recipe.ingredients];
 
-    if (DuviriWeapons.includes(recipe.resultType))
-      regularItems.push({
-        ItemType: "/Lotus/Types/Gameplay/Duviri/Resource/DuviriDragonDropItem",
-        ItemCount: 60,
-        ProductCategory: "MiscItems",
-      });
+    for (const [blueprints, dependencies] of ExtraBlueprintRequirements) {
+      const matches =
+        typeof blueprints === "string" ? blueprints == recipe.resultType : blueprints.includes(recipe.resultType);
+      if (matches) regularItems.push(dependencies);
+    }
 
     return regularItems;
   }

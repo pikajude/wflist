@@ -122,7 +122,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
         (weapon) =>
           !allVaulted.includes(weapon.uniqueName) &&
           isCategory(weapon, category.value) &&
-          (!options.value.hideCrafted || !masteredWeapons.value.get(weapon.uniqueName, false)),
+          !(options.value.hideCrafted && masteredWeapons.value.get(weapon.uniqueName, false)),
       )
       .map((w) => ({
         ...w,

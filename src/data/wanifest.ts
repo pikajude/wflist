@@ -39,7 +39,7 @@ type TypedExports = {
 
 type Exports = Record<Exclude<ExportCategory, keyof TypedExports>, object> & TypedExports;
 
-// apparently planet-specific rare items used to be craftable in exchange for a ridiculous quantity of common stuff
+// no longer craftable (and also we wouldn't want to anyway, the item costs are preposterous)
 export const ResourcesLegacyCraftable = [
   "/Lotus/Types/Items/MiscItems/Morphic",
   "/Lotus/Types/Items/MiscItems/Neurode",
@@ -53,22 +53,15 @@ export const ResourcesLegacyCraftable = [
   "/Lotus/Types/Items/RailjackMiscItems/GallosRailjackItem",
 ];
 
+// can be crafted one at a time via foundry but some players might not want to do that since you can get 3 from invasions
 export const InvasionResources = [
   "/Lotus/Types/Items/Research/BioComponent",
   "/Lotus/Types/Items/Research/ChemComponent",
   "/Lotus/Types/Items/Research/EnergyComponent",
 ];
 
+// blueprints for obtainable items that are no longer obtainable themselves
 export const BadRecipes = ["/Lotus/Types/Recipes/Weapons/CorpusHandcannonBlueprint"];
-
-export const DuviriWeapons = [
-  "/Lotus/Types/Friendly/PlayerControllable/Weapons/DuviriDualSwordsWeapon",
-  "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriTwoHandedKatana/DaxDuviriTwoHandedKatanaWeapon",
-  "/Lotus/Weapons/Tenno/Melee/Swords/DaxDuviriKatana/DaxDuviriKatanaWeapon",
-  "/Lotus/Weapons/Tenno/Melee/Polearms/DaxDuviriPolearm/DaxDuviriPolearmWeapon",
-  "/Lotus/Weapons/Tenno/Melee/Hammer/DaxDuviriHammer/DaxDuviriHammerWeapon",
-  "/Lotus/Weapons/Tenno/Melee/SwordsAndBoards/DaxDuviriMaceShieldWeapon",
-];
 
 export class Wanifest {
   exports = {} as Exports;
