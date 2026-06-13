@@ -26,7 +26,7 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
   const [bodyHeight, setBodyHeight] = useState(0);
 
   const styleOther =
-    isOpen.value && fixed ? { style: { top: `max(200px, calc(100% - ${bodyHeight + headerHeight}px))` } } : {};
+    isOpen.value && fixed ? { style: { top: `max(200px, calc(100% - ${bodyHeight + headerHeight}px - 2rem))` } } : {};
 
   return (
     <div
@@ -48,8 +48,8 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
           </button>
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: isOpen.value })}>
-          <div ref={(dom) => setBodyHeight(dom?.clientHeight ?? 0)}>
-            <div className={cx("accordion-body")}>
+          <div className={cx("accordion-body")}>
+            <div ref={(dom) => setBodyHeight(dom?.clientHeight ?? 0)}>
               <div className={cx("d-flex", "justify-content-between")}>
                 <Signalbox value={onlyMissing} label="Only show missing items" />
                 <button
@@ -61,7 +61,7 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
                   Clear inventory
                 </button>
               </div>
-              <table className={cx("table", "table-striped", "table-sm", "align-middle", "mb-0")}>
+              <table className={cx("table", "table-striped", "table-sm", "align-middle", { "mb-0": fixed })}>
                 <thead>
                   <tr>
                     <th>Name</th>
