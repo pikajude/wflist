@@ -3,8 +3,8 @@ import { useRoute } from "preact-iso";
 import { useContext } from "preact/hooks";
 import IngredientTable from "../components/IngredientTable";
 import IngredientTree from "../components/IngredientTree";
-import BrowserContext from "../components/weapons/BrowserContext";
-import BrowserNav from "../components/weapons/BrowserNav";
+import BrowserContext from "../components/items/BrowserContext";
+import BrowserNav from "../components/items/BrowserNav";
 import { useCraftList } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
@@ -38,7 +38,7 @@ export default function ViewItem() {
           </div>
         </div>
         <IngredientTable craftData={craftData} />
-        <div className={cx("mb-2")} />
+        <div className={cx("pt-2")} />
       </div>
     </>
   );

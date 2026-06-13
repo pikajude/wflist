@@ -3,9 +3,9 @@ import { For } from "@preact/signals/utils";
 import { useLocation } from "preact-iso";
 import { useContext } from "preact/hooks";
 import IngredientTable from "../components/IngredientTable";
-import BrowserContext, { createBrowserContext } from "../components/weapons/BrowserContext";
-import BrowserNav from "../components/weapons/BrowserNav";
-import WeaponCard from "../components/weapons/WeaponCard";
+import BrowserContext, { createBrowserContext } from "../components/items/BrowserContext";
+import BrowserNav from "../components/items/BrowserNav";
+import ItemCard from "../components/items/ItemCard";
 import { useCraftList } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
@@ -25,10 +25,8 @@ export default function Browse() {
     <BrowserContext value={vContext}>
       <BrowserNav />
       <div className={cx("container", "grid")}>
-        <div className={cx("fixed-bottom")} style={{ maxHeight: "75%" }}>
-          <IngredientTable isOpen={expanded} craftData={cd} fixed={true} />
-        </div>
-        <For each={weapons}>{(item) => <WeaponCard weapon={item} key={item.uniqueName} />}</For>
+        <IngredientTable isOpen={expanded} craftData={cd} fixed={true} />
+        <For each={weapons}>{(item) => <ItemCard item={item} key={item.uniqueName} />}</For>
       </div>
       <div className={cx("pt-4", "pb-5")} />
     </BrowserContext>

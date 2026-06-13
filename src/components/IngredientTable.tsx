@@ -23,7 +23,14 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
   });
 
   return (
-    <div className={cx("accordion", { "accordion-flush": fixed, "g-col-10": !fixed })}>
+    <div
+      className={cx("accordion", "ingredients-table", {
+        show: isOpen.value,
+        "fixed-bottom": fixed,
+        "accordion-flush": fixed,
+        "g-col-10": !fixed,
+      })}
+    >
       <div className={cx("accordion-item")}>
         <h2 className={cx("accordion-header")}>
           <button
@@ -35,10 +42,10 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
             })}
             onClick={() => (isOpen.value = !isOpen.value)}
           >
-            Ingredients
+            Ingredients ({lastIngredients.value.length})
           </button>
         </h2>
-        <div className={cx("accordion-collapse", "collapse", { show: isOpen.value })}>
+        <div className={cx("accordion-collapse", "collapse", { show: isOpen.value, "pt-5": isOpen.value })}>
           <div className={cx("accordion-body")}>
             <div className={cx("d-flex", "justify-content-between")}>
               <Signalbox value={onlyMissing} label="Only show missing items" />
