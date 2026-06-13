@@ -32,12 +32,13 @@ export default function ViewItem() {
     <>
       <BrowserNav />
       <div className={cx("container", "grid")}>
-        <div className={cx("card", "g-col-12")}>
+        <div className={cx("card", "g-col-10")}>
           <div className={cx("card-body")}>
             <IngredientTree list={craftData.craftList.value} showImages={img.value} />
           </div>
         </div>
         <IngredientTable craftData={craftData} />
+        <div className={cx("mb-2")} />
       </div>
     </>
   );

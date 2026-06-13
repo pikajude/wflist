@@ -18,14 +18,8 @@ export default function WeaponCard(
   const prettyName = weapon.archwing ? `[A] ${weapon.name}` : weapon.name;
 
   return (
-    <div
-      className={cx("card", {
-        "g-col-3": options.value.showImages,
-        "g-col-2": !options.value.showImages,
-      })}
-      {...rest}
-    >
-      <div className={cx("card-body")}>
+    <div className={cx("card", "g-col-2")} {...rest}>
+      <div className={cx("card-body", "weapon-card")}>
         {options.value.showImages ? (
           <>
             <a href={`/item${weapon.uniqueName}`}>
@@ -38,15 +32,19 @@ export default function WeaponCard(
             <a href={`/item${weapon.uniqueName}`}>{prettyName}</a>
           </div>
         )}
-        <form>
-          <Checkbox
-            initialValue={masteredWeapons.value.has(weapon.uniqueName)}
-            onChange={(e) => (masteredWeapons.value = masteredWeapons.value[e ? "add" : "remove"](weapon.uniqueName))}
-            name={`${weapon.uniqueName}_ma`}
-            label="Crafted"
-          />
-        </form>
       </div>
+      <ul className={cx("list-group", "list-group-flush")}>
+        <li className={cx("list-group-item")}>
+          <form>
+            <Checkbox
+              initialValue={masteredWeapons.value.has(weapon.uniqueName)}
+              onChange={(e) => (masteredWeapons.value = masteredWeapons.value[e ? "add" : "remove"](weapon.uniqueName))}
+              name={`${weapon.uniqueName}_ma`}
+              label="Crafted"
+            />
+          </form>
+        </li>
+      </ul>
     </div>
   );
 }

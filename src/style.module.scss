@@ -1,4 +1,11 @@
 @use "bootstrap" with (
   $enable-grid-classes: false,
-  $enable-cssgrid: true
+  $enable-cssgrid: true,
+  $grid-columns: 10,
+  $grid-gutter-width: 1rem
 );
+
+.weapon-card .form-check {
+  min-height: auto;
+  margin-bottom: 0;
+}

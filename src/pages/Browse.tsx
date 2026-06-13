@@ -25,9 +25,12 @@ export default function Browse() {
     <BrowserContext value={vContext}>
       <BrowserNav />
       <div className={cx("container", "grid")}>
-        <IngredientTable isOpen={expanded} craftData={cd} />
+        <div className={cx("fixed-bottom")} style={{ maxHeight: "75%" }}>
+          <IngredientTable isOpen={expanded} craftData={cd} fixed={true} />
+        </div>
         <For each={weapons}>{(item) => <WeaponCard weapon={item} key={item.uniqueName} />}</For>
       </div>
+      <div className={cx("pt-4", "pb-5")} />
     </BrowserContext>
   );
 }

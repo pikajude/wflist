@@ -6,11 +6,13 @@ import cx from "../style";
 import { HumanName, Texture } from "../util";
 import { Signalbox } from "./input";
 
-export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean> }) {
+export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean>; fixed?: boolean }) {
   let {
     craftData: { ingredientsFlat: ingredients },
     isOpen,
+    fixed,
   } = props;
+  fixed ??= false;
   const { ingredientsOwned } = useContext(AppState);
   const onlyMissing = useSignal(true);
   isOpen ??= signal(true);
@@ -21,11 +23,16 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
   });
 
   return (
-    <div className={cx("accordion", "g-col-12")}>
+    <div className={cx("accordion", { "accordion-flush": fixed, "g-col-10": !fixed })}>
       <div className={cx("accordion-item")}>
         <h2 className={cx("accordion-header")}>
           <button
-            className={cx("accordion-button", { collapsed: !isOpen.value })}
+            className={cx("accordion-button", {
+              collapsed: isOpen.value,
+              "border-top": fixed,
+              "border-bottom": fixed,
+              "shadow-none": fixed,
+            })}
             onClick={() => (isOpen.value = !isOpen.value)}
           >
             Ingredients
