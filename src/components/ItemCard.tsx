@@ -42,10 +42,9 @@ export default function ItemCard(
           id={id}
           autocomplete="off"
           checked={isMastered}
-          onChange={(e) => {
-            const newValue = e.currentTarget.checked;
-            craftedItems.value = craftedItems.value[newValue ? "add" : "remove"](item.uniqueName);
-          }}
+          onChange={(e) =>
+            (craftedItems.value = craftedItems.value[e.currentTarget.checked ? "add" : "remove"](item.uniqueName))
+          }
         />
         <label className={cx("btn", "btn-sm", "d-block", isMastered ? "btn-success" : "btn-secondary")} for={id}>
           {isMastered ? "Crafted" : "Missing"}

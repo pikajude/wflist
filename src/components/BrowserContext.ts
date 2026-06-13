@@ -28,10 +28,8 @@ export type BrowserOptions = {
 };
 
 export type TBrowserContext = {
-  weapons: ReadonlySignal<Array<ItemEx>>;
-
+  items: ReadonlySignal<Array<ItemEx>>;
   category: Signal<SelectedCategory>;
-
   options: Signal<BrowserOptions>;
 };
 
@@ -95,7 +93,7 @@ function isCategory(item: Item, categoryName: SelectedCategory): boolean {
 }
 
 export function createBrowserContext(appState: TState, location: LocationHook): TBrowserContext {
-  const { manifest, craftedItems: masteredWeapons } = appState;
+  const { manifest, craftedItems } = appState;
 
   const ws: Item[] = [
     ...manifest.exports["ExportWeapons"].filter((w) => !shouldExclude(w)),
@@ -125,7 +123,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
         (item) =>
           isCategory(item, category.value) &&
           !(options.value.hideVaulted && allVaulted.includes(item.uniqueName)) &&
-          !(options.value.hideCrafted && masteredWeapons.value.get(item.uniqueName, false)),
+          !(options.value.hideCrafted && craftedItems.value.get(item.uniqueName, false)),
       )
       .map((w) => ({
         ...w,
@@ -136,7 +134,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
   );
 
   return {
-    weapons,
+    items: weapons,
     category,
     options,
   };
@@ -144,7 +142,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 
 const BrowserContext = createContext<TBrowserContext>({
   category: signal(""),
-  weapons: signal([]),
+  items: signal([]),
   options: signal({
     showImages: true,
     hideVaulted: true,
