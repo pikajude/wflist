@@ -1,5 +1,5 @@
 import { signal, Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
-import { useContext } from "preact/hooks";
+import { useContext, useState } from "preact/hooks";
 import { CraftData, CraftRequirement } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
@@ -22,6 +22,12 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
     return ingredients.value.filter((v) => !v[1].toplevel && (!filt || v[1].quantityNeeded > 0));
   });
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [bodyHeight, setBodyHeight] = useState(0);
+
+  const styleOther =
+    isOpen.value && fixed ? { style: { top: `max(200px, calc(100% - ${bodyHeight + headerHeight}px))` } } : {};
+
   return (
     <div
       className={cx("accordion", "ingredients-table", {
@@ -30,9 +36,10 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
         "accordion-flush": fixed,
         "g-col-10": !fixed,
       })}
+      {...styleOther}
     >
       <div className={cx("accordion-item")}>
-        <h2 className={cx("accordion-header")}>
+        <h2 className={cx("accordion-header")} ref={(dom) => setHeaderHeight(dom?.clientHeight ?? 0)}>
           <button
             className={cx("accordion-button", { collapsed: isOpen.value })}
             onClick={() => (isOpen.value = !isOpen.value)}
@@ -41,38 +48,40 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
           </button>
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: isOpen.value })}>
-          <div className={cx("accordion-body")}>
-            <div className={cx("d-flex", "justify-content-between")}>
-              <Signalbox value={onlyMissing} label="Only show missing items" />
-              <button
-                className={cx("btn", "btn-sm", "btn-danger")}
-                onClick={() => {
-                  if (confirm("This operation cannot be undone!")) ingredientsOwned.value = {};
-                }}
-              >
-                Clear inventory
-              </button>
-            </div>
-            <table className={cx("table", "table-striped", "table-sm", "align-middle")}>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Total</th>
-                  <th>Missing</th>
-                  <th>Owned</th>
-                </tr>
-              </thead>
-              <tbody>
-                {lastIngredients.value.map(([uniqueName, req]) => (
-                  <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
-                ))}
-                {lastIngredients.value.length == 0 && (
+          <div ref={(dom) => setBodyHeight(dom?.clientHeight ?? 0)}>
+            <div className={cx("accordion-body")}>
+              <div className={cx("d-flex", "justify-content-between")}>
+                <Signalbox value={onlyMissing} label="Only show missing items" />
+                <button
+                  className={cx("btn", "btn-sm", "btn-danger")}
+                  onClick={() => {
+                    if (confirm("This operation cannot be undone!")) ingredientsOwned.value = {};
+                  }}
+                >
+                  Clear inventory
+                </button>
+              </div>
+              <table className={cx("table", "table-striped", "table-sm", "align-middle", "mb-0")}>
+                <thead>
                   <tr>
-                    <td colspan={4}>List complete!</td>
+                    <th>Name</th>
+                    <th>Total</th>
+                    <th>Missing</th>
+                    <th>Owned</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {lastIngredients.value.map(([uniqueName, req]) => (
+                    <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
+                  ))}
+                  {lastIngredients.value.length == 0 && (
+                    <tr>
+                      <td colspan={4}>List complete!</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>

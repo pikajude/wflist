@@ -20,30 +20,25 @@
     border-width: var(--bs-border-width) 0;
   }
 
-  &.show {
-    max-height: calc(100% - 220px);
+  &.show .accordion-item {
     height: 100%;
 
-    .accordion-item {
-      height: 100%;
+    .accordion-header {
+      position: relative;
+      z-index: 1030;
+    }
 
-      .accordion-header {
-        position: relative;
-        z-index: 1030;
-      }
+    .accordion-collapse {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding-top: bootstrap.$spacer * 3.25;
 
-      .accordion-collapse {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        padding-top: bootstrap.$spacer * 3;
-
-        .accordion-body {
-          max-height: 100%;
-          overflow-y: scroll;
-        }
+      .accordion-body {
+        max-height: 100%;
+        overflow-y: scroll;
       }
     }
   }
