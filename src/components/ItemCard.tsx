@@ -1,8 +1,8 @@
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
-import { AppState } from "../../data/state";
-import cx from "../../style";
-import { slugify, Texture } from "../../util";
+import { AppState } from "../data/state";
+import cx from "../style";
+import { slugify, Texture } from "../util";
 import BrowserContext, { ItemEx } from "./BrowserContext";
 
 export default function ItemCard(

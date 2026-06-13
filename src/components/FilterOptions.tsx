@@ -3,10 +3,10 @@ import { Show } from "@preact/signals/utils";
 import { Set } from "immutable";
 import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
-import { AppState } from "../../data/state";
-import cx from "../../style";
-import { Checkbox } from "../input";
+import { AppState } from "../data/state";
+import cx from "../style";
 import BrowserContext from "./BrowserContext";
+import { Checkbox } from "./input";
 
 export default function FilterOptions() {
   const { craftedItems: masteredWeapons, ingredientsOwned } = useContext(AppState);

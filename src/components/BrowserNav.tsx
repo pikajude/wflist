@@ -1,4 +1,4 @@
-import cx from "../../style";
+import cx from "../style";
 import FilterOptions from "./FilterOptions";
 import Tab from "./Tab";
 

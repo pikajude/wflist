@@ -1,5 +1,5 @@
 import { useContext } from "preact/hooks";
-import cx from "../../style";
+import cx from "../style";
 import BrowserContext, { SelectedCategory } from "./BrowserContext";
 
 export default function Tab(props: { label: SelectedCategory }) {
