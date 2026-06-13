@@ -5,42 +5,45 @@
   $grid-gutter-width: 1rem
 );
 
-.weapon-card {
-  .btn {
-    border-top-left-radius: 0;
-    border-top-right-radius: 0;
+.weapon-card .btn {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
 
-    margin: 0 -1px -1px;
+  margin: 0 -1px -1px;
+}
+
+.ingredients-table.fixed-bottom {
+  .accordion-button {
+    box-shadow: none;
+    border-style: var(--bs-border-style);
+    border-color: var(--bs-border-color);
+    border-width: var(--bs-border-width) 0;
   }
-}
 
-.weapon-card .form-check {
-  min-height: auto;
-  margin-bottom: 0;
-}
-
-.ingredients-table.fixed-bottom.show {
-  max-height: calc(100% - 220px);
-  height: 100%;
-
-  .accordion-item {
+  &.show {
+    max-height: calc(100% - 220px);
     height: 100%;
 
-    .accordion-header {
-      position: relative;
-      z-index: 1030;
-    }
+    .accordion-item {
+      height: 100%;
 
-    .accordion-collapse {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      .accordion-header {
+        position: relative;
+        z-index: 1030;
+      }
 
-      .accordion-body {
-        max-height: 100%;
-        overflow-y: scroll;
+      .accordion-collapse {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding-top: bootstrap.$spacer * 3;
+
+        .accordion-body {
+          max-height: 100%;
+          overflow-y: scroll;
+        }
       }
     }
   }

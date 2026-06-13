@@ -4,7 +4,7 @@ import { CraftData, CraftRequirement } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
 import { HumanName, Texture } from "../util";
-import { Signalbox } from "./input";
+import { Signalbox } from "./Checkbox";
 
 export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean>; fixed?: boolean }) {
   let {
@@ -34,18 +34,13 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
       <div className={cx("accordion-item")}>
         <h2 className={cx("accordion-header")}>
           <button
-            className={cx("accordion-button", {
-              collapsed: isOpen.value,
-              "border-top": fixed,
-              "border-bottom": fixed,
-              "shadow-none": fixed,
-            })}
+            className={cx("accordion-button", { collapsed: isOpen.value })}
             onClick={() => (isOpen.value = !isOpen.value)}
           >
             Ingredients ({lastIngredients.value.length})
           </button>
         </h2>
-        <div className={cx("accordion-collapse", "collapse", { show: isOpen.value, "pt-5": isOpen.value })}>
+        <div className={cx("accordion-collapse", "collapse", { show: isOpen.value })}>
           <div className={cx("accordion-body")}>
             <div className={cx("d-flex", "justify-content-between")}>
               <Signalbox value={onlyMissing} label="Only show missing items" />

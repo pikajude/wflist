@@ -6,7 +6,7 @@ import { usePopper } from "react-popper";
 import { AppState } from "../data/state";
 import cx from "../style";
 import BrowserContext from "./BrowserContext";
-import { Checkbox } from "./input";
+import { Checkbox } from "./Checkbox";
 
 export default function FilterOptions() {
   const { craftedItems: masteredWeapons, ingredientsOwned } = useContext(AppState);

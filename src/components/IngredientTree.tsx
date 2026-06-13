@@ -4,7 +4,7 @@ import { useContext } from "preact/hooks";
 import { CraftList } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
-import { HumanName } from "../util";
+import { humanName } from "../util";
 
 type Datum = string;
 
@@ -76,7 +76,7 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
                 fill="#eee"
                 fontSize="0.8rem"
               >
-                {HumanName(d.data)}
+                {humanName(d.data, manifest).replace("<ARCHWING> ", "[A] ")}
               </text>
             </a>
           ))}
