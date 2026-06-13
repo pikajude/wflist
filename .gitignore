@@ -24,3 +24,4 @@ dist-ssr
 *.sw?
 
 /export_full.json
+/src/style.module.scss.d.ts
