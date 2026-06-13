@@ -4,15 +4,15 @@ import { AppState } from "../../data/state";
 import cx from "../../style";
 import { Texture } from "../../util";
 import { Checkbox } from "../input";
-import BrowserContext, { WeaponEx } from "./BrowserContext";
+import BrowserContext, { ItemEx } from "./BrowserContext";
 
 export default function WeaponCard(
   props: {
-    weapon: WeaponEx;
+    weapon: ItemEx;
   } & HTMLAttributes<HTMLDivElement>,
 ) {
   const { weapon, ...rest } = props;
-  const { masteredWeapons } = useContext(AppState);
+  const { craftedItems: masteredWeapons } = useContext(AppState);
   const { options } = useContext(BrowserContext);
 
   const prettyName = weapon.archwing ? `[A] ${weapon.name}` : weapon.name;

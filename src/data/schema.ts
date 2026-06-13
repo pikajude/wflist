@@ -125,4 +125,5 @@ export type ExportSentinel = {
 export type ExportWarframe = {
   uniqueName: string;
   name: string;
+  productCategory: string;
 };

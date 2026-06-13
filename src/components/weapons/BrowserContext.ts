@@ -2,12 +2,13 @@ import { computed, ReadonlySignal, signal, Signal } from "@preact/signals";
 import { List, Map } from "immutable";
 import { createContext } from "preact";
 import { LocationHook } from "preact-iso";
-import { ExportWeapon } from "../../data/schema";
+import { ExportWarframe, ExportWeapon } from "../../data/schema";
 import { TState } from "../../data/state";
 import allVaulted from "../../data/vaulted.json";
 import { stored } from "../../util";
 
 const categoryMap = {
+  Warframe: ["Suits", "SpaceSuits"],
   Primary: ["LongGuns", "OperatorAmps", "SentinelWeapons", "SpaceGuns"],
   Secondary: ["Pistols"],
   Melee: ["Melee", "SpaceMelee"],
@@ -16,16 +17,18 @@ const categoryMap = {
 
 export type SelectedCategory = keyof typeof categoryMap | "";
 
-export type WeaponEx = ExportWeapon & { archwing: boolean };
+type Item = ExportWeapon | ExportWarframe;
+export type ItemEx = Item & { archwing: boolean };
 
 export type BrowserOptions = {
   showImages: boolean;
   hideCrafted: boolean;
+  hideVaulted: boolean;
   useInvasions: boolean;
 };
 
 export type TBrowserContext = {
-  weapons: ReadonlySignal<Array<WeaponEx>>;
+  weapons: ReadonlySignal<Array<ItemEx>>;
 
   category: Signal<SelectedCategory>;
 
@@ -70,38 +73,37 @@ const excludedWeapons = [
 const shouldExclude = (weapon: ExportWeapon) =>
   excludedWeapons.some((p) => (typeof p == "string" ? weapon.uniqueName.startsWith(p) : weapon.uniqueName.match(p)));
 
-function isCategory(weapon: ExportWeapon, categoryName: SelectedCategory): boolean {
+function isCategory(item: Item, categoryName: SelectedCategory): boolean {
   if (categoryName == "") return true;
 
   const categories = categoryMap[categoryName] as string[];
 
   if (categories.length == 0) return true;
 
-  if (weapon.uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee")) return categories.includes("Melee");
+  if (item.uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee")) return categories.includes("Melee");
 
-  if (
-    weapon.uniqueName.startsWith("/Lotus/Weapons/Infested/Pistols/InfKitGun") ||
-    weapon.uniqueName.includes("SUModular")
-  )
+  if (item.uniqueName.startsWith("/Lotus/Weapons/Infested/Pistols/InfKitGun") || item.uniqueName.includes("SUModular"))
     return categories.some((c) => c == "LongGuns" || c == "Pistols");
 
   if (
-    weapon.uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers") ||
-    weapon.uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers")
+    item.uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers") ||
+    item.uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers")
   )
     return categories.includes("OperatorAmps");
 
-  return categories.includes(weapon.productCategory);
+  return categories.includes(item.productCategory);
 }
 
 export function createBrowserContext(appState: TState, location: LocationHook): TBrowserContext {
-  const { manifest, masteredWeapons } = appState;
-  // dedup weapons. the export contains 3 identical copies of Mausolon. cause why not
-  const allWeapons = signal(
-    List(
-      Map(manifest.exports["ExportWeapons"].filter((w) => !shouldExclude(w)).map((w) => [w.uniqueName, w])).values(),
-    ),
-  );
+  const { manifest, craftedItems: masteredWeapons } = appState;
+
+  const ws: Item[] = [
+    ...manifest.exports["ExportWeapons"].filter((w) => !shouldExclude(w)),
+    ...manifest.exports["ExportWarframes"],
+  ];
+
+  // dedup items. the export contains 3 identical copies of Mausolon. cause why not
+  const allItems = signal(List(Map(ws.map((w) => [w.uniqueName, w])).values()));
 
   const { query } = location;
   const initialWanted = query["category"] ?? "All";
@@ -112,17 +114,18 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
   const options = stored<BrowserOptions>("wfListFilters", {
     showImages: true,
     hideCrafted: true,
+    hideVaulted: true,
     useInvasions: true,
   });
 
   const weapons = computed(() =>
-    allWeapons.value
+    allItems.value
       .toArray()
       .filter(
-        (weapon) =>
-          !allVaulted.includes(weapon.uniqueName) &&
-          isCategory(weapon, category.value) &&
-          !(options.value.hideCrafted && masteredWeapons.value.get(weapon.uniqueName, false)),
+        (item) =>
+          isCategory(item, category.value) &&
+          !(options.value.hideVaulted && allVaulted.includes(item.uniqueName)) &&
+          !(options.value.hideCrafted && masteredWeapons.value.get(item.uniqueName, false)),
       )
       .map((w) => ({
         ...w,
@@ -144,6 +147,7 @@ const BrowserContext = createContext<TBrowserContext>({
   weapons: signal([]),
   options: signal({
     showImages: true,
+    hideVaulted: true,
     hideCrafted: true,
     useInvasions: true,
   }),

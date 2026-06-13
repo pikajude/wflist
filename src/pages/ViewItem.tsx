@@ -17,9 +17,12 @@ export default function ViewItem() {
   const img = useComputed(() => opts.options.value.showImages);
 
   const path = rte.params["path"];
-  const isKey = path.startsWith("Lotus/");
 
-  const item = manifest.exports["ExportWeapons"].find((w) => (isKey ? w.uniqueName.slice(1) == path : w.name == path));
+  const key = manifest.getKey(path.startsWith("Lotus/") ? `/${path}` : path);
+
+  const item =
+    manifest.exports["ExportWeapons"].find((w) => w.uniqueName == key) ??
+    manifest.exports["ExportWarframes"].find((w) => w.uniqueName == key);
 
   const craftData = useCraftList(signal(item == null ? [] : [item.uniqueName]), inv);
 

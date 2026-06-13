@@ -107,6 +107,7 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
             className={cx("form-control")}
             value={quantity.value}
             min={0}
+            disabled={uniqueName == "/Lotus/Types/Items/MiscItems/ArgonCrystal"}
             onChange={(evt) => {
               let newQ = evt.currentTarget.valueAsNumber;
               if (isNaN(newQ)) newQ = 0;

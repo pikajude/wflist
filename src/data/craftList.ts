@@ -95,15 +95,13 @@ export class CraftList {
     // iterate top down
     for (const key of toposort(this._edges)) {
       // if we run into a key that's already present, that means all of this item's dependents have been processed already, so this quantity is the final needed for the top-level list
-      // so now we can safely round it up to the nearest batch size (though the rounding is only applied to the descendants, otherwise you get weird stuff like Exceptional Sentient Core requiring 3 Heart Nyth instead of 1)
       if (allItems[key] != null) {
         const { recipe } = allItems[key];
-        // subtract owned items
         allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key] ?? 0));
         const output = recipe?.num ?? 1;
-        const batchSize = Math.ceil(allItems[key].quantityNeeded / output) * output;
+        const batchesNeeded = Math.ceil(allItems[key].quantityNeeded / output);
         for (const { ItemType, ItemCount } of this.iterIngredients(key)) {
-          addOrInsert(ItemType, (ItemCount * batchSize) / output);
+          addOrInsert(ItemType, ItemCount * batchesNeeded);
         }
       } else {
         addOrInsert(key, 1);

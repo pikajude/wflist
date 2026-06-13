@@ -37,7 +37,7 @@ type TypedExports = {
   ExportWarframes: ExportWarframe[];
 };
 
-type Exports = Record<Exclude<ExportCategory, keyof TypedExports>, object> & TypedExports;
+type Exports = Record<Exclude<ExportCategory, keyof TypedExports>, unknown> & TypedExports;
 
 // no longer craftable (and also we wouldn't want to anyway, the item costs are preposterous)
 export const ResourcesLegacyCraftable = [
@@ -103,10 +103,9 @@ export class Wanifest {
       self.exports = { ...self.exports, ...obj };
     }
 
-    for (const { uniqueName, textureLocation } of self.exports["Manifest"]) {
-      self.textures[uniqueName] = textureLocation;
-    }
+    for (const { uniqueName, textureLocation } of self.exports["Manifest"]) self.textures[uniqueName] = textureLocation;
 
+    self.addNames(self.exports["ExportWarframes"]);
     self.addNames(self.exports["ExportWeapons"]);
     self.addNames(self.exports["ExportResources"]);
     self.addNames(self.exports["ExportGear"]);
@@ -114,17 +113,17 @@ export class Wanifest {
     return self;
   }
 
-  addNames = (objects: { uniqueName: string; name: string }[]) => {
+  private addNames(objects: { uniqueName: string; name: string }[]) {
     for (const { uniqueName, name } of objects) this.addName(uniqueName, name);
-  };
+  }
 
-  addName = (uniqueName: string, humanName: string) => {
+  private addName(uniqueName: string, humanName: string) {
     if (humanName.length == 0) return;
     this.names[uniqueName] = humanName;
     if (humanName in this.nameKeys)
       console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
     else this.nameKeys[humanName] = uniqueName;
-  };
+  }
 
   static async getExportText(filename: string) {
     const existing = await localforage.getItem<string>(filename);

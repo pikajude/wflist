@@ -7,8 +7,7 @@ import { Wanifest } from "./wanifest";
 export type TState = {
   manifest: Wanifest;
 
-  masteredWeapons: Signal<Set<string>>;
-
+  craftedItems: Signal<Set<string>>;
   ingredientsOwned: Signal<Inventory>;
 };
 
@@ -18,7 +17,7 @@ export async function createAppState(): Promise<TState> {
   const manifest = await Wanifest.create();
 
   const masteredWeapons = storedWith<Set<string>>(
-    "wfListMastered",
+    "wfListCrafted",
     (v) => Set(v == null ? [] : (JSON.parse(v) as string[])),
     (m) => JSON.stringify(m.toArray()),
   );
@@ -27,7 +26,7 @@ export async function createAppState(): Promise<TState> {
 
   return {
     manifest,
-    masteredWeapons,
+    craftedItems: masteredWeapons,
     ingredientsOwned,
   };
 }

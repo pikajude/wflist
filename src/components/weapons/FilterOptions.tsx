@@ -9,7 +9,7 @@ import { Checkbox } from "../input";
 import BrowserContext from "./BrowserContext";
 
 export default function FilterOptions() {
-  const { masteredWeapons, ingredientsOwned } = useContext(AppState);
+  const { craftedItems: masteredWeapons, ingredientsOwned } = useContext(AppState);
   const { options } = useContext(BrowserContext);
 
   const visible = useSignal(false);
@@ -55,7 +55,12 @@ export default function FilterOptions() {
             <Checkbox
               initialValue={options.value.hideCrafted}
               onChange={(e) => (options.value = { ...options.value, hideCrafted: e })}
-              label="Hide already crafted weapons"
+              label="Hide already crafted items"
+            />
+            <Checkbox
+              initialValue={options.value.hideVaulted}
+              onChange={(e) => (options.value = { ...options.value, hideVaulted: e })}
+              label="Hide vaulted items"
             />
             <hr />
             <div className={cx("mb-2")}>
