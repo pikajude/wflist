@@ -5,11 +5,21 @@
   $grid-gutter-width: 1rem
 );
 
+@use "@fortawesome/fontawesome-free/scss/variables" with (
+  $font-path: "/node_modules/@fortawesome/fontawesome-free/webfonts"
+);
+@use "@fortawesome/fontawesome-free";
+@use "@fortawesome/fontawesome-free/scss/solid.scss";
+
 .weapon-card .btn {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
 
   margin: 0 -1px -1px;
+}
+
+svg a[href] text {
+  text-decoration: underline;
 }
 
 .ingredients-table.fixed-bottom {

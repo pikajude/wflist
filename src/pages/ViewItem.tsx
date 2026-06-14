@@ -1,6 +1,6 @@
-import { signal, useComputed } from "@preact/signals";
+import { useComputed, useSignal } from "@preact/signals";
 import { useRoute } from "preact-iso";
-import { useContext } from "preact/hooks";
+import { useContext, useEffect } from "preact/hooks";
 import BrowserContext from "../components/BrowserContext";
 import BrowserNav from "../components/BrowserNav";
 import IngredientTable from "../components/IngredientTable";
@@ -16,29 +16,39 @@ export default function ViewItem() {
   const inv = useComputed(() => opts.options.value.useInvasions);
   const img = useComputed(() => opts.options.value.showImages);
 
-  const path = rte.params["path"];
+  const items = useSignal<string[]>([]);
 
-  const key = manifest.getKey(path.startsWith("Lotus/") ? `/${path}` : path);
+  // TODO: why can't we just usesignal here?
+  useEffect(() => {
+    const path = rte.params["path"];
+    const key = manifest.getKey(path.startsWith("Lotus/") ? `/${path}` : path);
+    const item =
+      manifest.exports["ExportWeapons"].find((w) => w.uniqueName == key) ??
+      manifest.exports["ExportWarframes"].find((w) => w.uniqueName == key);
+    items.value = item == null ? [] : [item.uniqueName];
+  }, [items, manifest, rte.params]);
 
-  const item =
-    manifest.exports["ExportWeapons"].find((w) => w.uniqueName == key) ??
-    manifest.exports["ExportWarframes"].find((w) => w.uniqueName == key);
-
-  const craftData = useCraftList(signal(item == null ? [] : [item.uniqueName]), inv);
-
-  if (item == null) return <div>Unknown item</div>;
+  const craftData = useCraftList(items, inv);
 
   return (
     <>
       <BrowserNav />
       <div className={cx("container", "grid")}>
-        <div className={cx("card", "g-col-10")}>
-          <div className={cx("card-body")}>
-            <IngredientTree list={craftData.craftList.value} showImages={img.value} />
+        {items.value.length == 0 ? (
+          <div className={cx("card", "g-col-10")}>
+            <div className={cx("card-body")}>Unknown item.</div>
           </div>
-        </div>
-        <IngredientTable craftData={craftData} />
-        <div className={cx("pt-2")} />
+        ) : (
+          <>
+            <div className={cx("card", "g-col-10")}>
+              <div className={cx("card-body")}>
+                <IngredientTree list={craftData.craftList.value} showImages={img.value} />
+              </div>
+            </div>
+            <IngredientTable craftData={craftData} />
+            <div className={cx("pt-2")} />
+          </>
+        )}
       </div>
     </>
   );

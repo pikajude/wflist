@@ -1,5 +1,4 @@
 import { ReadonlySignal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
-import { Set } from "immutable";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
 import { humanName, sortWith } from "../util";
@@ -10,6 +9,7 @@ import { Wanifest } from "./wanifest";
 
 export type CraftRequirement = {
   name: string;
+  dependents: Set<string>;
   quantityTotal: number;
   quantityNeeded: number;
   batchSize: number;
@@ -33,13 +33,11 @@ export class CraftList {
   }
 
   getRecipe(uniqueName: string) {
-    if (uniqueName in this.recipes) return this.recipes[uniqueName];
-
-    return (this.recipes[uniqueName] = this.manifest.findRecipe(uniqueName, this.includeResearchComponents));
+    return (this.recipes[uniqueName] ??= this.manifest.findRecipe(uniqueName, this.includeResearchComponents));
   }
 
   add(uniqueName: string, toplevel: boolean = true) {
-    if (toplevel) this._edges.push(["<root>", uniqueName]);
+    if (toplevel) this._edges.push(["_root", uniqueName]);
 
     for (const { ItemType } of this.iterIngredients(uniqueName)) {
       this._edges.push([uniqueName, ItemType]);
@@ -70,48 +68,44 @@ export class CraftList {
   }
 
   flattened(ownedItems: Record<string, number>) {
-    const allItems: Record<string, CraftRequirement & { recipe: ExportRecipe }> = {};
+    const allItems: Record<string, CraftRequirement> = {};
 
-    const roots = Set(this._edges.filter((e) => e[0] == "<root>").map((e) => e[1]));
-
-    const addOrInsert = (key: string, quantity: number) => {
-      if (key in allItems) {
-        allItems[key].quantityTotal += quantity;
-        allItems[key].quantityNeeded += quantity;
-        return;
-      }
-
-      const recipe = this.getRecipe(key);
-      return (allItems[key] = {
+    const addOrInsert = (key: string, quantity: number, toplevel: boolean, parent?: string) => {
+      allItems[key] ??= {
         name: humanName(key, this.manifest),
-        toplevel: roots.includes(key),
-        quantityNeeded: quantity,
-        quantityTotal: quantity,
-        batchSize: recipe?.num ?? 1,
-        recipe: recipe!,
-      });
+        dependents: new Set(),
+        toplevel: true,
+        quantityNeeded: 0,
+        quantityTotal: 0,
+        batchSize: this.getRecipe(key)?.num ?? 1,
+      };
+
+      if (parent != null && parent != "_root") allItems[key].dependents.add(parent);
+      allItems[key].quantityTotal += quantity;
+      allItems[key].quantityNeeded += quantity;
+      allItems[key].toplevel = toplevel;
+
+      return allItems[key];
     };
 
     // iterate top down
     for (const key of toposort(this._edges)) {
       // if we run into a key that's already present, that means all of this item's dependents have been processed already, so this quantity is the final needed for the top-level list
       if (allItems[key] != null) {
-        const { recipe } = allItems[key];
         allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key] ?? 0));
-        const output = recipe?.num ?? 1;
-        const batchesNeeded = Math.ceil(allItems[key].quantityNeeded / output);
+        const craftsNeeded = Math.ceil(allItems[key].quantityNeeded / allItems[key].batchSize);
         for (const { ItemType, ItemCount } of this.iterIngredients(key)) {
-          addOrInsert(ItemType, ItemCount * batchesNeeded);
+          addOrInsert(ItemType, ItemCount * craftsNeeded, false, key);
         }
       } else {
-        addOrInsert(key, 1);
+        addOrInsert(key, 1, true);
         for (const { ItemType, ItemCount } of this.iterIngredients(key)) {
-          addOrInsert(ItemType, ItemCount);
+          addOrInsert(ItemType, ItemCount, false, key);
         }
       }
     }
 
-    delete allItems["<root>"];
+    delete allItems["_root"];
 
     const paired = Object.entries(allItems);
     return sortWith(paired, CraftList.sortKey);

@@ -20,7 +20,7 @@ export function HumanName(id: string) {
   return <>{humanName(id, manifest)}</>;
 }
 
-export const humanName = (id: string, manifest: Wanifest) => manifest.names[id];
+export const humanName = (id: string, manifest: Wanifest) => (manifest.names[id] ?? "").replace("<ARCHWING>", "[A]");
 
 export function storedWith<T>(key: string, fromRaw: (k: string | null) => T, toRaw: (v: T) => string): Signal<T> {
   const underlying = signal<T>(fromRaw(localStorage.getItem(key)));

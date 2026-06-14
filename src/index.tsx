@@ -8,6 +8,8 @@ import Browse from "./pages/Browse.js";
 import ViewItem from "./pages/ViewItem.js";
 import "./style.module.scss";
 
+import "@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2";
+
 function App() {
   const [appState, setAppState] = useState<Lazy<TState>>(pending());
 
@@ -20,15 +22,15 @@ function App() {
   return (
     <Deferred value={appState}>
       {(arg) => (
-        <AppState.Provider value={arg}>
-          <LocationProvider>
+        <LocationProvider>
+          <AppState.Provider value={arg}>
             <Router>
               <Route path="/" component={Browse} />
               <Route path="/item/:path*" component={ViewItem} />
               <Route default component={NotFound} />
             </Router>
-          </LocationProvider>
-        </AppState.Provider>
+          </AppState.Provider>
+        </LocationProvider>
       )}
     </Deferred>
   );

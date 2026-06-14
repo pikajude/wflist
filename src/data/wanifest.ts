@@ -67,7 +67,8 @@ export class Wanifest {
   exports = {} as Exports;
   textures: { [name: string]: string } = {};
   names: { [uniqueName: string]: string } = {};
-  nameKeys: { [name: string]: string } = {};
+  private nameKeys: { [name: string]: string } = {};
+  private craftedItems: Set<string> = new Set();
 
   private constructor() {}
 
@@ -84,7 +85,13 @@ export class Wanifest {
     return nameOrKey;
   }
 
-  imageUrl = (name: string) => `http://content.warframe.com/PublicExport/${this.textures[name]}`;
+  imageUrl(name: string) {
+    return `http://content.warframe.com/PublicExport/${this.textures[name]}`;
+  }
+
+  isCrafted(name: string) {
+    return this.craftedItems.has(name);
+  }
 
   static async create() {
     const url = "https://origin.warframe.com/PublicExport/index_en.txt.lzma";
@@ -105,24 +112,27 @@ export class Wanifest {
 
     for (const { uniqueName, textureLocation } of self.exports["Manifest"]) self.textures[uniqueName] = textureLocation;
 
-    self.addNames(self.exports["ExportWarframes"]);
-    self.addNames(self.exports["ExportWeapons"]);
+    self.addNames(self.exports["ExportWarframes"], true);
+    self.addNames(self.exports["ExportWeapons"], true);
     self.addNames(self.exports["ExportResources"]);
     self.addNames(self.exports["ExportGear"]);
 
     return self;
   }
 
-  private addNames(objects: { uniqueName: string; name: string }[]) {
-    for (const { uniqueName, name } of objects) this.addName(uniqueName, name);
+  private addNames(objects: { uniqueName: string; name: string }[], crafted = false) {
+    for (const { uniqueName, name } of objects) {
+      if (crafted) this.craftedItems.add(uniqueName);
+      this.addName(uniqueName, name);
+    }
   }
 
   private addName(uniqueName: string, humanName: string) {
     if (humanName.length == 0) return;
     this.names[uniqueName] = humanName;
-    if (humanName in this.nameKeys)
-      console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
-    else this.nameKeys[humanName] = uniqueName;
+    if (humanName in this.nameKeys) {
+      // console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
+    } else this.nameKeys[humanName] = uniqueName;
   }
 
   static async getExportText(filename: string) {

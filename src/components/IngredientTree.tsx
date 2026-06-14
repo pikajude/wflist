@@ -1,5 +1,7 @@
 import { curveBumpX, hierarchy, HierarchyLink, HierarchyNode, link, tree } from "d3";
 import { Set } from "immutable";
+import { AnchorHTMLAttributes } from "preact";
+import { useLocation } from "preact-iso";
 import { useContext } from "preact/hooks";
 import { CraftList } from "../data/craftList";
 import { AppState } from "../data/state";
@@ -11,6 +13,7 @@ type Datum = string;
 export default function IngredientTree(props: { list: CraftList; showImages?: boolean }) {
   const { manifest } = useContext(AppState);
   const showImages = props.showImages ?? true;
+  const { route } = useLocation();
 
   const tree2: Record<string, string[]> = {};
 
@@ -63,23 +66,37 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
           ))}
         </g>
         <g>
-          {desc.map((d, i) => (
-            <a key={i} style={{ textDecoration: "none" }} {...{ transform: `translate(${d.y},${d.x})` }}>
-              <circle fill="#ccc" r="3" />
-              {showImages && <image href={manifest.imageUrl(d.data)} width={32} x={d.children ? -36 : 4} y={-16} />}
-              <text
-                dy="0.32em"
-                paint-order="stroke"
-                stroke-width={6}
-                x={(showImages ? 38 : 6) * (d.children ? -1 : 1)}
-                text-anchor={d.children ? "end" : "start"}
-                fill="#eee"
-                fontSize="1.2rem"
-              >
-                {humanName(d.data, manifest).replace("<ARCHWING> ", "[A] ")}
-              </text>
-            </a>
-          ))}
+          {desc.map((d, i) => {
+            const name = humanName(d.data, manifest);
+
+            const href: AnchorHTMLAttributes = manifest.isCrafted(d.data)
+              ? {
+                  href: `/item/${name}`,
+                  onClick: (e) => {
+                    e.preventDefault();
+                    route(`/item/${name}`);
+                  },
+                }
+              : {};
+
+            return (
+              <a key={i} {...href} {...{ transform: `translate(${d.y},${d.x})` }}>
+                <circle fill="#ccc" r="3" />
+                {showImages && <image href={manifest.imageUrl(d.data)} width={32} x={d.children ? -36 : 4} y={-16} />}
+                <text
+                  dy="0.32em"
+                  paint-order="stroke"
+                  stroke-width={6}
+                  x={(showImages ? 38 : 6) * (d.children ? -1 : 1)}
+                  text-anchor={d.children ? "end" : "start"}
+                  fill="#eee"
+                  fontSize="1.2rem"
+                >
+                  {name.replace("<ARCHWING> ", "[A] ")}
+                </text>
+              </a>
+            );
+          })}
         </g>
       </svg>
     </div>

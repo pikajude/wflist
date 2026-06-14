@@ -16,17 +16,8 @@ export default function FilterOptions() {
 
   const [refEl, setRefEl] = useState<HTMLAnchorElement | null>(null);
   const [popEl, setPopEl] = useState<HTMLDivElement | null>(null);
-  const [arrowEl, setArrowEl] = useState<HTMLDivElement | null>(null);
 
-  const { styles, attributes } = usePopper(refEl, popEl, {
-    placement: "bottom-end",
-    modifiers: [
-      {
-        name: "arrow",
-        options: { element: arrowEl },
-      },
-    ],
-  });
+  const { styles, attributes } = usePopper(refEl, popEl, { placement: "bottom-end" });
 
   return (
     <div className={cx("nav-item", visible.value ? "dropup" : "dropdown")} style={{ marginLeft: "auto" }}>
@@ -40,7 +31,12 @@ export default function FilterOptions() {
       </a>
 
       <Show when={visible}>
-        <div ref={setPopEl} className={cx("dropdown-menu", "show")} style={styles.popper} {...attributes.popper}>
+        <div
+          ref={setPopEl}
+          className={cx("dropdown-menu", "tooltip", "bs-tooltip-bottom", "show")}
+          style={styles.popper}
+          {...attributes.popper}
+        >
           <form className={cx("px-3", "py-2")} style={{ width: "400px" }}>
             <Checkbox
               initialValue={options.value.useInvasions}
@@ -86,8 +82,6 @@ export default function FilterOptions() {
               </button>
             </div>
           </form>
-
-          <div ref={setArrowEl} style={styles.arrow} />
         </div>
       </Show>
     </div>

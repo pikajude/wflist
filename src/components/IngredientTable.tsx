@@ -1,9 +1,11 @@
 import { signal, Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import { Show } from "@preact/signals/utils";
 import { useContext, useState } from "preact/hooks";
+import { usePopper } from "react-popper";
 import { CraftData, CraftRequirement } from "../data/craftList";
 import { AppState } from "../data/state";
 import cx from "../style";
-import { HumanName, Texture } from "../util";
+import { humanName, HumanName, Texture } from "../util";
 import { Signalbox } from "./Checkbox";
 
 export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean>; fixed?: boolean }) {
@@ -90,6 +92,7 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
 }
 
 export function IngredientRow({ uniqueName, requirement }: { uniqueName: string; requirement: CraftRequirement }) {
+  const { manifest } = useContext(AppState);
   const faded = requirement.quantityNeeded == 0;
   const fadedClass = cx({ "text-secondary": faded, "text-decoration-line-through": faded });
 
@@ -103,10 +106,36 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
     if (ing[uniqueName] != q) ingredientsOwned.value = { ...ing, [uniqueName]: q };
   });
 
+  const [refEl, setRefEl] = useState<HTMLElement | null>(null);
+  const [popEl, setPopEl] = useState<HTMLSpanElement | null>(null);
+
+  const popped = useSignal(false);
+  const { styles, attributes } = usePopper(refEl, popEl, { placement: "top" });
+
   return (
     <tr>
       <td>
-        <Texture id={uniqueName} width="24px" /> <span className={fadedClass}>{HumanName(uniqueName)}</span>
+        <Texture id={uniqueName} width="24px" /> <span className={fadedClass}>{HumanName(uniqueName)}</span>{" "}
+        <i
+          className={cx("fa-solid", "fa-sitemap")}
+          ref={setRefEl}
+          onMouseOver={() => (popped.value = true)}
+          onMouseOut={() => (popped.value = false)}
+        />
+        <Show when={popped}>
+          <div
+            className={cx("tooltip", "bs-tooltip-top", "show")}
+            ref={setPopEl}
+            style={styles.popper}
+            {...attributes.popper}
+          >
+            <div className={cx("tooltip-inner")}>
+              {Array.from(requirement.dependents.entries())
+                .map((e) => humanName(e[0], manifest))
+                .join(", ")}
+            </div>
+          </div>
+        </Show>
       </td>
       <td>
         <span className={fadedClass}>
