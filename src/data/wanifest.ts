@@ -116,6 +116,11 @@ export class Wanifest {
     self.addNames(self.exports["ExportWeapons"], true);
     self.addNames(self.exports["ExportResources"]);
     self.addNames(self.exports["ExportGear"]);
+    for (const { uniqueName, resultType } of self.exports["ExportRecipes"]) {
+      const bpn = `${self.names[resultType]} Blueprint`;
+      self.names[uniqueName] = bpn;
+      self.nameKeys[bpn] = uniqueName;
+    }
 
     return self;
   }

@@ -53,8 +53,8 @@ export class CraftList {
       for (const [bps, quantity] of BlueprintExchange[dep]) {
         const matches =
           typeof bps === "string"
-            ? this.manifest.getKey(bps) == uniqueName
-            : bps.some((b) => this.manifest.getKey(b) == uniqueName);
+            ? this.manifest.getKey(`${bps} Blueprint`) == uniqueName
+            : bps.some((b) => this.manifest.getKey(`${b} Blueprint`) == uniqueName);
         if (matches)
           regularItems.push({
             ItemType: this.manifest.getKey(dep),
@@ -64,13 +64,22 @@ export class CraftList {
       }
     }
 
+    if (recipe != null && recipe.consumeOnUse)
+      regularItems.push({
+        ItemType: recipe.uniqueName,
+        ItemCount: 1,
+        ProductCategory: "Items",
+      });
+
     return regularItems;
   }
 
   flattened(ownedItems: Record<string, number>) {
     const allItems: Record<string, CraftRequirement> = {};
 
-    const addOrInsert = (key: string, quantity: number, toplevel: boolean, parent?: string) => {
+    const addOrInsert = (item: ExportRecipe["ingredients"][0], toplevel: boolean, parent?: string) => {
+      const { ItemType: key, ItemCount: quantity } = item;
+
       allItems[key] ??= {
         name: humanName(key, this.manifest),
         dependents: new Set(),
@@ -94,13 +103,13 @@ export class CraftList {
       if (allItems[key] != null) {
         allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key] ?? 0));
         const craftsNeeded = Math.ceil(allItems[key].quantityNeeded / allItems[key].batchSize);
-        for (const { ItemType, ItemCount } of this.iterIngredients(key)) {
-          addOrInsert(ItemType, ItemCount * craftsNeeded, false, key);
+        for (const item of this.iterIngredients(key)) {
+          addOrInsert({ ...item, ItemCount: item.ItemCount * craftsNeeded }, false, key);
         }
       } else {
-        addOrInsert(key, 1, true);
-        for (const { ItemType, ItemCount } of this.iterIngredients(key)) {
-          addOrInsert(ItemType, ItemCount, false, key);
+        addOrInsert({ ItemType: key, ItemCount: 1, ProductCategory: "Items" }, true);
+        for (const item of this.iterIngredients(key)) {
+          addOrInsert(item, false, key);
         }
       }
     }
@@ -116,6 +125,7 @@ export class CraftList {
   static categorize = (a: string) => {
     if (a.startsWith("/Lotus/Types/Items/Gems")) return 0;
     if (a.startsWith("/Lotus/Types/Items/MiscItems") || a.startsWith("/Lotus/Types/Items/Research")) return 1;
+    if (a.endsWith("Blueprint")) return 150;
 
     if (a.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts")) return 100;
     if (a.startsWith("/Lotus/Weapons")) return 200;
