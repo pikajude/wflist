@@ -2,7 +2,7 @@ import { useComputed, useSignal } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
 import { Set } from "immutable";
 import { useCallback, useContext } from "preact/hooks";
-import { Brace, Grip, Link, Loader, Scaffold, ZGrip } from "../data/modular";
+import { Brace, Grip, Jet, Link, Loader, Nose, Reactor, Scaffold, ZGrip } from "../data/modular";
 import { AppState } from "../data/state";
 import cx from "../style";
 import BrowserContext from "./BrowserContext";
@@ -90,6 +90,32 @@ function OptionsForm() {
             selected={options.value.modular.ampScaffold}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, ampScaffold: x } };
+            }}
+          />
+        </div>
+      </div>
+      <div className={cx("mb-3")}>
+        <label className={cx("form-label")}>K-Drive components</label>
+        <div className={cx("input-group", "input-group-sm")}>
+          <Selector
+            options={Nose}
+            selected={options.value.modular.boardNose}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, boardNose: x } };
+            }}
+          />
+          <Selector
+            options={Jet}
+            selected={options.value.modular.boardJet}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, boardJet: x } };
+            }}
+          />
+          <Selector
+            options={Reactor}
+            selected={options.value.modular.boardReactor}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, boardReactor: x } };
             }}
           />
         </div>

@@ -1,6 +1,7 @@
 import { effect, signal, Signal, useSignal, useSignalEffect } from "@preact/signals";
 import { ImgHTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
+import * as z from "zod";
 import { AppState } from "./data/state";
 import { Wanifest } from "./data/wanifest";
 
@@ -14,11 +15,7 @@ export function Texture(props: { id: string } & ImgHTMLAttributes) {
   return <img src={manifest.imageUrl(id)} {...rest} />;
 }
 
-export function HumanName(id: string) {
-  const { manifest } = useContext(AppState);
-
-  return <>{humanName(id, manifest)}</>;
-}
+export const HumanName = (id: string) => <>{humanName(id, useContext(AppState).manifest)}</>;
 
 export const humanName = (id: string, manifest: Wanifest) => (manifest.names[id] ?? "").replace("<ARCHWING>", "[A]");
 
@@ -28,10 +25,15 @@ export function storedWith<T>(key: string, fromRaw: (k: string | null) => T, toR
   return underlying;
 }
 
-export function stored<T>(key: string, def: T): Signal<T> {
+export function stored<T extends z.ZodType>(key: string, def: T): Signal<z.output<T>> {
   return storedWith(
     key,
-    (k) => (k == null ? def : (JSON.parse(k) as T)),
+    (k) => {
+      const res = def.safeParse(k == null ? def : JSON.parse(k));
+      if (res.success) return res.data;
+      console.warn(`Unable to load ${key}: ${res.error}`);
+      return def.parse(undefined);
+    },
     (v) => JSON.stringify(v),
   );
 }
@@ -44,10 +46,15 @@ export function useStoredWith<T>(key: string, fromRaw: (k: string | null) => T, 
   return underlying;
 }
 
-export function useStored<T>(key: string, def: T): Signal<T> {
+export function useStored<T extends z.ZodType>(key: string, def: T): Signal<z.output<T>> {
   return useStoredWith(
     key,
-    (k) => (k == null ? def : (JSON.parse(k) as T)),
+    (k) => {
+      const res = def.safeParse(k == null ? def : JSON.parse(k));
+      if (res.success) return res.data;
+      console.warn(`Unable to load ${key}: ${res.error}`);
+      return def.parse(undefined);
+    },
     (v) => JSON.stringify(v),
   );
 }

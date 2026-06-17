@@ -1,7 +1,7 @@
 import { ReadonlySignal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
-import { BrowserOptions } from "../components/BrowserContext";
+import { BrowserOptions } from "../components/BrowserOptions";
 import { humanName, sortWith } from "../util";
 import BlueprintExchange from "./blueprintExchange";
 import { ExportRecipe } from "./schema";
@@ -34,7 +34,7 @@ export class CraftList {
   }
 
   getRecipe(uniqueName: string) {
-    return (this.recipes[uniqueName] ??= this.manifest.findRecipe(uniqueName, this.options.useInvasions));
+    return (this.recipes[uniqueName] ??= this.manifest.findRecipe(uniqueName, !this.options.useInvasions));
   }
 
   add(uniqueName: string, toplevel: boolean = true) {
@@ -53,9 +53,9 @@ export class CraftList {
     const tk = (k: string) => this.manifest.getKey(k.startsWith("Rauta ") ? k : `${k} Blueprint`);
 
     for (const dep in BlueprintExchange) {
-      for (const [bps, quantity] of BlueprintExchange[dep]) {
-        const matches = typeof bps === "string" ? tk(bps) == uniqueName : bps.map(tk).includes(uniqueName);
-        if (matches)
+      for (let [bps, quantity] of BlueprintExchange[dep]) {
+        if (typeof bps === "string") bps = [bps];
+        if (bps.map(tk).includes(uniqueName))
           regularItems.push({
             ItemType: this.manifest.getKey(dep),
             ItemCount: quantity,
@@ -72,32 +72,37 @@ export class CraftList {
       });
 
     if (!uniqueName.endsWith("Blueprint")) {
-      const { gunGrip, gunLoader, zawGrip, zawLink, ampBrace, ampScaffold } = this.options.modular;
-      const toAdd: string[] = [];
+      const { modular } = this.options;
+      const modComponents = [];
+
+      if (uniqueName.startsWith("/Lotus/Types/Vehicles/Hoverboard/HoverboardParts") && uniqueName.endsWith("Deck"))
+        modComponents.push(modular.boardJet, modular.boardNose, modular.boardReactor);
 
       if (
         uniqueName.startsWith("/Lotus/Weapons/Infested/Pistols/InfKitGun/Barrels") ||
         uniqueName.startsWith("/Lotus/Weapons/SolarisUnited/Secondary/SUModularSecondarySet1/Barrel")
       )
-        toAdd.push(gunGrip, gunLoader);
+        modComponents.push(modular.gunGrip, modular.gunLoader);
 
       if (
         uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee/ModularMelee01/Tip") ||
         uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee/ModularMelee02/Tip") ||
         uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee/ModularMeleeInfested/Tips")
       )
-        toAdd.push(zawGrip, zawLink);
+        modComponents.push(modular.zawGrip, modular.zawLink);
 
-      if (uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers/Set1/Barrel"))
-        toAdd.push(ampBrace, ampScaffold);
+      if (
+        uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers/Set1/Barrel") ||
+        uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers/Set2/Barrel") ||
+        uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers/Set1/Barrel")
+      )
+        modComponents.push(modular.ampBrace, modular.ampScaffold);
 
-      for (const item of toAdd)
-        if (item != "")
-          regularItems.push({
-            ItemType: item,
-            ItemCount: 1,
-            ProductCategory: "MiscItems",
-          });
+      regularItems.push(
+        ...modComponents
+          .filter((a) => a != "")
+          .map((a) => ({ ItemType: a, ItemCount: 1, ProductCategory: "MiscItems" })),
+      );
     }
 
     return regularItems;
@@ -107,23 +112,23 @@ export class CraftList {
     const allItems: Record<string, CraftRequirement> = {};
 
     const addOrInsert = (item: ExportRecipe["ingredients"][0], toplevel: boolean, parent?: string) => {
-      const { ItemType: key, ItemCount: quantity } = item;
+      const { ItemType, ItemCount } = item;
 
-      allItems[key] ??= {
-        name: humanName(key, this.manifest),
+      allItems[ItemType] ??= {
+        name: humanName(ItemType, this.manifest),
         dependents: new Set(),
         toplevel: true,
         quantityNeeded: 0,
         quantityTotal: 0,
-        batchSize: this.getRecipe(key)?.num ?? 1,
+        batchSize: this.getRecipe(ItemType)?.num ?? 1,
       };
 
-      if (parent != null && parent != "_root") allItems[key].dependents.add(parent);
-      allItems[key].quantityTotal += quantity;
-      allItems[key].quantityNeeded += quantity;
-      allItems[key].toplevel = toplevel;
+      if (parent != null && parent != "_root") allItems[ItemType].dependents.add(parent);
+      allItems[ItemType].quantityTotal += ItemCount;
+      allItems[ItemType].quantityNeeded += ItemCount;
+      allItems[ItemType].toplevel = toplevel;
 
-      return allItems[key];
+      return allItems[ItemType];
     };
 
     // iterate top down

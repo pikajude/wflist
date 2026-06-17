@@ -1,6 +1,7 @@
 import { Signal } from "@preact/signals";
 import { Set } from "immutable";
 import { createContext } from "preact";
+import * as z from "zod";
 import { stored, storedWith } from "../util";
 import { Wanifest } from "./wanifest";
 
@@ -8,10 +9,10 @@ export type TState = {
   manifest: Wanifest;
 
   craftedItems: Signal<Set<string>>;
-  ingredientsOwned: Signal<Inventory>;
+  ingredientsOwned: Signal<z.output<typeof Inventory>>;
 };
 
-export type Inventory = Record<string, number>;
+const Inventory = z.record(z.string(), z.number());
 
 export async function createAppState(): Promise<TState> {
   const manifest = await Wanifest.create();
@@ -22,7 +23,7 @@ export async function createAppState(): Promise<TState> {
     (m) => JSON.stringify(m.toArray()),
   );
 
-  const ingredientsOwned = stored<Inventory>("wfListIngredients", {});
+  const ingredientsOwned = stored("wfListIngredients", Inventory);
 
   return {
     manifest,

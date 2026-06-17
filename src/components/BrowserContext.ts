@@ -6,6 +6,7 @@ import { ExportWarframe, ExportWeapon } from "../data/schema";
 import { TState } from "../data/state";
 import allVaulted from "../data/vaulted.json";
 import { stored } from "../util";
+import { BrowserOptions } from "./BrowserOptions";
 
 const categoryMap = {
   Warframe: ["Suits", "SpaceSuits"],
@@ -20,22 +21,6 @@ export type SelectedCategory = keyof typeof categoryMap | "";
 
 type Item = ExportWeapon | ExportWarframe;
 export type ItemEx = Item & { archwing: boolean };
-
-export type BrowserOptions = {
-  showImages: boolean;
-  hideCrafted: boolean;
-  hideVaulted: boolean;
-  useInvasions: boolean;
-
-  modular: {
-    ampBrace: string;
-    ampScaffold: string;
-    gunGrip: string;
-    gunLoader: string;
-    zawGrip: string;
-    zawLink: string;
-  };
-};
 
 export type TBrowserContext = {
   items: ReadonlySignal<Array<ItemEx>>;
@@ -56,9 +41,6 @@ const excludedWeapons = [
   "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos",
   "/Lotus/Types/Items/Deimos/WoundedInfested",
 
-  // kdrive
-  "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts",
-
   // wtf is this? extra grimoire
   "/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire",
 
@@ -66,6 +48,9 @@ const excludedWeapons = [
   "/Lotus/Weapons/Sentients/OperatorAmplifiers/SentTrainingAmplifier",
   // other amp components
   new RegExp("^/Lotus/Weapons/(Sentients|Corpus)/OperatorAmplifiers/Set\\d+/(Grip|Chassis)"),
+
+  // kdrive
+  new RegExp("^/Lotus/Types/Vehicles/Hoverboard/HoverboardParts.*(Engine|Front|Jet)$"),
 
   // kitgun components
   new RegExp(
@@ -93,7 +78,8 @@ function isCategory(item: Item, categoryName: SelectedCategory): boolean {
     item.uniqueName.includes("SUModular") ||
     item.uniqueName.includes("ModularMelee") ||
     item.uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers") ||
-    item.uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers")
+    item.uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers") ||
+    item.uniqueName.startsWith("/Lotus/Types/Vehicles/Hoverboard/HoverboardParts")
   )
     return categories.includes("Modular");
 
@@ -117,29 +103,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 
   const category = signal<SelectedCategory>(initialCategory);
 
-  const options = stored<BrowserOptions>("wfListFilters", {
-    showImages: true,
-    hideCrafted: true,
-    hideVaulted: true,
-    useInvasions: true,
-    modular: {
-      ampBrace: "",
-      ampScaffold: "",
-      gunGrip: "",
-      gunLoader: "",
-      zawGrip: "",
-      zawLink: "",
-    },
-  });
-
-  options.value.modular ??= {
-    ampBrace: "",
-    ampScaffold: "",
-    gunGrip: "",
-    gunLoader: "",
-    zawGrip: "",
-    zawLink: "",
-  };
+  const options = stored("wfListFilters", BrowserOptions);
 
   const weapons = computed(() =>
     allItems.value
@@ -168,19 +132,6 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 const BrowserContext = createContext<TBrowserContext>({
   category: signal(""),
   items: signal([]),
-  options: stored("wfListFilters", {
-    showImages: true,
-    hideVaulted: true,
-    hideCrafted: true,
-    useInvasions: true,
-    modular: {
-      ampBrace: "",
-      ampScaffold: "",
-      gunGrip: "",
-      gunLoader: "",
-      zawGrip: "",
-      zawLink: "",
-    },
-  }),
+  options: stored("wfListFilters", BrowserOptions),
 });
 export default BrowserContext;

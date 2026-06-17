@@ -85,3 +85,34 @@ export const Link = {
   "Vargeet Ruhang": "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Balance/BalanceDamageICritI",
   "Vargeet Ruhang II": "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Balance/BalanceDamageIICritI",
 };
+
+export const Reactor = {
+  "Arc Twelve":
+    "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusA/HoverboardCorpusAEngine",
+  Coldfusor:
+    "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardSolarisA/HoverboardSolarisAEngine",
+  Gristlebuck:
+    "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardInfestedB/HoverboardInfestedBEngine",
+  Highbrow: "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusC/HoverboardCorpusCEngine",
+  Hothead: "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusB/HoverboardCorpusBEngine",
+};
+
+export const Nose = {
+  Beaky: "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardSolarisA/HoverboardSolarisAFront",
+  "Dink-A-Donk":
+    "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusB/HoverboardCorpusBFront",
+  Nodulite:
+    "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardInfestedB/HoverboardInfestedBFront",
+  "Two-Sloops":
+    "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusC/HoverboardCorpusCFront",
+  Wingnut: "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusA/HoverboardCorpusAFront",
+};
+
+export const Jet = {
+  Fatboys: "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusB/HoverboardCorpusBJet",
+  Steeba: "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardInfestedB/HoverboardInfestedBJet",
+  "Step Tens": "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusA/HoverboardCorpusAJet",
+  Thugs: "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusC/HoverboardCorpusCJet",
+  "Twin Kavats":
+    "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardSolarisA/HoverboardSolarisAJet",
+};
