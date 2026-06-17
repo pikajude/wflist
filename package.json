@@ -4,7 +4,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "vault": "./scripts/vault.js"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
@@ -28,6 +29,7 @@
     "@eslint/js": "^9.39.4",
     "@preact/preset-vite": "^2.10.2",
     "@types/d3": "^7.4.3",
+    "@types/node": "^25.9.3",
     "@types/toposort": "^2.0.7",
     "eslint": "^9.39.4",
     "eslint-config-preact": "^2.0.0",

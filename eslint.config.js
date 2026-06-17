@@ -1,6 +1,5 @@
 // @ts-expect-error no @types module for this config
 import preact from "eslint-config-preact";
-// @ts-expect-error no @types module for this config
 import js from "@eslint/js";
 
 import { defineConfig } from "eslint/config";
@@ -8,7 +7,7 @@ import tses from "typescript-eslint";
 
 export default defineConfig({
   files: ["**/*.{js,jsx,ts,tsx}"],
-  ignores: ["eslint.config.js"],
+  ignores: ["eslint.config.js", "scripts/vault.js"],
   extends: [
     preact,
     js.configs.recommended,

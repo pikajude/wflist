@@ -4,7 +4,6 @@ import { createContext } from "preact";
 import { LocationHook } from "preact-iso";
 import { ExportWarframe, ExportWeapon } from "../data/schema";
 import { TState } from "../data/state";
-import allVaulted from "../data/vaulted.json";
 import { stored } from "../util";
 import { BrowserOptions } from "./BrowserOptions";
 
@@ -111,7 +110,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
       .filter(
         (item) =>
           isCategory(item, category.value) &&
-          !(options.value.hideVaulted && allVaulted.includes(item.uniqueName)) &&
+          !(options.value.hideVaulted && manifest.vaultedItems.has(item.uniqueName)) &&
           !(options.value.hideCrafted && craftedItems.value.get(item.uniqueName, false)),
       )
       .map((w) => ({

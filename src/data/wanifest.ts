@@ -1,6 +1,7 @@
 import localforage from "localforage";
 import { decompress } from "lzma1";
 import { ExportGear, ExportRecipe, ExportResource, ExportSentinel, ExportWarframe, ExportWeapon } from "./schema";
+import VAULT from "./vault.json";
 
 export type ExportCategory =
   | "ExportAbilities"
@@ -69,6 +70,7 @@ export class Wanifest {
   names: { [uniqueName: string]: string } = {};
   private nameKeys: { [name: string]: string } = {};
   private craftedItems: Set<string> = new Set();
+  vaultedItems: Set<string> = new Set();
 
   private constructor() {}
 
@@ -121,6 +123,8 @@ export class Wanifest {
       self.names[uniqueName] = bpn;
       self.nameKeys[bpn] = uniqueName;
     }
+
+    for (const engName of VAULT) self.vaultedItems.add(self.nameKeys[engName]);
 
     return self;
   }
