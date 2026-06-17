@@ -24,7 +24,7 @@ export default function ItemCard(
       <div className={cx("card-body")}>
         {options.value.showImages ? (
           <>
-            <a href={`/item/${item.name}`}>
+            <a href={`/item${item.uniqueName}`}>
               <Texture id={item.uniqueName} className={cx("img-fluid")} />
             </a>
             <div className={cx("card-text")}>{prettyName}</div>

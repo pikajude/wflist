@@ -11,6 +11,7 @@ export default function BrowserNav() {
         <Tab label="Primary" />
         <Tab label="Secondary" />
         <Tab label="Melee" />
+        <Tab label="Modular" />
         <FilterOptions />
       </div>
     </nav>

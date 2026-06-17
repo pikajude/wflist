@@ -16,10 +16,9 @@ export default function Browse() {
 
   const { items, options } = vContext;
   const itemNames = useComputed(() => items.value.map((v) => v.uniqueName));
-  const useInvasions = useComputed(() => options.value.useInvasions);
   const expanded = useStored("wfBrowserIngredients", false);
 
-  const cd = useCraftList(itemNames, useInvasions);
+  const cd = useCraftList(itemNames, options);
 
   return (
     <BrowserContext value={vContext}>

@@ -13,7 +13,6 @@ export default function ViewItem() {
   const rte = useRoute();
   const { manifest } = useContext(AppState);
   const opts = useContext(BrowserContext);
-  const inv = useComputed(() => opts.options.value.useInvasions);
   const img = useComputed(() => opts.options.value.showImages);
 
   const items = useSignal<string[]>([]);
@@ -28,7 +27,7 @@ export default function ViewItem() {
     items.value = item == null ? [] : [item.uniqueName];
   }, [items, manifest, rte.params]);
 
-  const craftData = useCraftList(items, inv);
+  const craftData = useCraftList(items, opts.options);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { ReadonlySignal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
+import { BrowserOptions } from "../components/BrowserContext";
 import { humanName, sortWith } from "../util";
 import BlueprintExchange from "./blueprintExchange";
 import { ExportRecipe } from "./schema";
@@ -18,13 +19,13 @@ export type CraftRequirement = {
 
 export class CraftList {
   private manifest: Wanifest;
-  private includeResearchComponents: boolean;
+  private options: BrowserOptions;
   private recipes: Record<string, ExportRecipe | undefined> = {};
   private _edges: [string, string][] = [];
 
-  constructor(manifest: Wanifest, includeResearchComponents = false, items: string[] = []) {
+  constructor(manifest: Wanifest, options: BrowserOptions, items: string[] = []) {
     this.manifest = manifest;
-    this.includeResearchComponents = includeResearchComponents;
+    this.options = options;
     for (const it of items) this.add(it);
   }
 
@@ -33,7 +34,7 @@ export class CraftList {
   }
 
   getRecipe(uniqueName: string) {
-    return (this.recipes[uniqueName] ??= this.manifest.findRecipe(uniqueName, this.includeResearchComponents));
+    return (this.recipes[uniqueName] ??= this.manifest.findRecipe(uniqueName, this.options.useInvasions));
   }
 
   add(uniqueName: string, toplevel: boolean = true) {
@@ -49,12 +50,11 @@ export class CraftList {
     const recipe = this.getRecipe(uniqueName);
     const regularItems = [...(recipe?.ingredients ?? [])];
 
+    const tk = (k: string) => this.manifest.getKey(k.startsWith("Rauta ") ? k : `${k} Blueprint`);
+
     for (const dep in BlueprintExchange) {
       for (const [bps, quantity] of BlueprintExchange[dep]) {
-        const matches =
-          typeof bps === "string"
-            ? this.manifest.getKey(`${bps} Blueprint`) == uniqueName
-            : bps.some((b) => this.manifest.getKey(`${b} Blueprint`) == uniqueName);
+        const matches = typeof bps === "string" ? tk(bps) == uniqueName : bps.map(tk).includes(uniqueName);
         if (matches)
           regularItems.push({
             ItemType: this.manifest.getKey(dep),
@@ -70,6 +70,35 @@ export class CraftList {
         ItemCount: 1,
         ProductCategory: "Items",
       });
+
+    if (!uniqueName.endsWith("Blueprint")) {
+      const { gunGrip, gunLoader, zawGrip, zawLink, ampBrace, ampScaffold } = this.options.modular;
+      const toAdd: string[] = [];
+
+      if (
+        uniqueName.startsWith("/Lotus/Weapons/Infested/Pistols/InfKitGun/Barrels") ||
+        uniqueName.startsWith("/Lotus/Weapons/SolarisUnited/Secondary/SUModularSecondarySet1/Barrel")
+      )
+        toAdd.push(gunGrip, gunLoader);
+
+      if (
+        uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee/ModularMelee01/Tip") ||
+        uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee/ModularMelee02/Tip") ||
+        uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee/ModularMeleeInfested/Tips")
+      )
+        toAdd.push(zawGrip, zawLink);
+
+      if (uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers/Set1/Barrel"))
+        toAdd.push(ampBrace, ampScaffold);
+
+      for (const item of toAdd)
+        if (item != "")
+          regularItems.push({
+            ItemType: item,
+            ItemCount: 1,
+            ProductCategory: "MiscItems",
+          });
+    }
 
     return regularItems;
   }
@@ -120,12 +149,16 @@ export class CraftList {
     return sortWith(paired, CraftList.sortKey);
   }
 
-  static sortKey = (a: [string, CraftRequirement]) => [a[1].toplevel ? 0 : 1, this.categorize(a[0]), a[1].name];
+  static sortKey = (a: [string, CraftRequirement]) => [
+    a[1].toplevel ? 0 : 1,
+    this.categorize(a[0]),
+    a[1].name.replace("[A] ", ""),
+  ];
 
   static categorize = (a: string) => {
+    if (a.endsWith("Blueprint")) return 150;
     if (a.startsWith("/Lotus/Types/Items/Gems")) return 0;
     if (a.startsWith("/Lotus/Types/Items/MiscItems") || a.startsWith("/Lotus/Types/Items/Research")) return 1;
-    if (a.endsWith("Blueprint")) return 150;
 
     if (a.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts")) return 100;
     if (a.startsWith("/Lotus/Weapons")) return 200;
@@ -139,9 +172,9 @@ export type CraftData = {
   ingredientsFlat: ReadonlySignal<ReturnType<CraftList["flattened"]>>;
 };
 
-export function useCraftList(items: ReadonlySignal<string[]>, useInvasions: ReadonlySignal<boolean>): CraftData {
+export function useCraftList(items: ReadonlySignal<string[]>, options: ReadonlySignal<BrowserOptions>): CraftData {
   const { manifest, ingredientsOwned } = useContext(AppState);
-  const craftList = useComputed(() => new CraftList(manifest, !useInvasions.value, items.value));
+  const craftList = useComputed(() => new CraftList(manifest, options.value, items.value));
   const ingredientsFlat = useSignal<ReturnType<CraftList["flattened"]>>([]);
 
   useSignalEffect(() => {

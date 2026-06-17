@@ -12,6 +12,7 @@ const categoryMap = {
   Primary: ["LongGuns", "OperatorAmps", "SentinelWeapons", "SpaceGuns"],
   Secondary: ["Pistols"],
   Melee: ["Melee", "SpaceMelee"],
+  Modular: ["Modular"],
   All: [],
 };
 
@@ -25,6 +26,15 @@ export type BrowserOptions = {
   hideCrafted: boolean;
   hideVaulted: boolean;
   useInvasions: boolean;
+
+  modular: {
+    ampBrace: string;
+    ampScaffold: string;
+    gunGrip: string;
+    gunLoader: string;
+    zawGrip: string;
+    zawLink: string;
+  };
 };
 
 export type TBrowserContext = {
@@ -78,16 +88,14 @@ function isCategory(item: Item, categoryName: SelectedCategory): boolean {
 
   if (categories.length == 0) return true;
 
-  if (item.uniqueName.startsWith("/Lotus/Weapons/Ostron/Melee")) return categories.includes("Melee");
-
-  if (item.uniqueName.startsWith("/Lotus/Weapons/Infested/Pistols/InfKitGun") || item.uniqueName.includes("SUModular"))
-    return categories.some((c) => c == "LongGuns" || c == "Pistols");
-
   if (
+    item.uniqueName.startsWith("/Lotus/Weapons/Infested/Pistols/InfKitGun") ||
+    item.uniqueName.includes("SUModular") ||
+    item.uniqueName.includes("ModularMelee") ||
     item.uniqueName.startsWith("/Lotus/Weapons/Sentients/OperatorAmplifiers") ||
     item.uniqueName.startsWith("/Lotus/Weapons/Corpus/OperatorAmplifiers")
   )
-    return categories.includes("OperatorAmps");
+    return categories.includes("Modular");
 
   return categories.includes(item.productCategory);
 }
@@ -114,7 +122,24 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
     hideCrafted: true,
     hideVaulted: true,
     useInvasions: true,
+    modular: {
+      ampBrace: "",
+      ampScaffold: "",
+      gunGrip: "",
+      gunLoader: "",
+      zawGrip: "",
+      zawLink: "",
+    },
   });
+
+  options.value.modular ??= {
+    ampBrace: "",
+    ampScaffold: "",
+    gunGrip: "",
+    gunLoader: "",
+    zawGrip: "",
+    zawLink: "",
+  };
 
   const weapons = computed(() =>
     allItems.value
@@ -143,11 +168,19 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 const BrowserContext = createContext<TBrowserContext>({
   category: signal(""),
   items: signal([]),
-  options: signal({
+  options: stored("wfListFilters", {
     showImages: true,
     hideVaulted: true,
     hideCrafted: true,
     useInvasions: true,
+    modular: {
+      ampBrace: "",
+      ampScaffold: "",
+      gunGrip: "",
+      gunLoader: "",
+      zawGrip: "",
+      zawLink: "",
+    },
   }),
 });
 export default BrowserContext;
