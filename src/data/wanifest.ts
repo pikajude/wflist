@@ -1,5 +1,6 @@
 import localforage from "localforage";
 import { decompress } from "lzma1";
+import ADVERSARY from "./adversary.json";
 import { ExportGear, ExportRecipe, ExportResource, ExportSentinel, ExportWarframe, ExportWeapon } from "./schema";
 import VAULT from "./vault.json";
 
@@ -40,8 +41,8 @@ type TypedExports = {
 
 type Exports = Record<Exclude<ExportCategory, keyof TypedExports>, unknown> & TypedExports;
 
-// no longer craftable (and also we wouldn't want to anyway, the item costs are preposterous)
 export const ResourcesLegacyCraftable = [
+  // no longer craftable (and also we wouldn't want to anyway, the item costs are preposterous)
   "/Lotus/Types/Items/MiscItems/Morphic",
   "/Lotus/Types/Items/MiscItems/Neurode",
   "/Lotus/Types/Items/MiscItems/OrokinCell",
@@ -52,6 +53,9 @@ export const ResourcesLegacyCraftable = [
   "/Lotus/Types/Items/RailjackMiscItems/CarbidesRailjackItem",
   "/Lotus/Types/Items/RailjackMiscItems/IsosRailjackItem",
   "/Lotus/Types/Items/RailjackMiscItems/GallosRailjackItem",
+
+  // permanently vaulted stuff
+  "/Lotus/Powersuits/Excalibur/ExcaliburPrime",
 ];
 
 // can be crafted one at a time via foundry but some players might not want to do that since you can get 3 from invasions
@@ -69,14 +73,16 @@ export class Wanifest {
   textures: { [name: string]: string } = {};
   names: { [uniqueName: string]: string } = {};
   private nameKeys: { [name: string]: string } = {};
-  private craftedItems: Set<string> = new Set();
-  vaultedItems: Set<string> = new Set();
+  private craftableItems: Set<string> = new Set();
+  private vaultedItems: Set<string> = new Set();
 
   private constructor() {}
 
   findRecipe(name: string, includeResearchComponents: boolean) {
     if (ResourcesLegacyCraftable.includes(name)) return undefined;
     if (!includeResearchComponents && InvasionResources.includes(name)) return undefined;
+
+    if (ADVERSARY.includes(name)) return undefined;
 
     return this.exports.ExportRecipes.find((c) => !BadRecipes.includes(c.uniqueName) && c.resultType == name);
   }
@@ -91,8 +97,12 @@ export class Wanifest {
     return `http://content.warframe.com/PublicExport/${this.textures[name]}`;
   }
 
-  isCrafted(name: string) {
-    return this.craftedItems.has(name);
+  isCraftable(name: string) {
+    return this.craftableItems.has(name);
+  }
+
+  isVaulted(name: string) {
+    return this.vaultedItems.has(name);
   }
 
   static async create() {
@@ -131,7 +141,7 @@ export class Wanifest {
 
   private addNames(objects: { uniqueName: string; name: string }[], crafted = false) {
     for (const { uniqueName, name } of objects) {
-      if (crafted) this.craftedItems.add(uniqueName);
+      if (crafted) this.craftableItems.add(uniqueName);
       this.addName(uniqueName, name);
     }
   }

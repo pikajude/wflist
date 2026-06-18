@@ -1,34 +1,29 @@
 import { Signal } from "@preact/signals";
-import { Set } from "immutable";
 import { createContext } from "preact";
 import * as z from "zod";
-import { stored, storedWith } from "../util";
+import { stored } from "../util";
 import { Wanifest } from "./wanifest";
 
 export type TState = {
   manifest: Wanifest;
 
-  craftedItems: Signal<Set<string>>;
+  craftedItems: Signal<z.output<typeof CraftedList>>;
   ingredientsOwned: Signal<z.output<typeof Inventory>>;
 };
 
-const Inventory = z.record(z.string(), z.number());
+const CraftedList = z
+  .codec(z.array(z.string()), z.set(z.string()), {
+    decode: (s) => new Set(s),
+    encode: (s) => Array.from(s),
+  })
+  .prefault([]);
+const Inventory = z.record(z.string(), z.number()).prefault({});
 
 export async function createAppState(): Promise<TState> {
-  const manifest = await Wanifest.create();
-
-  const craftedItems = storedWith<Set<string>>(
-    "wfListCrafted",
-    (v) => Set(v == null ? [] : (JSON.parse(v) as string[])),
-    (m) => JSON.stringify(m.toArray()),
-  );
-
-  const ingredientsOwned = stored("wfListIngredients", Inventory);
-
   return {
-    manifest,
-    craftedItems,
-    ingredientsOwned,
+    manifest: await Wanifest.create(),
+    craftedItems: stored("wfListCrafted", CraftedList),
+    ingredientsOwned: stored("wfListIngredients", Inventory),
   };
 }
 

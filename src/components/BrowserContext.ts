@@ -1,7 +1,8 @@
 import { computed, ReadonlySignal, signal, Signal } from "@preact/signals";
-import { List, Map } from "immutable";
+import { Map } from "immutable";
 import { createContext } from "preact";
 import { LocationHook } from "preact-iso";
+import ADVERSARY from "../data/adversary.json";
 import { ExportWarframe, ExportWeapon } from "../data/schema";
 import { TState } from "../data/state";
 import { stored } from "../util";
@@ -43,6 +44,9 @@ const excludedWeapons = [
   // wtf is this? extra grimoire
   "/Lotus/Weapons/Tenno/Grimoire/TnDoppelgangerGrimoire",
 
+  // sentinel weapons can't be crafted
+  "/Lotus/Types/Sentinels/SentinelWeapons",
+
   // mote amp
   "/Lotus/Weapons/Sentients/OperatorAmplifiers/SentTrainingAmplifier",
   // other amp components
@@ -62,7 +66,7 @@ const excludedWeapons = [
   /PvPVariant/,
 ] as const;
 
-const shouldExclude = (weapon: ExportWeapon) =>
+const shouldExclude = (weapon: ExportWeapon | ExportWarframe) =>
   excludedWeapons.some((p) => (typeof p == "string" ? weapon.uniqueName.startsWith(p) : weapon.uniqueName.match(p)));
 
 function isCategory(item: Item, categoryName: SelectedCategory): boolean {
@@ -82,19 +86,27 @@ function isCategory(item: Item, categoryName: SelectedCategory): boolean {
   )
     return categories.includes("Modular");
 
+  if (item.uniqueName.startsWith("/Lotus/Powersuits/EntratiMech")) return categories.includes("Suits");
+
   return categories.includes(item.productCategory);
 }
+
+const PermaVaulted = [
+  "/Lotus/Powersuits/Excalibur/ExcaliburPrime",
+  "/Lotus/Weapons/Tenno/Pistol/LatoPrime",
+  "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",
+];
 
 export function createBrowserContext(appState: TState, location: LocationHook): TBrowserContext {
   const { manifest, craftedItems } = appState;
 
   const ws: Item[] = [
-    ...manifest.exports["ExportWeapons"].filter((w) => !shouldExclude(w)),
+    ...manifest.exports["ExportWeapons"].filter((w) => !shouldExclude(w) && !ADVERSARY.includes(w.uniqueName)),
     ...manifest.exports["ExportWarframes"],
-  ];
+  ].filter((w) => !PermaVaulted.includes(w.uniqueName));
 
   // dedup items. the export contains 3 identical copies of Mausolon. cause why not
-  const allItems = signal(List(Map(ws.map((w) => [w.uniqueName, w])).values()));
+  const allItems = Array.from(Map(ws.map((w) => [w.uniqueName, w])).values());
 
   const { query } = location;
   const initialWanted = query["category"] ?? "All";
@@ -104,14 +116,13 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 
   const options = stored("wfListFilters", BrowserOptions);
 
-  const weapons = computed(() =>
-    allItems.value
-      .toArray()
+  const items = computed(() =>
+    allItems
       .filter(
         (item) =>
           isCategory(item, category.value) &&
-          !(options.value.hideVaulted && manifest.vaultedItems.has(item.uniqueName)) &&
-          !(options.value.hideCrafted && craftedItems.value.get(item.uniqueName, false)),
+          !(options.value.hideVaulted && manifest.isVaulted(item.uniqueName)) &&
+          !(options.value.hideCrafted && craftedItems.value.has(item.uniqueName)),
       )
       .map((w) => ({
         ...w,
@@ -122,7 +133,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
   );
 
   return {
-    items: weapons,
+    items,
     category,
     options,
   };

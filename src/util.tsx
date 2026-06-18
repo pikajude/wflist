@@ -25,16 +25,31 @@ export function storedWith<T>(key: string, fromRaw: (k: string | null) => T, toR
   return underlying;
 }
 
+const jsonCodec = <T extends z.core.$ZodType>(schema: T) =>
+  z.codec(z.string(), schema, {
+    decode: (jsonString, ctx) => {
+      try {
+        return JSON.parse(jsonString) as z.input<T>;
+      } catch (err: unknown) {
+        ctx.issues.push({
+          code: "invalid_format",
+          format: "json",
+          input: jsonString,
+          message: (err as Error).message,
+        });
+        return z.NEVER;
+      }
+    },
+    encode: (value) => JSON.stringify(value),
+  });
+
 export function stored<T extends z.ZodType>(key: string, def: T): Signal<z.output<T>> {
+  const sch = jsonCodec(def);
+
   return storedWith(
     key,
-    (k) => {
-      const res = def.safeParse(k == null ? def : JSON.parse(k));
-      if (res.success) return res.data;
-      console.warn(`Unable to load ${key}: ${res.error}`);
-      return def.parse(undefined);
-    },
-    (v) => JSON.stringify(v),
+    (k) => (k == null ? def.parse(undefined) : sch.decode(k)),
+    (v) => sch.encode(v),
   );
 }
 
@@ -47,15 +62,12 @@ export function useStoredWith<T>(key: string, fromRaw: (k: string | null) => T, 
 }
 
 export function useStored<T extends z.ZodType>(key: string, def: T): Signal<z.output<T>> {
+  const sch = jsonCodec(def);
+
   return useStoredWith(
     key,
-    (k) => {
-      const res = def.safeParse(k == null ? def : JSON.parse(k));
-      if (res.success) return res.data;
-      console.warn(`Unable to load ${key}: ${res.error}`);
-      return def.parse(undefined);
-    },
-    (v) => JSON.stringify(v),
+    (k) => (k == null ? def.parse(undefined) : sch.decode(k)),
+    (v) => sch.encode(v),
   );
 }
 

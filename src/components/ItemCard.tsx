@@ -24,7 +24,7 @@ export default function ItemCard(
       <div className={cx("card-body")}>
         {options.value.showImages ? (
           <>
-            <a href={`/item${item.uniqueName}`}>
+            <a href={`/item/${prettyName}`}>
               <Texture id={item.uniqueName} className={cx("img-fluid")} />
             </a>
             <div className={cx("card-text")}>{prettyName}</div>
@@ -42,9 +42,12 @@ export default function ItemCard(
           id={id}
           autocomplete="off"
           checked={isMastered}
-          onChange={(e) =>
-            (craftedItems.value = craftedItems.value[e.currentTarget.checked ? "add" : "remove"](item.uniqueName))
-          }
+          onChange={(e) => {
+            const copied = new Set(craftedItems.value);
+            if (e.currentTarget.checked) copied.add(item.uniqueName);
+            else copied.delete(item.uniqueName);
+            craftedItems.value = copied;
+          }}
         />
         <label className={cx("btn", "btn-sm", "d-block", isMastered ? "btn-success" : "btn-secondary")} for={id}>
           {isMastered ? "Crafted" : "Missing"}

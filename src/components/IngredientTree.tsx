@@ -69,7 +69,7 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
           {desc.map((d, i) => {
             const name = humanName(d.data, manifest);
 
-            const href: AnchorHTMLAttributes = manifest.isCrafted(d.data)
+            const href: AnchorHTMLAttributes = manifest.isCraftable(d.data)
               ? {
                   href: `/item/${name}`,
                   onClick: (e) => {

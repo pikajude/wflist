@@ -1,6 +1,5 @@
 import { useComputed, useSignal } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
-import { Set } from "immutable";
 import { useCallback, useContext } from "preact/hooks";
 import { Brace, Grip, Jet, Link, Loader, Nose, Reactor, Scaffold, ZGrip } from "../data/modular";
 import { AppState } from "../data/state";
@@ -49,7 +48,7 @@ export default function FilterOptions() {
 }
 
 function OptionsForm() {
-  const { craftedItems, ingredientsOwned } = useContext(AppState);
+  const { manifest, craftedItems, ingredientsOwned } = useContext(AppState);
   const { options } = useContext(BrowserContext);
 
   return (
@@ -169,12 +168,27 @@ function OptionsForm() {
         >
           Export inventory (to clipboard)
         </button>
+        <button
+          className={cx("btn", "btn-info")}
+          onClick={() => {
+            const dlink = document.createElement("a");
+            dlink.href = window.URL.createObjectURL(
+              new Blob([JSON.stringify(manifest.exports)], { type: "application/json" }),
+            );
+            dlink.download = "export-full.json";
+            dlink.target = "_blank";
+            document.body.appendChild(dlink);
+            dlink.click();
+          }}
+        >
+          Download data
+        </button>
       </div>
       <div>
         <button
           onClick={(evt) => {
             evt.preventDefault();
-            if (confirm("Are you sure you want to reset your crafted items?")) craftedItems.value = Set();
+            if (confirm("Are you sure you want to reset your crafted items?")) craftedItems.value = new Set();
           }}
           className={cx("btn", "btn-danger", "btn-sm")}
         >

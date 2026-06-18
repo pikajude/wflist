@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { exec } from "node:child_process";
-import { fstat } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
