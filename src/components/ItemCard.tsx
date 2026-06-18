@@ -1,9 +1,9 @@
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
-import { AppState } from "../data/state";
+import { AppState } from "../AppState";
+import BrowserContext, { ItemEx } from "../BrowserContext";
 import cx from "../style";
 import { slugify, Texture } from "../util";
-import BrowserContext, { ItemEx } from "./BrowserContext";
 
 export default function ItemCard(
   props: {
@@ -31,7 +31,7 @@ export default function ItemCard(
           </>
         ) : (
           <div className={cx("card-text")}>
-            <a href={`/item${item.uniqueName}`}>{prettyName}</a>
+            <a href={`/item/${prettyName}`}>{prettyName}</a>
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import cx from "../style";
-import FilterOptions from "./FilterOptions";
+import FilterOptions from "./BrowserOptions";
 import Tab from "./Tab";
 
 export default function BrowserNav() {

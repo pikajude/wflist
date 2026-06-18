@@ -3,12 +3,12 @@ import { For } from "@preact/signals/utils";
 import { useLocation } from "preact-iso";
 import { useContext } from "preact/hooks";
 import * as z from "zod";
-import BrowserContext, { createBrowserContext } from "../components/BrowserContext";
+import { AppState } from "../AppState";
+import BrowserContext, { createBrowserContext } from "../BrowserContext";
 import BrowserNav from "../components/BrowserNav";
 import IngredientTable from "../components/IngredientTable";
 import ItemCard from "../components/ItemCard";
 import { useCraftList } from "../data/craftList";
-import { AppState } from "../data/state";
 import cx from "../style";
 import { useStored } from "../util";
 

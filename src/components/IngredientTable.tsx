@@ -1,9 +1,10 @@
-import { signal, Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import { signal, Signal, useComputed, useSignal } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
+import { TargetedEvent } from "preact";
 import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
+import { AppState } from "../AppState";
 import { CraftData, CraftRequirement } from "../data/craftList";
-import { AppState } from "../data/state";
 import cx from "../style";
 import { humanName, HumanName, Texture } from "../util";
 import { Signalbox } from "./Checkbox";
@@ -50,41 +51,43 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
           </button>
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: isOpen.value })}>
-          <div className={cx("accordion-body")}>
-            <div ref={(dom) => setBodyHeight(dom?.clientHeight ?? 0)}>
-              <div className={cx("d-flex", "justify-content-between")}>
-                <Signalbox value={onlyMissing} label="Only show missing items" />
-                <button
-                  className={cx("btn", "btn-sm", "btn-danger")}
-                  onClick={() => {
-                    if (confirm("This operation cannot be undone!")) ingredientsOwned.value = {};
-                  }}
-                >
-                  Clear inventory
-                </button>
-              </div>
-              <table className={cx("table", "table-striped", "table-sm", "align-middle", { "mb-0": fixed })}>
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Total</th>
-                    <th>Missing</th>
-                    <th>Owned</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lastIngredients.value.map(([uniqueName, req]) => (
-                    <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
-                  ))}
-                  {lastIngredients.value.length == 0 && (
+          <Show when={isOpen}>
+            <div className={cx("accordion-body")}>
+              <div ref={(dom) => setBodyHeight(dom?.clientHeight ?? 0)}>
+                <div className={cx("d-flex", "justify-content-between")}>
+                  <Signalbox value={onlyMissing} label="Only show missing items" />
+                  <button
+                    className={cx("btn", "btn-sm", "btn-danger")}
+                    onClick={() => {
+                      if (confirm("This operation cannot be undone!")) ingredientsOwned.value = {};
+                    }}
+                  >
+                    Clear inventory
+                  </button>
+                </div>
+                <table className={cx("table", "table-striped", "table-sm", "align-middle", { "mb-0": fixed })}>
+                  <thead>
                     <tr>
-                      <td colspan={4}>List complete!</td>
+                      <th>Name</th>
+                      <th>Total</th>
+                      <th>Missing</th>
+                      <th>Owned</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {lastIngredients.value.map(([uniqueName, req]) => (
+                      <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
+                    ))}
+                    {lastIngredients.value.length == 0 && (
+                      <tr>
+                        <td colspan={4}>List complete!</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          </Show>
         </div>
       </div>
     </div>
@@ -98,19 +101,21 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
 
   const { ingredientsOwned } = useContext(AppState);
 
-  const quantity = useSignal(ingredientsOwned.value[uniqueName] ?? 0);
+  if (!(uniqueName in ingredientsOwned.value)) ingredientsOwned.value[uniqueName] = signal(0);
 
-  useSignalEffect(() => {
-    const q = quantity.value;
-    const ing = ingredientsOwned.peek();
-    if (ing[uniqueName] != q) ingredientsOwned.value = { ...ing, [uniqueName]: q };
-  });
+  const quantity = ingredientsOwned.value[uniqueName];
 
   const [refEl, setRefEl] = useState<HTMLElement | null>(null);
   const [popEl, setPopEl] = useState<HTMLSpanElement | null>(null);
 
   const popped = useSignal(false);
   const { styles, attributes } = usePopper(refEl, popEl, { placement: "top" });
+
+  const setQuantity = (evt: TargetedEvent<HTMLInputElement>) => {
+    let q = evt.currentTarget.valueAsNumber;
+    if (isNaN(q)) q = 0;
+    quantity.value = Math.max(0, q);
+  };
 
   return (
     <tr>
@@ -154,11 +159,11 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
             className={cx("form-control")}
             value={quantity.value}
             min={0}
+            autocomplete="off"
             disabled={uniqueName == "/Lotus/Types/Items/MiscItems/ArgonCrystal"}
+            onBlur={setQuantity}
             onChange={(evt) => {
-              let newQ = evt.currentTarget.valueAsNumber;
-              if (isNaN(newQ)) newQ = 0;
-              quantity.value = Math.max(0, newQ);
+              if (document.activeElement != evt.currentTarget) setQuantity(evt);
             }}
           />
           <button className={cx("btn", "btn-primary")} onClick={(_) => (quantity.value = requirement.quantityTotal)}>

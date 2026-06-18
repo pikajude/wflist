@@ -36,6 +36,15 @@ const blueprintExchange: BlueprintExchange = {
     [brs("Steflos"), 150],
   ],
 
+  "Crimson Talent": [
+    ["Wrath", 90],
+    [["Wrath Blade", "Wrath Handle"], 45],
+  ],
+  "Emerald Talent": [
+    ["Pride", 90],
+    [["Pride Blade", "Pride Handle"], 45],
+  ],
+
   "Kullervo's Bane": [
     ["Kullervo", 15],
     [cns("Kullervo"), 9],

@@ -1,8 +1,8 @@
 import { Attributes } from "preact";
 import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "preact-iso";
 import { useEffect, useState } from "preact/hooks";
+import { AppState, createAppState, TState } from "./AppState.js";
 import { completed, Deferred, Lazy, pending } from "./components/Deferred.js";
-import { AppState, createAppState, TState } from "./data/state.js";
 import { NotFound } from "./pages/_404.jsx";
 import Browse from "./pages/Browse.js";
 import ViewItem from "./pages/ViewItem.js";

@@ -1,11 +1,11 @@
-import { ReadonlySignal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import { ReadonlySignal, Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
-import { BrowserOptions } from "../components/BrowserOptions";
+import { AppState } from "../AppState";
+import { BrowserOptions } from "../BrowserContext";
 import { humanName, sortWith } from "../util";
 import BlueprintExchange from "./blueprintExchange";
 import { ExportRecipe } from "./schema";
-import { AppState } from "./state";
 import { Wanifest } from "./wanifest";
 
 export type CraftRequirement = {
@@ -108,7 +108,7 @@ export class CraftList {
     return regularItems;
   }
 
-  flattened(ownedItems: Record<string, number>) {
+  flattened(ownedItems: Record<string, Signal<number>>) {
     const allItems: Record<string, CraftRequirement> = {};
 
     const addOrInsert = (item: ExportRecipe["ingredients"][0], toplevel: boolean, parent?: string) => {
@@ -135,7 +135,7 @@ export class CraftList {
     for (const key of toposort(this._edges)) {
       // if we run into a key that's already present, that means all of this item's dependents have been processed already, so this quantity is the final needed for the top-level list
       if (allItems[key] != null) {
-        allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key] ?? 0));
+        allItems[key].quantityNeeded = Math.max(0, allItems[key].quantityTotal - (ownedItems[key]?.value ?? 0));
         const craftsNeeded = Math.ceil(allItems[key].quantityNeeded / allItems[key].batchSize);
         for (const item of this.iterIngredients(key)) {
           addOrInsert({ ...item, ItemCount: item.ItemCount * craftsNeeded }, false, key);
@@ -185,9 +185,14 @@ export function useCraftList(items: ReadonlySignal<string[]>, options: ReadonlyS
   useSignalEffect(() => {
     const cl = craftList.value;
     const ing = ingredientsOwned.value;
+    Object.entries(ing).forEach((ev) => void ev[1].value);
     setTimeout(() => {
       console.log("calculating flat materials list...");
-      ingredientsFlat.value = cl.flattened(ing);
+      const dt = performance.now();
+      const flattened = cl.flattened(ing);
+      const dt2 = performance.now();
+      console.log(`took ${dt2 - dt}ms`);
+      ingredientsFlat.value = flattened;
     });
   });
 

@@ -1,10 +1,10 @@
-import { useComputed, useSignal } from "@preact/signals";
+import { useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
 import { useCallback, useContext } from "preact/hooks";
+import { AppState } from "../AppState";
+import BrowserContext from "../BrowserContext";
 import { Brace, Grip, Jet, Link, Loader, Nose, Reactor, Scaffold, ZGrip } from "../data/modular";
-import { AppState } from "../data/state";
 import cx from "../style";
-import BrowserContext from "./BrowserContext";
 import { Checkbox } from "./Checkbox";
 
 export default function FilterOptions() {
@@ -21,6 +21,12 @@ export default function FilterOptions() {
       else setTimeout(() => (animating.value = false), 150);
     });
   }, [visible, animating]);
+
+  useSignalEffect(() => {
+    const vis = visible.value;
+    if (vis) document.body.style = "overflow: hidden";
+    else document.body.style = "";
+  });
 
   return (
     <div className={cx("nav-item")} style={{ marginLeft: "auto" }}>
@@ -158,18 +164,27 @@ function OptionsForm() {
         </div>
       </div>
       <hr />
-      <div className={cx("mb-2")}>
+      <div className={cx("mb-2", "input-group")}>
         <button
-          className={cx("btn", "btn-primary", "btn-sm")}
+          className={cx("btn", "btn-sm", "btn-outline-light")}
           onClick={(evt) => {
             evt.preventDefault();
             void window.navigator.clipboard.writeText(JSON.stringify(ingredientsOwned.value, null, 2));
           }}
         >
-          Export inventory (to clipboard)
+          Copy inventory to clipboard
         </button>
         <button
-          className={cx("btn", "btn-info")}
+          className={cx("btn", "btn-sm", "btn-outline-light")}
+          onClick={(evt) => {
+            evt.preventDefault();
+            void window.navigator.clipboard.writeText(JSON.stringify(options.value, null, 2));
+          }}
+        >
+          Copy settings to clipboard
+        </button>
+        <button
+          className={cx("btn", "btn-sm", "btn-outline-light")}
           onClick={() => {
             const dlink = document.createElement("a");
             dlink.href = window.URL.createObjectURL(
@@ -181,7 +196,7 @@ function OptionsForm() {
             dlink.click();
           }}
         >
-          Download data
+          Download public Warframe export
         </button>
       </div>
       <div>

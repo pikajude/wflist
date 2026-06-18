@@ -23,6 +23,8 @@ svg a[href] text {
 }
 
 .ingredients-table.fixed-bottom {
+  z-index: 200;
+
   .accordion-button {
     box-shadow: none;
     border-style: var(--bs-border-style);
@@ -35,7 +37,7 @@ svg a[href] text {
 
     .accordion-header {
       position: relative;
-      z-index: 1030;
+      z-index: 300;
     }
 
     .accordion-collapse {

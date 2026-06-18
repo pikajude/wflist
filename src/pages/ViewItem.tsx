@@ -1,12 +1,12 @@
 import { useComputed, useSignal } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext, useEffect } from "preact/hooks";
-import BrowserContext from "../components/BrowserContext";
+import { AppState } from "../AppState";
+import BrowserContext from "../BrowserContext";
 import BrowserNav from "../components/BrowserNav";
 import IngredientTable from "../components/IngredientTable";
 import IngredientTree from "../components/IngredientTree";
 import { useCraftList } from "../data/craftList";
-import { AppState } from "../data/state";
 import cx from "../style";
 
 export default function ViewItem() {
