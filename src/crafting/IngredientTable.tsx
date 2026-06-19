@@ -3,11 +3,10 @@ import { Show } from "@preact/signals/utils";
 import { TargetedEvent } from "preact";
 import { useContext, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
+import { CraftData, CraftRequirement } from ".";
 import { AppState } from "../AppState";
-import { CraftData, CraftRequirement } from "../data/craftList";
 import cx from "../style";
-import { humanName, HumanName, Texture } from "../util";
-import { Signalbox } from "./Checkbox";
+import { HumanName, humanName, Signalbox, Texture } from "../util";
 
 export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean>; fixed?: boolean }) {
   let {
@@ -101,7 +100,8 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
 
   const { ingredientsOwned } = useContext(AppState);
 
-  if (!(uniqueName in ingredientsOwned.value)) ingredientsOwned.value[uniqueName] = signal(0);
+  if (!(uniqueName in ingredientsOwned.value))
+    ingredientsOwned.value = { ...ingredientsOwned.value, [uniqueName]: signal(0) };
 
   const quantity = ingredientsOwned.value[uniqueName];
 
@@ -120,7 +120,10 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
   return (
     <tr>
       <td>
-        <Texture id={uniqueName} width="24px" /> <span className={fadedClass}>{HumanName(uniqueName)}</span>{" "}
+        <Texture id={uniqueName} width="24px" />{" "}
+        <span className={fadedClass}>
+          <HumanName id={uniqueName} />
+        </span>{" "}
         <i
           className={cx("fa-solid", "fa-sitemap")}
           ref={setRefEl}

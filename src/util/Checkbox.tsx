@@ -1,6 +1,6 @@
 import { Signal, useSignal } from "@preact/signals";
+import { slugify } from ".";
 import cx from "../style";
-import { slugify } from "../util";
 
 export function Checkbox(props: {
   initialValue: boolean;

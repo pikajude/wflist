@@ -1,9 +1,7 @@
-export type BlueprintExchange = { [resource: string]: [string | string[], number][] };
-
 const cns = (name: string) => [`${name} Chassis`, `${name} Neuroptics`, `${name} Systems`];
 const brs = (name: string) => [`${name} Barrel`, `${name} Receiver`, `${name} Stock`];
 
-const blueprintExchange: BlueprintExchange = {
+const BlueprintExchange: { [resource: string]: [string | string[], number][] } = {
   Atramentum: [
     ["Follie", 1200],
     [cns("Follie"), 400],
@@ -85,4 +83,4 @@ const blueprintExchange: BlueprintExchange = {
   ],
 };
 
-export default blueprintExchange;
+export default BlueprintExchange;

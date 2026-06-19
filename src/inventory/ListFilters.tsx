@@ -1,13 +1,13 @@
 import { useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
 import { useCallback, useContext } from "preact/hooks";
+import { InventoryState } from ".";
 import { AppState } from "../AppState";
-import BrowserContext from "../BrowserContext";
-import { Brace, Grip, Jet, Link, Loader, Nose, Reactor, Scaffold, ZGrip } from "../data/modular";
+import { Brace, Grip, Jet, Link, Loader, Nose, Reactor, Scaffold, ZawGrip } from "../crafting/modular";
 import cx from "../style";
-import { Checkbox } from "./Checkbox";
+import { Checkbox } from "../util";
 
-export default function FilterOptions() {
+export default function ListFilters() {
   const animating = useSignal(false);
   const visible = useSignal(false);
   const inDom = useComputed(() => animating.value || visible.value);
@@ -55,7 +55,7 @@ export default function FilterOptions() {
 
 function OptionsForm() {
   const { manifest, craftedItems, ingredientsOwned } = useContext(AppState);
-  const { options } = useContext(BrowserContext);
+  const { options } = useContext(InventoryState);
 
   return (
     <form className={cx("px-3", "py-3")}>
@@ -148,7 +148,7 @@ function OptionsForm() {
         <label className={cx("form-label")}>Zaw components</label>
         <div className={cx("input-group", "input-group-sm")}>
           <Selector
-            options={ZGrip}
+            options={ZawGrip}
             selected={options.value.modular.zawGrip}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, zawGrip: x } };

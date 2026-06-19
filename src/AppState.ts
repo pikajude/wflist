@@ -1,11 +1,11 @@
 import { signal, Signal } from "@preact/signals";
 import { createContext } from "preact";
-import * as z from "zod";
-import { Wanifest } from "./data/wanifest";
+import z from "zod";
+import { PublicExport } from "./publicExport";
 import { stored } from "./util";
 
-export type TState = {
-  manifest: Wanifest;
+export type TAppState = {
+  manifest: PublicExport;
 
   craftedItems: Signal<z.output<typeof CraftedList>>;
   ingredientsOwned: Signal<z.output<typeof Inventory>>;
@@ -31,12 +31,12 @@ const Inventory = z.codec(z.record(z.string(), z.number()), z.record(z.string(),
   },
 });
 
-export async function createAppState(): Promise<TState> {
+export async function createAppState(): Promise<TAppState> {
   return {
-    manifest: await Wanifest.create(),
+    manifest: await PublicExport.create(),
     craftedItems: stored("wfListCrafted", CraftedList),
     ingredientsOwned: stored("wfListIngredients", Inventory),
   };
 }
 
-export const AppState = createContext({} as TState);
+export const AppState = createContext({} as TAppState);

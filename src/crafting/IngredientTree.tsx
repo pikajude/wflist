@@ -3,8 +3,8 @@ import { Set } from "immutable";
 import { AnchorHTMLAttributes } from "preact";
 import { useLocation } from "preact-iso";
 import { useContext } from "preact/hooks";
+import { CraftList } from ".";
 import { AppState } from "../AppState";
-import { CraftList } from "../data/craftList";
 import cx from "../style";
 import { humanName } from "../util";
 

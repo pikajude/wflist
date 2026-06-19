@@ -1,17 +1,16 @@
 import { Attributes } from "preact";
 import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "preact-iso";
 import { useEffect, useState } from "preact/hooks";
-import { AppState, createAppState, TState } from "./AppState.js";
-import { completed, Deferred, Lazy, pending } from "./components/Deferred.js";
-import { NotFound } from "./pages/_404.jsx";
-import Browse from "./pages/Browse.js";
-import ViewItem from "./pages/ViewItem.js";
-import "./style.module.scss";
+import { AppState, createAppState, TAppState } from "./AppState.js";
+import ListInventory from "./inventory/List.js";
+import ViewItem from "./inventory/ViewItem.js";
+import { completed, Deferred, pending } from "./util";
 
 import "@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2";
+import "./style.module.scss";
 
 function App() {
-  const [appState, setAppState] = useState<Lazy<TState>>(pending());
+  const [appState, setAppState] = useState(pending<TAppState>());
 
   useEffect(() => {
     createAppState()
@@ -25,9 +24,9 @@ function App() {
         <LocationProvider>
           <AppState.Provider value={arg}>
             <Router>
-              <Route path="/" component={Browse} />
+              <Route path="/" component={ListInventory} />
               <Route path="/item/:path*" component={ViewItem} />
-              <Route default component={NotFound} />
+              <Route default component={() => <p>Not found.</p>} />
             </Router>
           </AppState.Provider>
         </LocationProvider>

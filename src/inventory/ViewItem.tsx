@@ -1,18 +1,18 @@
 import { useComputed, useSignal } from "@preact/signals";
 import { useRoute } from "preact-iso";
 import { useContext, useEffect } from "preact/hooks";
+import { InventoryState } from ".";
 import { AppState } from "../AppState";
-import BrowserContext from "../BrowserContext";
-import BrowserNav from "../components/BrowserNav";
-import IngredientTable from "../components/IngredientTable";
-import IngredientTree from "../components/IngredientTree";
-import { useCraftList } from "../data/craftList";
+import { useCraftList } from "../crafting";
+import IngredientTable from "../crafting/IngredientTable";
+import IngredientTree from "../crafting/IngredientTree";
 import cx from "../style";
+import Nav from "./Nav";
 
 export default function ViewItem() {
   const rte = useRoute();
   const { manifest } = useContext(AppState);
-  const opts = useContext(BrowserContext);
+  const opts = useContext(InventoryState);
   const img = useComputed(() => opts.options.value.showImages);
 
   const items = useSignal<string[]>([]);
@@ -31,8 +31,9 @@ export default function ViewItem() {
 
   return (
     <>
-      <BrowserNav />
+      <Nav />
       <div className={cx("container", "grid")}>
+        <h1 className={cx("g-col-10", "fs-5")}>{items.value[0]}</h1>
         {items.value.length == 0 ? (
           <div className={cx("card", "g-col-10")}>
             <div className={cx("card-body")}>Unknown item.</div>

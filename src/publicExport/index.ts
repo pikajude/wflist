@@ -4,6 +4,8 @@ import ADVERSARY from "./adversary.json";
 import { ExportGear, ExportRecipe, ExportResource, ExportSentinel, ExportWarframe, ExportWeapon } from "./schema";
 import VAULT from "./vault.json";
 
+export { ADVERSARY, VAULT };
+
 export type ExportCategory =
   | "ExportAbilities"
   | "ExportAvionics"
@@ -68,7 +70,7 @@ export const InvasionResources = [
 // unobtainable blueprints
 export const BadRecipes = ["/Lotus/Types/Recipes/Weapons/CorpusHandcannonBlueprint"];
 
-export class Wanifest {
+export class PublicExport {
   exports = {} as Exports;
   textures: { [name: string]: string } = {};
   names: { [uniqueName: string]: string } = {};
@@ -108,7 +110,7 @@ export class Wanifest {
   static async create() {
     const url = "https://origin.warframe.com/PublicExport/index_en.txt.lzma";
 
-    const self = new Wanifest();
+    const self = new PublicExport();
 
     console.log(`Wanifest: fetching index`);
     const response = await fetch(url);
@@ -116,7 +118,7 @@ export class Wanifest {
       .decode(decompress(await response.bytes()))
       .split(/\s+/m)
       .filter((s) => s.trim().length > 0)
-      .map((l) => Wanifest.getExportText(l));
+      .map((l) => PublicExport.getExportText(l));
     for (const exp of await Promise.all(lines)) {
       const obj = JSON.parse(exp) as Exports;
       self.exports = { ...self.exports, ...obj };

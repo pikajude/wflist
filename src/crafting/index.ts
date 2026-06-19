@@ -2,11 +2,11 @@ import { ReadonlySignal, Signal, useComputed, useSignal, useSignalEffect } from 
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
 import { AppState } from "../AppState";
-import { BrowserOptions } from "../BrowserContext";
+import { InventoryOptions } from "../inventory";
+import { PublicExport } from "../publicExport";
+import { ExportRecipe } from "../publicExport/schema";
 import { humanName, sortWith } from "../util";
 import BlueprintExchange from "./blueprintExchange";
-import { ExportRecipe } from "./schema";
-import { Wanifest } from "./wanifest";
 
 export type CraftRequirement = {
   name: string;
@@ -18,12 +18,12 @@ export type CraftRequirement = {
 };
 
 export class CraftList {
-  private manifest: Wanifest;
-  private options: BrowserOptions;
+  private manifest: PublicExport;
+  private options: InventoryOptions;
   private recipes: Record<string, ExportRecipe | undefined> = {};
   private _edges: [string, string][] = [];
 
-  constructor(manifest: Wanifest, options: BrowserOptions, items: string[] = []) {
+  constructor(manifest: PublicExport, options: InventoryOptions, items: string[] = []) {
     this.manifest = manifest;
     this.options = options;
     for (const it of items) this.add(it);
@@ -177,7 +177,7 @@ export type CraftData = {
   ingredientsFlat: ReadonlySignal<ReturnType<CraftList["flattened"]>>;
 };
 
-export function useCraftList(items: ReadonlySignal<string[]>, options: ReadonlySignal<BrowserOptions>): CraftData {
+export function useCraftList(items: ReadonlySignal<string[]>, options: ReadonlySignal<InventoryOptions>): CraftData {
   const { manifest, ingredientsOwned } = useContext(AppState);
   const craftList = useComputed(() => new CraftList(manifest, options.value, items.value));
   const ingredientsFlat = useSignal<ReturnType<CraftList["flattened"]>>([]);

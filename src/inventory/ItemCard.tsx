@@ -1,7 +1,7 @@
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
 import { AppState } from "../AppState";
-import BrowserContext, { ItemEx } from "../BrowserContext";
+import { InventoryState, ItemEx } from "../inventory";
 import cx from "../style";
 import { slugify, Texture } from "../util";
 
@@ -12,7 +12,7 @@ export default function ItemCard(
 ) {
   const { item, ...rest } = props;
   const { craftedItems } = useContext(AppState);
-  const { options } = useContext(BrowserContext);
+  const { options } = useContext(InventoryState);
 
   const prettyName = item.archwing ? `[A] ${item.name}` : item.name;
 

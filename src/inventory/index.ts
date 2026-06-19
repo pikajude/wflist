@@ -2,11 +2,11 @@ import { computed, ReadonlySignal, signal, Signal } from "@preact/signals";
 import { Map } from "immutable";
 import { createContext } from "preact";
 import { LocationHook } from "preact-iso";
-import * as z from "zod";
-import { TState } from "./AppState";
-import ADVERSARY from "./data/adversary.json";
-import { ExportWarframe, ExportWeapon } from "./data/schema";
-import { stored } from "./util";
+import z from "zod";
+import { TAppState } from "../AppState";
+import { ADVERSARY } from "../publicExport";
+import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
+import { stored } from "../util/storage";
 
 const categoryMap = {
   Warframe: ["Suits", "SpaceSuits"],
@@ -19,7 +19,7 @@ const categoryMap = {
 
 export type SelectedCategory = keyof typeof categoryMap | "";
 
-export const BrowserOptions = z
+export const InventoryOptions = z
   .object({
     showImages: z.boolean().default(true),
     hideCrafted: z.boolean().default(true),
@@ -41,15 +41,15 @@ export const BrowserOptions = z
   })
   .prefault({});
 
-export type BrowserOptions = z.output<typeof BrowserOptions>;
+export type InventoryOptions = z.output<typeof InventoryOptions>;
 
 type Item = ExportWeapon | ExportWarframe;
 export type ItemEx = Item & { archwing: boolean };
 
-export type TBrowserContext = {
+export type TInventoryState = {
   items: ReadonlySignal<Array<ItemEx>>;
   category: Signal<SelectedCategory>;
-  options: Signal<BrowserOptions>;
+  options: Signal<InventoryOptions>;
 };
 
 const excludedWeapons = [
@@ -121,7 +121,7 @@ const PermaVaulted = [
   "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",
 ];
 
-export function createBrowserContext(appState: TState, location: LocationHook): TBrowserContext {
+export function createInventoryState(appState: TAppState, location: LocationHook): TInventoryState {
   const { manifest, craftedItems } = appState;
 
   const ws: Item[] = [
@@ -138,7 +138,7 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
 
   const category = signal<SelectedCategory>(initialCategory);
 
-  const options = stored("wfListFilters", BrowserOptions);
+  const options = stored("wfListFilters", InventoryOptions);
 
   const items = computed(() =>
     allItems
@@ -163,9 +163,8 @@ export function createBrowserContext(appState: TState, location: LocationHook): 
   };
 }
 
-const BrowserContext = createContext<TBrowserContext>({
+export const InventoryState = createContext<TInventoryState>({
   category: signal(""),
   items: signal([]),
-  options: stored("wfListFilters", BrowserOptions),
+  options: stored("wfListFilters", InventoryOptions),
 });
-export default BrowserContext;

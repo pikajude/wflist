@@ -54,7 +54,7 @@ export const Loader = {
   Zipneedle: "/Lotus/Weapons/SolarisUnited/Secondary/SUModularSecondarySet1/Clip/SUModularCritIReloadIIClipPart",
 };
 
-export const ZGrip = {
+export const ZawGrip = {
   Jayap: "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Handle/HandleFive",
   Korb: "/Lotus/Weapons/Ostron/Melee/ModularMelee02/Handle/HandleNine",
   Kroostra: "/Lotus/Weapons/Ostron/Melee/ModularMelee01/Handle/HandleSix",
