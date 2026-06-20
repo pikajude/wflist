@@ -1,39 +1,49 @@
-import { useComputed, useSignal } from "@preact/signals";
-import { useRoute } from "preact-iso";
-import { useContext, useEffect } from "preact/hooks";
-import { InventoryState } from ".";
+import { useComputed } from "@preact/signals";
+import { useContext } from "preact/hooks";
+import { createInventoryState, InventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
 import IngredientTree from "../crafting/IngredientTree";
 import cx from "../style";
+import { useDynamicRoute } from "../util";
 import Nav from "./Nav";
+import { Categories, categorize } from "./category";
 
 export default function ViewItem() {
-  const rte = useRoute();
-  const { manifest } = useContext(AppState);
-  const opts = useContext(InventoryState);
-  const img = useComputed(() => opts.options.value.showImages);
+  const tapp = useContext(AppState);
+  const { manifest } = tapp;
 
-  const items = useSignal<string[]>([]);
+  const { params } = useDynamicRoute();
 
-  // TODO: why can't we just usesignal here?
-  useEffect(() => {
-    const path = rte.params["path"];
+  const items = useComputed(() => {
+    const path = params.value["path"] ?? "";
     const key = manifest.getKey(path.startsWith("Lotus/") ? `/${path}` : path);
     const item =
       manifest.exports["ExportWeapons"].find((w) => w.uniqueName == key) ??
       manifest.exports["ExportWarframes"].find((w) => w.uniqueName == key);
-    items.value = item == null ? [] : [item.uniqueName];
-  }, [items, manifest, rte.params]);
+    return item == null ? [] : [item];
+  });
+  const cat = useComputed(() => {
+    for (const it of items.value)
+      for (const [k, v] of Object.entries(Categories)) if (v.includes(categorize(it))) return k;
 
-  const craftData = useCraftList(items, opts.options);
+    return "All";
+  });
+
+  const istate = createInventoryState(tapp, cat);
+  const { options } = istate;
+  const img = useComputed(() => options.value.showImages);
+
+  const craftData = useCraftList(
+    useComputed(() => items.value.map((i) => i.uniqueName)),
+    options,
+  );
 
   return (
-    <>
+    <InventoryState.Provider value={istate}>
       <Nav />
       <div className={cx("container", "grid")}>
-        <h1 className={cx("g-col-10", "fs-5")}>{items.value[0]}</h1>
         {items.value.length == 0 ? (
           <div className={cx("card", "g-col-10")}>
             <div className={cx("card-body")}>Unknown item.</div>
@@ -50,6 +60,6 @@ export default function ViewItem() {
           </>
         )}
       </div>
-    </>
+    </InventoryState.Provider>
   );
 }

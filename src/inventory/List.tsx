@@ -1,6 +1,5 @@
 import { useComputed } from "@preact/signals";
 import { For } from "@preact/signals/utils";
-import { useLocation } from "preact-iso";
 import { useContext } from "preact/hooks";
 import { boolean } from "zod";
 import { createInventoryState, InventoryState } from ".";
@@ -8,12 +7,12 @@ import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
 import cx from "../style";
-import { useStored } from "../util";
+import { useDynamicRoute, useStored } from "../util";
 import ItemCard from "./ItemCard";
 import Nav from "./Nav";
 
 export default function ListInventory() {
-  const vContext = createInventoryState(useContext(AppState), useLocation());
+  const vContext = createInventoryState(useContext(AppState), useDynamicRoute());
 
   const { items, options } = vContext;
   const itemNames = useComputed(() => items.value.map((v) => v.uniqueName));

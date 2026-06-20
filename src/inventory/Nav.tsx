@@ -24,11 +24,7 @@ function Tab(props: { label: SelectedCategory }) {
   const { label } = props;
 
   return (
-    <a
-      className={cx("nav-link", "text-sm-center", { active: category.value == label })}
-      href={`/?category=${label}`}
-      onClick={() => (category.value = label)}
-    >
+    <a className={cx("nav-link", "text-sm-center", { active: category.value == label })} href={`/?category=${label}`}>
       {label}
     </a>
   );

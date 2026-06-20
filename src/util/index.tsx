@@ -1,4 +1,7 @@
-import { useContext } from "preact/hooks";
+import { Signal, useSignal } from "@preact/signals";
+import equal from "fast-deep-equal";
+import { RouteHook, useRoute } from "preact-iso";
+import { useContext, useEffect } from "preact/hooks";
 import { AppState } from "../AppState";
 import { PublicExport } from "../publicExport";
 
@@ -25,4 +28,30 @@ export function sortWith<T, V>(arr: T[], fn: (v: T) => V) {
       return 0;
     })
     .map((a) => a.value);
+}
+
+export type RouteSignal = {
+  path: Signal<string>;
+  query: Signal<RouteHook["query"]>;
+  params: Signal<RouteHook["params"]>;
+};
+
+export function useDynamicRoute() {
+  const r = useRoute();
+
+  const path = useSignal(r.path);
+  const query = useSignal(r.query);
+  const params = useSignal(r.params);
+
+  useEffect(() => {
+    path.value = r.path;
+  }, [path, r.path]);
+  useEffect(() => {
+    if (!equal(r.query, query.value)) query.value = { ...r.query };
+  }, [r.query, query]);
+  useEffect(() => {
+    if (!equal(r.params, params.value)) params.value = { ...r.params };
+  }, [r.params, params]);
+
+  return { path, query, params };
 }

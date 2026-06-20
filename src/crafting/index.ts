@@ -26,7 +26,7 @@ export class CraftList {
   constructor(manifest: PublicExport, options: InventoryOptions, items: string[] = []) {
     this.manifest = manifest;
     this.options = options;
-    for (const it of items) this.add(it);
+    items.forEach((it) => this.add(it));
   }
 
   get edges(): ReadonlyArray<[string, string]> {
