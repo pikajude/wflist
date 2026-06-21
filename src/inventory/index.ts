@@ -22,10 +22,10 @@ export const InventoryOptions = z
         ampBrace: z.string().default(""),
         ampScaffold: z.string().default(""),
         gunGrip: z.string().default(""),
+        gunLoader: z.string().default(""),
         boardNose: z.string().default(""),
         boardJet: z.string().default(""),
         boardReactor: z.string().default(""),
-        gunLoader: z.string().default(""),
         zawGrip: z.string().default(""),
         zawLink: z.string().default(""),
       })
@@ -52,7 +52,10 @@ const PermaVaulted = [
 
 const isCategory = (c: SelectedCategory, i: Item) => c == "All" || Categories[c].includes(categorize(i));
 
-export function createInventoryState(appState: TAppState, route: RouteSignal | Signal<string>): TInventoryState {
+export async function createInventoryState(
+  appState: TAppState,
+  route: RouteSignal | Signal<string>,
+): Promise<TInventoryState> {
   const { manifest, craftedItems } = appState;
 
   const ws: Item[] = [
@@ -68,7 +71,7 @@ export function createInventoryState(appState: TAppState, route: RouteSignal | S
     return requested in Categories ? (requested as SelectedCategory) : "All";
   });
 
-  const options = stored("wfListFilters", InventoryOptions);
+  const options = await stored("wfListFilters", InventoryOptions);
 
   const items = computed(() =>
     allItems

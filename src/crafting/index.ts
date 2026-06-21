@@ -1,4 +1,4 @@
-import { ReadonlySignal, Signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import { ReadonlySignal, Signal, useComputed } from "@preact/signals";
 import { useContext } from "preact/hooks";
 import toposort from "toposort";
 import { AppState } from "../AppState";
@@ -180,20 +180,14 @@ export type CraftData = {
 export function useCraftList(items: ReadonlySignal<string[]>, options: ReadonlySignal<InventoryOptions>): CraftData {
   const { manifest, ingredientsOwned } = useContext(AppState);
   const craftList = useComputed(() => new CraftList(manifest, options.value, items.value));
-  const ingredientsFlat = useSignal<ReturnType<CraftList["flattened"]>>([]);
 
-  useSignalEffect(() => {
-    const cl = craftList.value;
-    const ing = ingredientsOwned.value;
-    Object.entries(ing).forEach((ev) => void ev[1].value);
-    setTimeout(() => {
-      console.log("calculating flat materials list...");
-      const dt = performance.now();
-      const flattened = cl.flattened(ing);
-      const dt2 = performance.now();
-      console.log(`took ${dt2 - dt}ms`);
-      ingredientsFlat.value = flattened;
-    });
+  const ingredientsFlat = useComputed(() => {
+    console.log("calculating flat materials list...");
+    const dt = performance.now();
+    const flattened = craftList.value.flattened(ingredientsOwned.value);
+    const dt2 = performance.now();
+    console.log(`took ${dt2 - dt}ms`);
+    return flattened;
   });
 
   return { craftList, ingredientsFlat };

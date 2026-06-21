@@ -37,9 +37,9 @@ const Inventory = z
 export async function createAppState(): Promise<TAppState> {
   return {
     manifest: await PublicExport.create(),
-    craftedItems: stored("wfListCrafted", CraftedList),
-    ingredientsOwned: stored("wfListIngredients", Inventory),
-    listOpen: stored("wfListOpen", z.boolean().default(false)),
+    craftedItems: await stored("wfListCrafted", CraftedList),
+    ingredientsOwned: await stored("wfListIngredients", Inventory),
+    listOpen: await stored("wfListOpen", z.boolean().default(false)),
   };
 }
 

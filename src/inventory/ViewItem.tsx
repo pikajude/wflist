@@ -1,14 +1,16 @@
-import { useComputed } from "@preact/signals";
+import { ReadonlySignal, useComputed } from "@preact/signals";
 import { useContext } from "preact/hooks";
 import { createInventoryState, InventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
 import IngredientTree from "../crafting/IngredientTree";
+import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
 import cx from "../style";
 import { useDynamicRoute } from "../util";
-import Nav from "./Nav";
 import { Categories, categorize } from "./category";
+import InventoryStateLoader from "./InventoryStateLoader";
+import Nav from "./Nav";
 
 export default function ViewItem() {
   const tapp = useContext(AppState);
@@ -31,8 +33,16 @@ export default function ViewItem() {
     return "All";
   });
 
-  const istate = createInventoryState(tapp, cat);
-  const { options } = istate;
+  return (
+    <InventoryStateLoader state={() => createInventoryState(tapp, cat)}>
+      <ViewInner items={items} />
+    </InventoryStateLoader>
+  );
+}
+
+function ViewInner(props: { items: ReadonlySignal<(ExportWarframe | ExportWeapon)[]> }) {
+  const { options } = useContext(InventoryState);
+  const { items } = props;
   const img = useComputed(() => options.value.showImages);
 
   const craftData = useCraftList(
@@ -41,7 +51,7 @@ export default function ViewItem() {
   );
 
   return (
-    <InventoryState.Provider value={istate}>
+    <>
       <Nav />
       <div className={cx("container", "grid")}>
         {items.value.length == 0 ? (
@@ -60,6 +70,6 @@ export default function ViewItem() {
           </>
         )}
       </div>
-    </InventoryState.Provider>
+    </>
   );
 }

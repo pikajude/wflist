@@ -20,22 +20,15 @@ const jsonCodec = <T extends z.core.$ZodType>(schema: T) =>
     encode: (value) => JSON.stringify(value),
   });
 
-export function stored<T extends z.ZodType>(key: string, def: T): Signal<z.output<T>> {
+export async function stored<T extends z.ZodType>(key: string, def: T): Promise<Signal<z.output<T>>> {
   const sch = jsonCodec(def);
 
-  const fallback = def.parse(undefined);
-  const init = signal(fallback);
+  const raw = await localforage.getItem<string>(key);
 
-  void localforage
-    .getItem<string>(key)
-    .then((v) => {
-      if (v != null) init.value = sch.decode(v);
-    })
-    .catch(console.error);
+  const init = signal(raw == null ? def.parse(undefined) : sch.decode(raw));
 
   effect(() => {
-    const val = init.value;
-    if (val != fallback) void localforage.setItem(key, sch.encode(val)).catch(console.error);
+    void localforage.setItem(key, sch.encode(init.value)).catch(console.error);
   });
 
   return init;
