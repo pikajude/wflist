@@ -1,6 +1,6 @@
-import { ReadonlySignal, useComputed } from "@preact/signals";
-import { useContext } from "preact/hooks";
-import { createInventoryState, InventoryState } from ".";
+import { ReadonlySignal, signal, useComputed } from "@preact/signals";
+import { useContext, useMemo } from "preact/hooks";
+import { createInventoryState, InventoryOptions, InventoryState, TInventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
@@ -8,7 +8,7 @@ import IngredientTree from "../crafting/IngredientTree";
 import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
 import cx from "../style";
 import { useDynamicRoute } from "../util";
-import { Categories, categorize } from "./category";
+import { Categories, categorize, SelectedCategory } from "./category";
 import InventoryStateLoader from "./InventoryStateLoader";
 import Nav from "./Nav";
 
@@ -28,15 +28,26 @@ export default function ViewItem() {
   });
   const cat = useComputed(() => {
     for (const it of items.value)
-      for (const [k, v] of Object.entries(Categories)) if (v.includes(categorize(it))) return k;
+      for (const [k, v] of Object.entries(Categories)) if (v.includes(categorize(it))) return k as SelectedCategory;
 
     return "All";
   });
 
+  const loadingState = useMemo<TInventoryState>(
+    () => ({
+      category: cat,
+      items: signal([]),
+      options: signal(InventoryOptions.parse(undefined)),
+    }),
+    [cat],
+  );
+
   return (
-    <InventoryStateLoader state={() => createInventoryState(tapp, cat)}>
-      <ViewInner items={items} />
-    </InventoryStateLoader>
+    <InventoryState.Provider value={loadingState}>
+      <InventoryStateLoader state={() => createInventoryState(tapp, cat)} pending={<Nav />}>
+        <ViewInner items={items} />
+      </InventoryStateLoader>
+    </InventoryState.Provider>
   );
 }
 

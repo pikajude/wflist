@@ -1,7 +1,7 @@
-import { useComputed } from "@preact/signals";
+import { signal, useComputed } from "@preact/signals";
 import { For } from "@preact/signals/utils";
-import { useContext } from "preact/hooks";
-import { createInventoryState, InventoryState } from ".";
+import { useContext, useMemo } from "preact/hooks";
+import { createInventoryState, InventoryOptions, InventoryState, SelectedCategory, TInventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
@@ -15,10 +15,21 @@ export default function ListInventory() {
   const a = useContext(AppState);
   const r = useDynamicRoute();
 
+  const loadingState = useMemo<TInventoryState>(
+    () => ({
+      category: signal((r.query.value["category"] ?? "All") as SelectedCategory),
+      items: signal([]),
+      options: signal(InventoryOptions.parse(undefined)),
+    }),
+    [r.query.value],
+  );
+
   return (
-    <InventoryStateLoader state={() => createInventoryState(a, r)}>
-      <ListInner />
-    </InventoryStateLoader>
+    <InventoryState.Provider value={loadingState}>
+      <InventoryStateLoader state={() => createInventoryState(a, r)} pending={<Nav />}>
+        <ListInner />
+      </InventoryStateLoader>
+    </InventoryState.Provider>
   );
 }
 
