@@ -1,3 +1,4 @@
+import z from "zod";
 import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
 
 export const Categories = {
@@ -9,7 +10,14 @@ export const Categories = {
   All: [] as string[],
 };
 
-export type SelectedCategory = keyof typeof Categories;
+export function typedKeys<T extends object>(object: T) {
+  return Object.keys(object) as (keyof typeof object)[];
+}
+
+const [k1, ...krest] = typedKeys(Categories);
+
+export const Category = z.enum([k1, ...krest]).default("All");
+export type Category = z.infer<typeof Category>;
 
 type Item = ExportWeapon | ExportWarframe;
 

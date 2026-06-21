@@ -1,7 +1,7 @@
 import { signal, useComputed } from "@preact/signals";
 import { For } from "@preact/signals/utils";
 import { useContext, useMemo } from "preact/hooks";
-import { createInventoryState, InventoryOptions, InventoryState, SelectedCategory, TInventoryState } from ".";
+import { Category, createInventoryState, InventoryOptions, InventoryState, TInventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
@@ -17,7 +17,7 @@ export default function ListInventory() {
 
   const loadingState = useMemo<TInventoryState>(
     () => ({
-      category: signal((r.query.value["category"] ?? "All") as SelectedCategory),
+      category: signal(Category.safeParse(r.query.value["category"]).data ?? "All"),
       items: signal([]),
       options: signal(InventoryOptions.parse(undefined)),
     }),

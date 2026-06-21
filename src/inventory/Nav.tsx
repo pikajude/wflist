@@ -1,5 +1,5 @@
 import { useContext } from "preact/hooks";
-import { InventoryState, SelectedCategory } from ".";
+import { Category, InventoryState } from ".";
 import cx from "../style";
 import ListFilters from "./ListFilters";
 
@@ -19,7 +19,7 @@ export default function Nav() {
   );
 }
 
-function Tab(props: { label: SelectedCategory }) {
+function Tab(props: { label: Category }) {
   const { category } = useContext(InventoryState);
   const { label } = props;
 

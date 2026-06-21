@@ -7,9 +7,9 @@ import { ADVERSARY } from "../publicExport";
 import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
 import { RouteSignal } from "../util";
 import { stored } from "../util/storage";
-import { Categories, categorize, isExcluded, SelectedCategory } from "./category";
+import { Categories, categorize, Category, isExcluded } from "./category";
 
-export { type SelectedCategory };
+export { Category };
 
 export const InventoryOptions = z
   .object({
@@ -40,7 +40,7 @@ export type ItemEx = Item & { archwing: boolean };
 
 export type TInventoryState = {
   items: ReadonlySignal<Array<ItemEx>>;
-  category: ReadonlySignal<SelectedCategory>;
+  category: ReadonlySignal<Category>;
   options: Signal<InventoryOptions>;
 };
 
@@ -50,7 +50,7 @@ const PermaVaulted = [
   "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",
 ];
 
-const isCategory = (c: SelectedCategory, i: Item) => c == "All" || Categories[c].includes(categorize(i));
+const isCategory = (c: Category, i: Item) => c == "All" || Categories[c].includes(categorize(i));
 
 export async function createInventoryState(
   appState: TAppState,
@@ -66,9 +66,9 @@ export async function createInventoryState(
   // dedup items. the export contains 3 identical copies of Mausolon. cause why not
   const allItems = Array.from(Map(ws.map((w) => [w.uniqueName, w])).values());
 
-  const category = computed<SelectedCategory>(() => {
-    const requested = route instanceof Signal ? route.value : (route.query.value["category"] ?? "All");
-    return requested in Categories ? (requested as SelectedCategory) : "All";
+  const category = computed<Category>(() => {
+    const requested = route instanceof Signal ? route.value : route.query.value["category"];
+    return Category.safeParse(requested).data ?? "All";
   });
 
   const options = await stored("wfListFilters", InventoryOptions);

@@ -8,7 +8,7 @@ import IngredientTree from "../crafting/IngredientTree";
 import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
 import cx from "../style";
 import { useDynamicRoute } from "../util";
-import { Categories, categorize, SelectedCategory } from "./category";
+import { Categories, categorize, typedKeys } from "./category";
 import InventoryStateLoader from "./InventoryStateLoader";
 import Nav from "./Nav";
 
@@ -28,7 +28,7 @@ export default function ViewItem() {
   });
   const cat = useComputed(() => {
     for (const it of items.value)
-      for (const [k, v] of Object.entries(Categories)) if (v.includes(categorize(it))) return k as SelectedCategory;
+      for (const k of typedKeys(Categories)) if (Categories[k].includes(categorize(it))) return k;
 
     return "All";
   });
