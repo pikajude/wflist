@@ -96,5 +96,5 @@ export function createInventoryState(appState: TAppState, route: RouteSignal | S
 export const InventoryState = createContext<TInventoryState>({
   category: signal("All"),
   items: signal([]),
-  options: stored("wfListFilters", InventoryOptions),
+  options: signal(InventoryOptions.parse(undefined)),
 });

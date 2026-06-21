@@ -1,22 +1,15 @@
 import { Attributes } from "preact";
 import { hydrate, LocationProvider, Route, Router, prerender as ssr } from "preact-iso";
-import { useEffect, useState } from "preact/hooks";
-import { AppState, createAppState, TAppState } from "./AppState.js";
+import { AppState, createAppState } from "./AppState.js";
 import ListInventory from "./inventory/List.js";
 import ViewItem from "./inventory/ViewItem.js";
-import { completed, Deferred, pending } from "./util";
+import { Deferred, useLazy } from "./util";
 
 import "@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2";
 import "./style.module.scss";
 
 function App() {
-  const [appState, setAppState] = useState(pending<TAppState>());
-
-  useEffect(() => {
-    createAppState()
-      .then((as_) => setAppState(completed(as_)))
-      .catch(console.error);
-  }, [setAppState]);
+  const appState = useLazy(createAppState);
 
   return (
     <Deferred value={appState}>

@@ -90,7 +90,7 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
                   x={(showImages ? 38 : 6) * (d.children ? -1 : 1)}
                   text-anchor={d.children ? "end" : "start"}
                   fill="#eee"
-                  fontSize="1.2rem"
+                  // fontSize="1.2rem"
                 >
                   {name.replace("<ARCHWING> ", "[A] ")}
                 </text>

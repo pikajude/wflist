@@ -1,4 +1,5 @@
-import { effect, Signal, signal, useSignal, useSignalEffect } from "@preact/signals";
+import { effect, Signal, signal } from "@preact/signals";
+import localforage from "localforage";
 import z from "zod";
 
 const jsonCodec = <T extends z.core.$ZodType>(schema: T) =>
@@ -19,36 +20,23 @@ const jsonCodec = <T extends z.core.$ZodType>(schema: T) =>
     encode: (value) => JSON.stringify(value),
   });
 
-function storedWith<T>(key: string, fromRaw: (k: string | null) => T, toRaw: (v: T) => string): Signal<T> {
-  const underlying = signal<T>(fromRaw(localStorage.getItem(key)));
-  effect(() => localStorage.setItem(key, toRaw(underlying.value)));
-  return underlying;
-}
-
 export function stored<T extends z.ZodType>(key: string, def: T): Signal<z.output<T>> {
   const sch = jsonCodec(def);
 
-  return storedWith(
-    key,
-    (k) => (k == null ? def.parse(undefined) : sch.decode(k)),
-    (v) => sch.encode(v),
-  );
-}
+  const fallback = def.parse(undefined);
+  const init = signal(fallback);
 
-function useStoredWith<T>(key: string, fromRaw: (k: string | null) => T, toRaw: (v: T) => string): Signal<T> {
-  const underlying = useSignal<T>(fromRaw(localStorage.getItem(key)));
+  void localforage
+    .getItem<string>(key)
+    .then((v) => {
+      if (v != null) init.value = sch.decode(v);
+    })
+    .catch(console.error);
 
-  useSignalEffect(() => localStorage.setItem(key, toRaw(underlying.value)));
+  effect(() => {
+    const val = init.value;
+    if (val != fallback) void localforage.setItem(key, sch.encode(val)).catch(console.error);
+  });
 
-  return underlying;
-}
-
-export function useStored<T extends z.ZodType>(key: string, def: T): Signal<z.output<T>> {
-  const sch = jsonCodec(def);
-
-  return useStoredWith(
-    key,
-    (k) => (k == null ? def.parse(undefined) : sch.decode(k)),
-    (v) => sch.encode(v),
-  );
+  return init;
 }

@@ -9,6 +9,7 @@ export type TAppState = {
 
   craftedItems: Signal<z.output<typeof CraftedList>>;
   ingredientsOwned: Signal<z.output<typeof Inventory>>;
+  listOpen: Signal<boolean>;
 };
 
 const CraftedList = z
@@ -18,24 +19,27 @@ const CraftedList = z
   })
   .prefault([]);
 
-const Inventory = z.codec(z.record(z.string(), z.number()), z.record(z.string(), z.instanceof(Signal<number>)), {
-  decode: (raw) => {
-    const x: Record<string, Signal<number>> = {};
-    for (const key in raw) x[key] = signal(raw[key]);
-    return x;
-  },
-  encode: (dat) => {
-    const x: Record<string, number> = {};
-    for (const key in dat) x[key] = dat[key].value;
-    return x;
-  },
-});
+const Inventory = z
+  .codec(z.record(z.string(), z.number()), z.record(z.string(), z.instanceof(Signal<number>)), {
+    decode: (raw) => {
+      const x: Record<string, Signal<number>> = {};
+      for (const key in raw) x[key] = signal(raw[key]);
+      return x;
+    },
+    encode: (dat) => {
+      const x: Record<string, number> = {};
+      for (const key in dat) x[key] = dat[key].value;
+      return x;
+    },
+  })
+  .prefault({});
 
 export async function createAppState(): Promise<TAppState> {
   return {
     manifest: await PublicExport.create(),
     craftedItems: stored("wfListCrafted", CraftedList),
     ingredientsOwned: stored("wfListIngredients", Inventory),
+    listOpen: stored("wfListOpen", z.boolean().default(false)),
   };
 }
 

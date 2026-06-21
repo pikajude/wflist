@@ -1,9 +1,10 @@
 import { Signal, useSignal } from "@preact/signals";
 import equal from "fast-deep-equal";
 import { RouteHook, useRoute } from "preact-iso";
-import { useContext, useEffect } from "preact/hooks";
+import { useContext, useEffect, useState } from "preact/hooks";
 import { AppState } from "../AppState";
 import { PublicExport } from "../publicExport";
+import { completed, Lazy, pending } from "./Deferred";
 
 export * from "./Checkbox";
 export * from "./Deferred";
@@ -54,4 +55,16 @@ export function useDynamicRoute() {
   }, [r.params, params]);
 
   return { path, query, params };
+}
+
+export function useLazy<T>(p: () => Promise<T>): Lazy<T> {
+  const [val, setVal] = useState(pending<T>());
+
+  useEffect(() => {
+    p()
+      .then((res) => setVal(completed(res)))
+      .catch(console.error);
+  }, [p, setVal]);
+
+  return val;
 }
