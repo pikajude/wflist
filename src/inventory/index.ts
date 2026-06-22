@@ -1,5 +1,4 @@
 import { computed, ReadonlySignal, signal, Signal } from "@preact/signals";
-import { Map } from "immutable";
 import { createContext } from "preact";
 import z from "zod";
 import { TAppState } from "../AppState";
@@ -35,11 +34,10 @@ export const InventoryOptions = z
 
 export type InventoryOptions = z.output<typeof InventoryOptions>;
 
-type Item = ExportWeapon | ExportWarframe;
-export type ItemEx = Item & { archwing: boolean };
+export type Item = ExportWeapon | ExportWarframe;
 
 export type TInventoryState = {
-  items: ReadonlySignal<Array<ItemEx>>;
+  items: ReadonlySignal<Array<Item>>;
   category: ReadonlySignal<Category>;
   options: Signal<InventoryOptions>;
 };
@@ -64,7 +62,7 @@ export async function createInventoryState(
   ].filter((w) => !PermaVaulted.includes(w.uniqueName));
 
   // dedup items. the export contains 3 identical copies of Mausolon. cause why not
-  const allItems = Array.from(Map(ws.map((w) => [w.uniqueName, w])).values());
+  const allItems = Object.entries(Object.fromEntries(ws.map((w) => [w.uniqueName, w]))).map((e) => e[1]);
 
   const category = computed<Category>(() => {
     const requested = route instanceof Signal ? route.value : route.query.value["category"];
@@ -83,7 +81,6 @@ export async function createInventoryState(
       )
       .map((w) => ({
         ...w,
-        archwing: w.name.startsWith("<ARCHWING>"),
         name: w.name.replace("<ARCHWING> ", ""),
       }))
       .sort((a, b) => a.name.localeCompare(b.name)),

@@ -1,20 +1,20 @@
 import { HTMLAttributes } from "preact";
 import { useContext } from "preact/hooks";
 import { AppState } from "../AppState";
-import { InventoryState, ItemEx } from "../inventory";
+import { InventoryState, Item } from "../inventory";
 import cx from "../style";
 import { slugify, Texture } from "../util";
 
 export default function ItemCard(
   props: {
-    item: ItemEx;
+    item: Item;
   } & HTMLAttributes<HTMLDivElement>,
 ) {
   const { item, ...rest } = props;
   const { craftedItems } = useContext(AppState);
   const { options } = useContext(InventoryState);
 
-  const prettyName = item.archwing ? `[A] ${item.name}` : item.name;
+  const prettyName = item.name;
 
   const isMastered = craftedItems.value.has(item.uniqueName);
   const id = slugify(`${item.uniqueName}_crafted`);

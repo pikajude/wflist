@@ -2,7 +2,7 @@ import { effect, Signal, signal } from "@preact/signals";
 import localforage from "localforage";
 import z from "zod";
 
-const jsonCodec = <T extends z.core.$ZodType>(schema: T) =>
+export const jsonCodec = <T extends z.core.$ZodType>(schema: T) =>
   z.codec(z.string(), schema, {
     decode: (jsonString, ctx) => {
       try {
@@ -27,9 +27,7 @@ export async function stored<T extends z.ZodType>(key: string, def: T): Promise<
 
   const init = signal(raw == null ? def.parse(undefined) : sch.decode(raw));
 
-  effect(() => {
-    void localforage.setItem(key, sch.encode(init.value)).catch(console.error);
-  });
+  effect(() => void localforage.setItem(key, sch.encode(init.value)).catch(console.error));
 
   return init;
 }

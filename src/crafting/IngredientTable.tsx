@@ -36,7 +36,7 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
         show: isOpen.value,
         "fixed-bottom": fixed,
         "accordion-flush": fixed,
-        "g-col-10": !fixed,
+        "g-col-12": !fixed,
       })}
       {...styleOther}
     >

@@ -1,5 +1,4 @@
 import { curveBumpX, hierarchy, HierarchyLink, HierarchyNode, link, tree } from "d3";
-import { Set } from "immutable";
 import { AnchorHTMLAttributes } from "preact";
 import { useLocation } from "preact-iso";
 import { useContext } from "preact/hooks";
@@ -17,9 +16,7 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
 
   const tree2: Record<string, string[]> = {};
 
-  const edges = Set(props.list.edges.map((e) => `${e[0]}!${e[1]}`))
-    .toArray()
-    .map((e) => e.split("!", 2));
+  const edges = Array.from(new Set(props.list.edges.map((e) => `${e[0]}!${e[1]}`)).keys()).map((e) => e.split("!", 2));
 
   for (const [from, to] of edges) {
     if (tree2[from] == null) tree2[from] = [];
@@ -71,10 +68,10 @@ export default function IngredientTree(props: { list: CraftList; showImages?: bo
 
             const href: AnchorHTMLAttributes = manifest.isCraftable(d.data)
               ? {
-                  href: `/item/${name}`,
+                  href: `/item${d.data}`,
                   onClick: (e) => {
                     e.preventDefault();
-                    route(`/item/${name}`);
+                    route(`/item${d.data}`);
                   },
                 }
               : {};

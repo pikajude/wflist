@@ -66,12 +66,12 @@ function ViewInner(props: { items: ReadonlySignal<(ExportWarframe | ExportWeapon
       <Nav />
       <div className={cx("container", "grid")}>
         {items.value.length == 0 ? (
-          <div className={cx("card", "g-col-10")}>
+          <div className={cx("card", "g-col-12")}>
             <div className={cx("card-body")}>Unknown item.</div>
           </div>
         ) : (
           <>
-            <div className={cx("card", "g-col-10")}>
+            <div className={cx("card", "g-col-12")}>
               <div className={cx("card-body")}>
                 <IngredientTree list={craftData.craftList.value} showImages={img.value} />
               </div>

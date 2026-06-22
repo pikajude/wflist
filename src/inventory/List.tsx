@@ -34,19 +34,19 @@ export default function ListInventory() {
 }
 
 function ListInner() {
-  const as_ = useContext(AppState);
-  const vContext = useContext(InventoryState);
+  const { listOpen } = useContext(AppState);
+  const { items, options } = useContext(InventoryState);
 
-  const { items, options } = vContext;
-  const itemNames = useComputed(() => items.value.map((v) => v.uniqueName));
-
-  const cd = useCraftList(itemNames, options);
+  const cd = useCraftList(
+    useComputed(() => items.value.map((v) => v.uniqueName)),
+    options,
+  );
 
   return (
     <>
       <Nav />
       <div className={cx("container", "grid")}>
-        <IngredientTable isOpen={as_.listOpen} craftData={cd} fixed={true} />
+        <IngredientTable isOpen={listOpen} craftData={cd} fixed={true} />
         <For each={items}>{(item) => <ItemCard item={item} key={item.uniqueName} />}</For>
       </div>
       <div className={cx("pt-4", "pb-5")} />

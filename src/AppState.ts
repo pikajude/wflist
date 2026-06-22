@@ -6,7 +6,6 @@ import { stored } from "./util";
 
 export type TAppState = {
   manifest: PublicExport;
-
   craftedItems: Signal<z.output<typeof CraftedList>>;
   ingredientsOwned: Signal<z.output<typeof Inventory>>;
   listOpen: Signal<boolean>;
