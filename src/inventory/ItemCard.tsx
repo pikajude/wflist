@@ -14,9 +14,9 @@ export default function ItemCard(
   const { craftedItems } = useContext(AppState);
   const { options } = useContext(InventoryState);
 
-  const prettyName = item.name;
+  const prettyName = item.name.replace("<ARCHWING>", "[A]");
 
-  const isMastered = craftedItems.value.has(item.uniqueName);
+  const isCrafted = craftedItems.value.has(item.uniqueName);
   const id = slugify(`${item.uniqueName}_crafted`);
 
   return (
@@ -41,7 +41,7 @@ export default function ItemCard(
           className={cx("btn-check")}
           id={id}
           autocomplete="off"
-          checked={isMastered}
+          checked={isCrafted}
           onChange={(e) => {
             const copied = new Set(craftedItems.value);
             if (e.currentTarget.checked) copied.add(item.uniqueName);
@@ -49,8 +49,8 @@ export default function ItemCard(
             craftedItems.value = copied;
           }}
         />
-        <label className={cx("btn", "btn-sm", "d-block", isMastered ? "btn-success" : "btn-secondary")} for={id}>
-          {isMastered ? "Crafted" : "Missing"}
+        <label className={cx("btn", "btn-sm", "d-block", isCrafted ? "btn-success" : "btn-secondary")} for={id}>
+          {isCrafted ? "Crafted" : "Missing"}
         </label>
       </div>
     </div>

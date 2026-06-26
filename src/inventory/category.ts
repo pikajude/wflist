@@ -1,11 +1,12 @@
 import z from "zod";
-import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
+import { Item } from ".";
 
 export const Categories = {
   Warframe: ["Suits", "SpaceSuits"],
   Primary: ["LongGuns", "OperatorAmps", "SentinelWeapons", "SpaceGuns"],
   Secondary: ["Pistols"],
   Melee: ["Melee", "SpaceMelee"],
+  Companion: ["KubrowPets", "Sentinels"],
   Modular: ["Modular"],
   All: [] as string[],
 };
@@ -18,8 +19,6 @@ const [k1, ...krest] = typedKeys(Categories);
 
 export const Category = z.enum([k1, ...krest]).default("All");
 export type Category = z.infer<typeof Category>;
-
-type Item = ExportWeapon | ExportWarframe;
 
 export function categorize(item: Item): string {
   if (
@@ -34,6 +33,8 @@ export function categorize(item: Item): string {
 
   if (item.uniqueName.startsWith("/Lotus/Powersuits/EntratiMech")) return "Suits";
 
+  if (item.uniqueName.startsWith("/Lotus/Types/Friendly/Pets")) return "Sentinels";
+
   return item.productCategory;
 }
 
@@ -42,9 +43,10 @@ export const ExcludedWeaponPattern = [
   "/Lotus/Powersuits",
 
   // moa/hound
-  "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts",
-  "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts",
   "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetMeleeWeapon",
+  "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MeleeMoaPetPayload",
+  new RegExp("^/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPet(Leg|Engine|Payload).*$"),
+  new RegExp("^/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts/ZanukaPetPart(Body|Legs|Tail).$"),
 
   // vulp/predasite
   "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos",

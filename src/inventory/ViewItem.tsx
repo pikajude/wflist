@@ -1,11 +1,10 @@
 import { ReadonlySignal, signal, useComputed } from "@preact/signals";
 import { useContext, useMemo } from "preact/hooks";
-import { createInventoryState, InventoryOptions, InventoryState, TInventoryState } from ".";
+import { createInventoryState, InventoryOptions, InventoryState, Item, TInventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
 import IngredientTree from "../crafting/IngredientTree";
-import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
 import cx from "../style";
 import { useDynamicRoute } from "../util";
 import { Categories, categorize, typedKeys } from "./category";
@@ -23,7 +22,8 @@ export default function ViewItem() {
     const key = manifest.getKey(path.startsWith("Lotus/") ? `/${path}` : path);
     const item =
       manifest.exports["ExportWeapons"].find((w) => w.uniqueName == key) ??
-      manifest.exports["ExportWarframes"].find((w) => w.uniqueName == key);
+      manifest.exports["ExportWarframes"].find((w) => w.uniqueName == key) ??
+      manifest.exports["ExportSentinels"].find((w) => w.uniqueName == key);
     return item == null ? [] : [item];
   });
   const cat = useComputed(() => {
@@ -51,7 +51,7 @@ export default function ViewItem() {
   );
 }
 
-function ViewInner(props: { items: ReadonlySignal<(ExportWarframe | ExportWeapon)[]> }) {
+function ViewInner(props: { items: ReadonlySignal<Item[]> }) {
   const { options } = useContext(InventoryState);
   const { items } = props;
   const img = useComputed(() => options.value.showImages);

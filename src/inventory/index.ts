@@ -3,8 +3,8 @@ import { createContext } from "preact";
 import z from "zod";
 import { TAppState } from "../AppState";
 import { ADVERSARY } from "../publicExport";
-import { ExportWarframe, ExportWeapon } from "../publicExport/schema";
-import { RouteSignal } from "../util";
+import { ExportSentinel, ExportWarframe, ExportWeapon } from "../publicExport/schema";
+import { RouteSignal, sortWith } from "../util";
 import { stored } from "../util/storage";
 import { Categories, categorize, Category, isExcluded } from "./category";
 
@@ -34,10 +34,10 @@ export const InventoryOptions = z
 
 export type InventoryOptions = z.output<typeof InventoryOptions>;
 
-export type Item = ExportWeapon | ExportWarframe;
+export type Item = ExportWeapon | ExportWarframe | ExportSentinel;
 
 export type TInventoryState = {
-  items: ReadonlySignal<Array<Item>>;
+  items: ReadonlySignal<Item[]>;
   category: ReadonlySignal<Category>;
   options: Signal<InventoryOptions>;
 };
@@ -59,12 +59,13 @@ export async function createInventoryState(
   const ws: Item[] = [
     ...manifest.exports["ExportWeapons"].filter((w) => !isExcluded(w) && !ADVERSARY.includes(w.uniqueName)),
     ...manifest.exports["ExportWarframes"],
+    ...manifest.exports["ExportSentinels"],
   ].filter((w) => !PermaVaulted.includes(w.uniqueName));
 
   // dedup items. the export contains 3 identical copies of Mausolon. cause why not
   const allItems = Object.entries(Object.fromEntries(ws.map((w) => [w.uniqueName, w]))).map((e) => e[1]);
 
-  const category = computed<Category>(() => {
+  const category = computed(() => {
     const requested = route instanceof Signal ? route.value : route.query.value["category"];
     return Category.safeParse(requested).data ?? "All";
   });
@@ -72,18 +73,15 @@ export async function createInventoryState(
   const options = await stored("wfListFilters", InventoryOptions);
 
   const items = computed(() =>
-    allItems
-      .filter(
+    sortWith(
+      allItems.filter(
         (item) =>
           isCategory(category.value, item) &&
           !(options.value.hideVaulted && manifest.isVaulted(item.uniqueName)) &&
           !(options.value.hideCrafted && craftedItems.value.has(item.uniqueName)),
-      )
-      .map((w) => ({
-        ...w,
-        name: w.name.replace("<ARCHWING> ", ""),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name)),
+      ),
+      (a) => a.name.replace("<ARCHWING> ", ""),
+    ),
   );
 
   return {

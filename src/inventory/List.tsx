@@ -46,7 +46,7 @@ function ListInner() {
     <>
       <Nav />
       <div className={cx("container", "grid")}>
-        <IngredientTable isOpen={listOpen} craftData={cd} fixed={true} />
+        <IngredientTable isOpen={listOpen} craftData={cd} />
         <For each={items}>{(item) => <ItemCard item={item} key={item.uniqueName} />}</For>
       </div>
       <div className={cx("pt-4", "pb-5")} />

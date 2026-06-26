@@ -8,18 +8,17 @@ import { AppState } from "../AppState";
 import cx from "../style";
 import { HumanName, humanName, Signalbox, Texture } from "../util";
 
-export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean>; fixed?: boolean }) {
+export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean> }) {
   let {
-    craftData: { ingredientsFlat: ingredients },
+    craftData: { ingredients },
     isOpen,
-    fixed,
   } = props;
-  fixed ??= false;
+  const fixed = isOpen != null;
   const { ingredientsOwned } = useContext(AppState);
   const onlyMissing = useSignal(true);
   isOpen ??= signal(true);
 
-  const lastIngredients = useComputed(() => {
+  const allIngredients = useComputed(() => {
     const filt = onlyMissing.value;
     return ingredients.value.filter((v) => !v[1].toplevel && (!filt || v[1].quantityNeeded > 0));
   });
@@ -46,7 +45,7 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
             className={cx("accordion-button", { collapsed: isOpen.value })}
             onClick={() => (isOpen.value = !isOpen.value)}
           >
-            Ingredients ({lastIngredients.value.length})
+            Ingredients ({allIngredients.value.length})
           </button>
         </h2>
         <div className={cx("accordion-collapse", "collapse", { show: isOpen.value })}>
@@ -54,7 +53,7 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
             <div className={cx("accordion-body")}>
               <div ref={(dom) => setBodyHeight(dom?.clientHeight ?? 0)}>
                 <div className={cx("d-flex", "justify-content-between")}>
-                  <Signalbox value={onlyMissing} label="Only show missing items" />
+                  <Signalbox value={onlyMissing} label="Hide owned items" />
                   <button
                     className={cx("btn", "btn-sm", "btn-danger")}
                     onClick={() => {
@@ -74,10 +73,10 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
                     </tr>
                   </thead>
                   <tbody>
-                    {lastIngredients.value.map(([uniqueName, req]) => (
+                    {allIngredients.value.map(([uniqueName, req]) => (
                       <IngredientRow uniqueName={uniqueName} requirement={req} key={uniqueName} />
                     ))}
-                    {lastIngredients.value.length == 0 && (
+                    {allIngredients.value.length == 0 && (
                       <tr>
                         <td colspan={4}>List complete!</td>
                       </tr>

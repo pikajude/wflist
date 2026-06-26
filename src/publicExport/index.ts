@@ -68,7 +68,10 @@ export const InvasionResources = [
 ];
 
 // unobtainable blueprints
-export const BadRecipes = ["/Lotus/Types/Recipes/Weapons/CorpusHandcannonBlueprint"];
+export const BadRecipes = [
+  "/Lotus/Types/Recipes/Weapons/CorpusHandcannonBlueprint",
+  "/Lotus/Types/Recipes/Weapons/GrineerCombatKnifeBlueprint",
+];
 
 export class PublicExport {
   exports = {} as Exports;
@@ -112,13 +115,13 @@ export class PublicExport {
 
     const self = new PublicExport();
 
-    console.log(`Wanifest: fetching index`);
+    console.log(`PublicExport: fetching index`);
     const response = await fetch(url);
     const lines = new TextDecoder()
       .decode(decompress(await response.bytes()))
       .split(/\s+/m)
       .filter((s) => s.trim().length > 0)
-      .map((l) => PublicExport.getExportText(l));
+      .map((l) => this.getExportText(l));
     for (const exp of await Promise.all(lines)) {
       const obj = JSON.parse(exp) as Exports;
       self.exports = { ...self.exports, ...obj };
@@ -128,6 +131,7 @@ export class PublicExport {
 
     self.addNames(self.exports["ExportWarframes"], true);
     self.addNames(self.exports["ExportWeapons"], true);
+    self.addNames(self.exports["ExportSentinels"], true);
     self.addNames(self.exports["ExportResources"]);
     self.addNames(self.exports["ExportGear"]);
     for (const { uniqueName, resultType } of self.exports["ExportRecipes"]) {
@@ -141,9 +145,9 @@ export class PublicExport {
     return self;
   }
 
-  private addNames(objects: { uniqueName: string; name: string }[], crafted = false) {
+  private addNames(objects: { uniqueName: string; name: string }[], craftable?: boolean) {
     for (const { uniqueName, name } of objects) {
-      if (crafted) this.craftableItems.add(uniqueName);
+      if (craftable) this.craftableItems.add(uniqueName);
       this.addName(uniqueName, name);
     }
   }
@@ -151,9 +155,9 @@ export class PublicExport {
   private addName(uniqueName: string, humanName: string) {
     if (humanName.length == 0) return;
     this.names[uniqueName] = humanName;
-    if (humanName in this.nameKeys) {
-      // console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
-    } else this.nameKeys[humanName] = uniqueName;
+    if (humanName in this.nameKeys)
+      console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
+    else this.nameKeys[humanName] = uniqueName;
   }
 
   static async getExportText(filename: string) {

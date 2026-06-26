@@ -12,6 +12,7 @@ export default function Nav() {
         <Tab label="Primary" />
         <Tab label="Secondary" />
         <Tab label="Melee" />
+        <Tab label="Companion" />
         <Tab label="Modular" />
         <ListFilters />
       </div>

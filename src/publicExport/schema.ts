@@ -117,10 +117,10 @@ export type DamagePerShot = [
   number,
 ];
 
-// only here so vault script can run
 export type ExportSentinel = {
   uniqueName: string;
   name: string;
+  productCategory: string;
 };
 export type ExportWarframe = {
   uniqueName: string;

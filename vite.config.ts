@@ -2,7 +2,6 @@ import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 import { patchCssModules } from "vite-css-modules";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   css: {
     modules: {},

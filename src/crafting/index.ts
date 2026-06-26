@@ -174,21 +174,20 @@ export class CraftList {
 
 export type CraftData = {
   craftList: ReadonlySignal<CraftList>;
-  ingredientsFlat: ReadonlySignal<ReturnType<CraftList["flattened"]>>;
+  ingredients: ReadonlySignal<ReturnType<CraftList["flattened"]>>;
 };
 
 export function useCraftList(items: ReadonlySignal<string[]>, options: ReadonlySignal<InventoryOptions>): CraftData {
   const { manifest, ingredientsOwned } = useContext(AppState);
   const craftList = useComputed(() => new CraftList(manifest, options.value, items.value));
 
-  const ingredientsFlat = useComputed(() => {
-    console.log("calculating flat materials list...");
+  const ingredients = useComputed(() => {
     const dt = performance.now();
     const flattened = craftList.value.flattened(ingredientsOwned.value);
     const dt2 = performance.now();
-    console.log(`took ${dt2 - dt}ms`);
+    console.log(`material list calculation took ${dt2 - dt}ms`);
     return flattened;
   });
 
-  return { craftList, ingredientsFlat };
+  return { craftList, ingredients };
 }
