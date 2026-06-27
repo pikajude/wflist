@@ -3,7 +3,24 @@ import { Show } from "@preact/signals/utils";
 import { useCallback, useContext } from "preact/hooks";
 import { InventoryState } from ".";
 import { AppState } from "../AppState";
-import { Brace, Grip, Jet, Link, Loader, Nose, Reactor, Scaffold, ZawGrip } from "../crafting/modular";
+import {
+  Brace,
+  Grip,
+  Jet,
+  Link,
+  Loader,
+  MoaBracket,
+  MoaCore,
+  MoaGyro,
+  Nose,
+  PredAntigen,
+  PredMutagen,
+  Reactor,
+  Scaffold,
+  VulpAntigen,
+  VulpMutagen,
+  ZawGrip,
+} from "../crafting/modular";
 import cx from "../style";
 import { Checkbox } from "../util";
 
@@ -159,6 +176,65 @@ function OptionsForm() {
             selected={options.value.modular.zawLink}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, zawLink: x } };
+            }}
+          />
+        </div>
+      </div>
+      <div className={cx("mb-3")}>
+        <label className={cx("form-label")}>MOA components</label>
+        <div className={cx("input-group", "input-group-sm")}>
+          <Selector
+            options={MoaCore}
+            selected={options.value.modular.moaCore}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, moaCore: x } };
+            }}
+          />
+          <Selector
+            options={MoaGyro}
+            selected={options.value.modular.moaGyro}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, moaGyro: x } };
+            }}
+          />
+          <Selector
+            options={MoaBracket}
+            selected={options.value.modular.moaBracket}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, moaBracket: x } };
+            }}
+          />
+        </div>
+      </div>
+      <div className={cx("mb-3")}>
+        <label className={cx("form-label")}>Deimos pet components</label>
+        <div className={cx("input-group", "input-group-sm")}>
+          <Selector
+            options={PredAntigen}
+            selected={options.value.modular.predAntigen}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, predAntigen: x } };
+            }}
+          />
+          <Selector
+            options={PredMutagen}
+            selected={options.value.modular.predMutagen}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, predMutagen: x } };
+            }}
+          />
+          <Selector
+            options={VulpAntigen}
+            selected={options.value.modular.vulpAntigen}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, vulpAntigen: x } };
+            }}
+          />
+          <Selector
+            options={VulpMutagen}
+            selected={options.value.modular.vulpMutagen}
+            onChange={(x) => {
+              options.value = { ...options.value, modular: { ...options.value.modular, vulpMutagen: x } };
             }}
           />
         </div>

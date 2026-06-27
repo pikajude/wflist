@@ -7,6 +7,7 @@ import { PublicExport } from "../publicExport";
 import { ExportRecipe } from "../publicExport/schema";
 import { humanName, sortWith } from "../util";
 import BlueprintExchange from "./blueprintExchange";
+import DeimosExchange from "./deimosExchange.json";
 
 export type CraftRequirement = {
   name: string;
@@ -98,12 +99,34 @@ export class CraftList {
       )
         modComponents.push(modular.ampBrace, modular.ampScaffold);
 
+      if (uniqueName.startsWith("/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetHead"))
+        modComponents.push(modular.moaBracket, modular.moaCore, modular.moaGyro);
+
+      if (uniqueName.endsWith("InfestedCatbrowPetPowerSuit"))
+        modComponents.push(modular.vulpAntigen, modular.vulpMutagen);
+
+      if (uniqueName.endsWith("PredatorKubrowPetPowerSuit"))
+        modComponents.push(modular.predAntigen, modular.predMutagen);
+
       regularItems.push(
         ...modComponents
           .filter((a) => a != "")
           .map((a) => ({ ItemType: a, ItemCount: 1, ProductCategory: "MiscItems" })),
       );
     }
+
+    if (uniqueName in DeimosExchange)
+      regularItems.push({
+        ItemType: DeimosExchange[uniqueName as keyof typeof DeimosExchange],
+        ItemCount: 1,
+        ProductCategory: "MiscItems",
+      });
+    else if (uniqueName.endsWith("CatbrowPetPowerSuit") || uniqueName.endsWith("KubrowPetPowerSuit"))
+      regularItems.push({
+        ItemType: "/Lotus/Types/Game/KubrowPet/EggHatcher",
+        ItemCount: 1,
+        ProductCategory: "MiscItems",
+      });
 
     return regularItems;
   }

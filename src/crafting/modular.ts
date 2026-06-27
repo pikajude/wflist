@@ -116,3 +116,57 @@ export const Jet = {
   "Twin Kavats":
     "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardSolarisA/HoverboardSolarisAJet",
 };
+
+export const MoaBracket = {
+  "Drimper Bracket": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetLegA",
+  "Gauth Bracket": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetLegD",
+  "Hona Bracket": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetLegMelee",
+  "Jonsin Bracket": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetLegC",
+  "Tian Bracket": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetLegB",
+};
+
+export const MoaCore = {
+  "Alcrom Core": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetEngineArcotek",
+  "Drex Core": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetEngineThricore",
+  "Krisys Core": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetEngineKrisys",
+  "Lehan Core": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MeleeMoaPetEngine",
+};
+
+export const MoaGyro = {
+  "Aegron Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetPayloadAegron",
+  "Atheca Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetPayloadThermocor",
+  "Harpen Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetPayloadDarta",
+  "Hextra Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetPayloadHextra",
+  "Munit Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetPayloadMunitron",
+  "Phazor Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetPayloadTazron",
+  "Trux Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPetPayloadCryoxion",
+  "Tyli Gyro": "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MeleeMoaPetPayload",
+};
+
+export const PredAntigen = {
+  "ELASMUN ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorAntigenA",
+  "IBEXAN ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorAntigenC",
+  "IRANON ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorAntigenB",
+  "TETHRON ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorAntigenD",
+};
+
+export const PredMutagen = {
+  "ARIOLI MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorMutagenC",
+  "CHITEN MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorMutagenB",
+  "LEPTOSAM MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorMutagenA",
+  "MONACHOD MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedPredatorMutagenD",
+};
+
+export const VulpAntigen = {
+  "DESUS ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterAntigenB",
+  "PLAGEN ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterAntigenC",
+  "POXI ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterAntigenD",
+  "VIROX ANTIGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterAntigenA",
+};
+
+export const VulpMutagen = {
+  "ADRA MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterMutagenA",
+  "ELSA MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterMutagenB",
+  "PHIJAR MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterMutagenD",
+  "ZARIM MUTAGEN": "/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts/Deimos/InfestedCritterMutagenC",
+};

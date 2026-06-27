@@ -25,3 +25,4 @@ dist-ssr
 
 debug/
 src/style.module.scss.d.ts
+export-full.json

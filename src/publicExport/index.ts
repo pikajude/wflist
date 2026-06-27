@@ -70,7 +70,10 @@ export const InvasionResources = [
 // unobtainable blueprints
 export const BadRecipes = [
   "/Lotus/Types/Recipes/Weapons/CorpusHandcannonBlueprint",
+  "/Lotus/Types/Recipes/Weapons/GrineerHandcannonBlueprint",
   "/Lotus/Types/Recipes/Weapons/GrineerCombatKnifeBlueprint",
+  "/Lotus/Types/Recipes/Weapons/LowKatanaBlueprint",
+  "/Lotus/Types/Recipes/Weapons/WeaponParts/SagekPrimeStockBlueprint",
 ];
 
 export class PublicExport {
@@ -89,7 +92,13 @@ export class PublicExport {
 
     if (ADVERSARY.includes(name)) return undefined;
 
-    return this.exports.ExportRecipes.find((c) => !BadRecipes.includes(c.uniqueName) && c.resultType == name);
+    const elig = this.exports.ExportRecipes.filter((r) => !BadRecipes.includes(r.uniqueName) && r.resultType == name);
+
+    if (elig.length == 0) return undefined;
+    if (elig.length == 1) return elig[0];
+
+    console.warn(elig);
+    throw new Error(`Multiple valid recipes for ${name}, please filter them`);
   }
 
   getKey(nameOrKey: string): string {
@@ -110,8 +119,8 @@ export class PublicExport {
     return this.vaultedItems.has(name);
   }
 
-  static async create() {
-    const url = "https://origin.warframe.com/PublicExport/index_en.txt.lzma";
+  static async create(langCode = "en") {
+    const url = `https://origin.warframe.com/PublicExport/index_${langCode}.txt.lzma`;
 
     const self = new PublicExport();
 
@@ -128,6 +137,12 @@ export class PublicExport {
     }
 
     for (const { uniqueName, textureLocation } of self.exports["Manifest"]) self.textures[uniqueName] = textureLocation;
+
+    for (const obj of self.exports["ExportWeapons"]) {
+      if (obj.uniqueName.startsWith("/Lotus/Types/Items/Deimos/WoundedInfested")) {
+        obj.name = `Wounded ${obj.name}`;
+      }
+    }
 
     self.addNames(self.exports["ExportWarframes"], true);
     self.addNames(self.exports["ExportWeapons"], true);

@@ -27,6 +27,13 @@ export const InventoryOptions = z
         boardReactor: z.string().default(""),
         zawGrip: z.string().default(""),
         zawLink: z.string().default(""),
+        moaCore: z.string().default(""),
+        moaGyro: z.string().default(""),
+        moaBracket: z.string().default(""),
+        predAntigen: z.string().default(""),
+        predMutagen: z.string().default(""),
+        vulpAntigen: z.string().default(""),
+        vulpMutagen: z.string().default(""),
       })
       .prefault({}),
   })

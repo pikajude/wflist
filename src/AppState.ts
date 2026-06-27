@@ -1,4 +1,4 @@
-import { signal, Signal } from "@preact/signals";
+import { effect, signal, Signal } from "@preact/signals";
 import { createContext } from "preact";
 import z from "zod";
 import { PublicExport } from "./publicExport";
@@ -8,8 +8,13 @@ export type TAppState = {
   manifest: PublicExport;
   craftedItems: Signal<z.output<typeof CraftedList>>;
   ingredientsOwned: Signal<z.output<typeof Inventory>>;
+  language: Signal<z.output<typeof LanguageCode>>;
   listOpen: Signal<boolean>;
 };
+
+export const LanguageCode = z
+  .enum(["de", "en", "es", "fr", "it", "ja", "ko", "pl", "pt", "ru", "tc", "th", "tr", "uk", "zh"])
+  .default("en");
 
 const CraftedList = z
   .codec(z.array(z.string()), z.set(z.string()), {
@@ -34,10 +39,22 @@ const Inventory = z
   .prefault({});
 
 export async function createAppState(): Promise<TAppState> {
+  const langCode = await stored("wfListLang", LanguageCode);
+
+  let prevCode = langCode.value;
+
+  effect(() => {
+    if (langCode.value != prevCode) {
+      prevCode = langCode.value;
+      window.location.reload();
+    }
+  });
+
   return {
-    manifest: await PublicExport.create(),
+    manifest: await PublicExport.create(prevCode),
     craftedItems: await stored("wfListCrafted", CraftedList),
     ingredientsOwned: await stored("wfListIngredients", Inventory),
+    language: langCode,
     listOpen: await stored("wfListOpen", z.boolean().default(false)),
   };
 }

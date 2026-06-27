@@ -33,7 +33,11 @@ export function categorize(item: Item): string {
 
   if (item.uniqueName.startsWith("/Lotus/Powersuits/EntratiMech")) return "Suits";
 
-  if (item.uniqueName.startsWith("/Lotus/Types/Friendly/Pets")) return "Sentinels";
+  if (
+    item.uniqueName.startsWith("/Lotus/Types/Friendly/Pets") ||
+    item.uniqueName.startsWith("/Lotus/Types/Items/Deimos/WoundedInfested")
+  )
+    return "Sentinels";
 
   return item.productCategory;
 }
@@ -44,7 +48,7 @@ export const ExcludedWeaponPattern = [
 
   // moa/hound
   "/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetMeleeWeapon",
-  "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MeleeMoaPetPayload",
+  "/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MeleeMoaPet",
   new RegExp("^/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts/MoaPet(Leg|Engine|Payload).*$"),
   new RegExp("^/Lotus/Types/Friendly/Pets/ZanukaPets/ZanukaPetParts/ZanukaPetPart(Body|Legs|Tail).$"),
 

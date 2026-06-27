@@ -1,0 +1,8 @@
+{
+  "/Lotus/Types/Friendly/Pets/CreaturePets/HornedInfestedCatbrowPetPowerSuit": "/Lotus/Types/Items/Deimos/WoundedInfestedCritterUncommonRewardItem",
+  "/Lotus/Types/Friendly/Pets/CreaturePets/VulpineInfestedCatbrowPetPowerSuit": "/Lotus/Types/Items/Deimos/WoundedInfestedCritterCommonRewardItem",
+  "/Lotus/Types/Friendly/Pets/CreaturePets/MedjayPredatorKubrowPetPowerSuit": "/Lotus/Types/Items/Deimos/WoundedInfestedPredatorRareRewardItem",
+  "/Lotus/Types/Friendly/Pets/CreaturePets/ArmoredInfestedCatbrowPetPowerSuit": "/Lotus/Types/Items/Deimos/WoundedInfestedCritterRareRewardItem",
+  "/Lotus/Types/Friendly/Pets/CreaturePets/PharaohPredatorKubrowPetPowerSuit": "/Lotus/Types/Items/Deimos/WoundedInfestedPredatorUncommonRewardItem",
+  "/Lotus/Types/Friendly/Pets/CreaturePets/VizierPredatorKubrowPetPowerSuit": "/Lotus/Types/Items/Deimos/WoundedInfestedPredatorCommonRewardItem"
+}
