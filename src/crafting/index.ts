@@ -5,7 +5,7 @@ import { AppState } from "../AppState";
 import { InventoryOptions } from "../inventory";
 import { PublicExport } from "../publicExport";
 import { ExportRecipe } from "../publicExport/schema";
-import { humanName, sortWith } from "../util";
+import { humanName } from "../util";
 import BlueprintExchange from "./blueprintExchange";
 import DeimosExchange from "./deimosExchange.json";
 
@@ -173,26 +173,8 @@ export class CraftList {
 
     delete allItems["_root"];
 
-    const paired = Object.entries(allItems);
-    return sortWith(paired, CraftList.sortKey);
+    return Object.entries(allItems);
   }
-
-  static sortKey = (a: [string, CraftRequirement]) => [
-    a[1].toplevel ? 0 : 1,
-    this.categorize(a[0]),
-    a[1].name.replace("[A] ", ""),
-  ];
-
-  static categorize = (a: string) => {
-    if (a.endsWith("Blueprint")) return 150;
-    if (a.startsWith("/Lotus/Types/Items/Gems")) return 0;
-    if (a.startsWith("/Lotus/Types/Items/MiscItems") || a.startsWith("/Lotus/Types/Items/Research")) return 1;
-
-    if (a.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts")) return 100;
-    if (a.startsWith("/Lotus/Weapons")) return 200;
-
-    return 10;
-  };
 }
 
 export type CraftData = {

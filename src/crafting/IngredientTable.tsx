@@ -1,12 +1,31 @@
 import { signal, Signal, useComputed, useSignal } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
+import debounce from "debounce";
 import { TargetedEvent } from "preact";
-import { useContext, useState } from "preact/hooks";
+import { useContext, useMemo, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
 import { CraftData, CraftRequirement } from ".";
 import { AppState } from "../AppState";
 import cx from "../style";
-import { HumanName, humanName, Signalbox, Texture } from "../util";
+import { humanName, Signalbox, sortWith, Texture } from "../util";
+
+function itemSortOrder(name: string) {
+  if (name.endsWith("Blueprint")) return 150;
+  if (name.startsWith("/Lotus/Types/Items/MiscItems") || name.startsWith("/Lotus/Types/Items/Research")) return 1;
+  if (
+    name.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts") ||
+    name.startsWith("/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts") ||
+    name.startsWith("/Lotus/Types/Friendly/Pets/CreaturePets/CreaturePetParts") ||
+    name.startsWith("/Lotus/Types/Vehicles/Hoverboard/HoverboardParts") ||
+    name.startsWith("/Lotus/Weapons/SolarisUnited") ||
+    name.startsWith("/Lotus/Weapons/Ostron") ||
+    name.endsWith("Component")
+  )
+    return 100;
+  if (name.startsWith("/Lotus/Weapons")) return 200;
+
+  return 10;
+}
 
 export default function IngredientTable(props: { craftData: CraftData; isOpen?: Signal<boolean> }) {
   let {
@@ -18,9 +37,22 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
   const onlyMissing = useSignal(true);
   isOpen ??= signal(true);
 
+  const filterStr = useSignal("");
+
+  const setFilterStr = useMemo(() => debounce((contents: string) => (filterStr.value = contents), 250), [filterStr]);
+
   const allIngredients = useComputed(() => {
     const filt = onlyMissing.value;
-    return ingredients.value.filter((v) => !v[1].toplevel && (!filt || v[1].quantityNeeded > 0));
+    return sortWith(
+      ingredients.value.filter((v) => {
+        if (v[1].toplevel) return false;
+
+        if (filterStr.value.length > 0) return v[1].name.toLowerCase().includes(filterStr.value.toLowerCase());
+
+        return !filt || v[1].quantityNeeded > 0;
+      }),
+      (a) => [itemSortOrder(a[0]), a[1].name.replace("[A] ", "")],
+    );
   });
 
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -63,6 +95,14 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
                     Clear inventory
                   </button>
                 </div>
+                <div className={cx("mt-2", "mb-2")}>
+                  <input
+                    type="text"
+                    placeholder="Filter ingredients"
+                    className={cx("form-control", "form-control-sm")}
+                    onInput={(c) => setFilterStr(c.currentTarget.value)}
+                  />
+                </div>
                 <table className={cx("table", "table-striped", "table-sm", "align-middle", { "mb-0": fixed })}>
                   <thead>
                     <tr>
@@ -78,7 +118,7 @@ export default function IngredientTable(props: { craftData: CraftData; isOpen?: 
                     ))}
                     {allIngredients.value.length == 0 && (
                       <tr>
-                        <td colspan={4}>List complete!</td>
+                        <td colspan={4}>{filterStr.value.length == 0 ? "List complete!" : "No matches"}</td>
                       </tr>
                     )}
                   </tbody>
@@ -119,10 +159,7 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
   return (
     <tr>
       <td>
-        <Texture id={uniqueName} width="24px" />{" "}
-        <span className={fadedClass}>
-          <HumanName id={uniqueName} />
-        </span>{" "}
+        <Texture id={uniqueName} width="24px" /> <span className={fadedClass}>{requirement.name}</span>{" "}
         <i
           className={cx("fa-solid", "fa-sitemap")}
           ref={setRefEl}

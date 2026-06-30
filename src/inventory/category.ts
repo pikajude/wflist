@@ -2,13 +2,14 @@ import z from "zod";
 import { Item } from ".";
 
 export const Categories = {
+  All: [] as string[],
   Warframe: ["Suits", "SpaceSuits"],
   Primary: ["LongGuns", "OperatorAmps", "SentinelWeapons", "SpaceGuns"],
   Secondary: ["Pistols"],
   Melee: ["Melee", "SpaceMelee"],
   Companion: ["KubrowPets", "Sentinels"],
+  Archwing: ["SpaceSuits", "SpaceGuns", "SpaceMelee"],
   Modular: ["Modular"],
-  All: [] as string[],
 };
 
 export function typedKeys<T extends object>(object: T) {
