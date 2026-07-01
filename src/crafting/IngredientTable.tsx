@@ -11,7 +11,7 @@ import { humanName, Signalbox, sortWith, Texture } from "../util";
 
 function itemSortOrder(name: string) {
   if (name.endsWith("Blueprint")) return 150;
-  if (name.startsWith("/Lotus/Types/Items/MiscItems") || name.startsWith("/Lotus/Types/Items/Research")) return 1;
+  if (name.startsWith("/Lotus/Types/Items/MiscItems") || name.startsWith("/Lotus/Types/Items/Research")) return 10;
   if (
     name.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts") ||
     name.startsWith("/Lotus/Types/Friendly/Pets/MoaPets/MoaPetParts") ||
@@ -163,6 +163,7 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
         <i
           className={cx("fa-solid", "fa-sitemap")}
           ref={setRefEl}
+          onClick={() => void window.navigator.clipboard.writeText(JSON.stringify(uniqueName))}
           onMouseOver={() => (popped.value = true)}
           onMouseOut={() => (popped.value = false)}
         />

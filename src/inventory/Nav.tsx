@@ -4,7 +4,7 @@ import cx from "../style";
 import ListFilters from "./ListFilters";
 import { Categories, typedKeys } from "./category";
 
-export default function Nav() {
+export default function Nav(props: { search?: boolean }) {
   const { category } = useContext(InventoryState);
 
   return (
@@ -19,7 +19,7 @@ export default function Nav() {
             {c}
           </a>
         ))}
-        <ListFilters />
+        <ListFilters search={props.search} />
       </div>
     </nav>
   );

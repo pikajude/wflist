@@ -1,7 +1,7 @@
-import { signal, useComputed } from "@preact/signals";
+import { useComputed } from "@preact/signals";
 import { For } from "@preact/signals/utils";
 import { useContext, useMemo } from "preact/hooks";
-import { Category, createInventoryState, InventoryOptions, InventoryState, TInventoryState } from ".";
+import { Category, createInventoryState, InventoryState, makeInventoryState, TInventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
@@ -16,11 +16,7 @@ export default function ListInventory() {
   const r = useDynamicRoute();
 
   const loadingState = useMemo<TInventoryState>(
-    () => ({
-      category: signal(Category.safeParse(r.query.value["category"]).data ?? "All"),
-      items: signal([]),
-      options: signal(InventoryOptions.parse(undefined)),
-    }),
+    () => makeInventoryState(Category.safeParse(r.query.value["category"]).data ?? "All"),
     [r.query.value],
   );
 
@@ -44,7 +40,7 @@ function ListInner() {
 
   return (
     <>
-      <Nav />
+      <Nav search={true} />
       <div className={cx("container", "grid")}>
         <IngredientTable isOpen={listOpen} craftData={cd} />
         <For each={items}>{(item) => <ItemCard item={item} key={item.uniqueName} />}</For>

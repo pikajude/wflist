@@ -7,6 +7,7 @@ import { Deferred, useLazy } from "./util";
 
 import "@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2";
 import "./style.module.scss";
+import Images from "./util/Images.js";
 
 function App() {
   const appState = useLazy(createAppState);
@@ -18,6 +19,7 @@ function App() {
           <AppState.Provider value={arg}>
             <Router>
               <Route path="/" component={ListInventory} />
+              <Route path="/textures" component={Images} />
               <Route path="/item/:path*" component={ViewItem} />
               <Route default component={() => <p>Not found.</p>} />
             </Router>

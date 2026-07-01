@@ -47,6 +47,7 @@ export type TInventoryState = {
   items: ReadonlySignal<Item[]>;
   category: ReadonlySignal<Category>;
   options: Signal<InventoryOptions>;
+  searchQuery: Signal<string>;
 };
 
 const PermaVaulted = [
@@ -56,6 +57,12 @@ const PermaVaulted = [
 ];
 
 const isCategory = (c: Category, i: Item) => c == "All" || Categories[c].includes(categorize(i));
+
+const matchesQuery = (query: string, item: Item) => {
+  const q = query.toLowerCase();
+
+  return item.uniqueName.toLowerCase().includes(q) || item.name.toLowerCase().includes(q);
+};
 
 export async function createInventoryState(
   appState: TAppState,
@@ -79,14 +86,19 @@ export async function createInventoryState(
 
   const options = await stored("wfListFilters", InventoryOptions);
 
+  const searchQuery = signal("");
+
   const items = computed(() =>
     sortWith(
-      allItems.filter(
-        (item) =>
+      allItems.filter((item) => {
+        if (searchQuery.value.length > 0) return matchesQuery(searchQuery.value, item);
+
+        return (
           isCategory(category.value, item) &&
           !(options.value.hideVaulted && manifest.isVaulted(item.uniqueName)) &&
-          !(options.value.hideCrafted && craftedItems.value.has(item.uniqueName)),
-      ),
+          !(options.value.hideCrafted && craftedItems.value.has(item.uniqueName))
+        );
+      }),
       (a) => a.name.replace("<ARCHWING> ", ""),
     ),
   );
@@ -95,11 +107,15 @@ export async function createInventoryState(
     items,
     category,
     options,
+    searchQuery,
   };
 }
 
-export const InventoryState = createContext<TInventoryState>({
-  category: signal("All"),
+export const makeInventoryState = (category: Category | Signal<Category>) => ({
+  category: typeof category === "string" ? signal(category) : category,
   items: signal([]),
   options: signal(InventoryOptions.parse(undefined)),
+  searchQuery: signal(""),
 });
+
+export const InventoryState = createContext<TInventoryState>(makeInventoryState("All"));

@@ -1,6 +1,6 @@
-import { ReadonlySignal, signal, useComputed } from "@preact/signals";
+import { ReadonlySignal, useComputed } from "@preact/signals";
 import { useContext, useMemo } from "preact/hooks";
-import { createInventoryState, InventoryOptions, InventoryState, Item, TInventoryState } from ".";
+import { createInventoryState, InventoryState, Item, makeInventoryState, TInventoryState } from ".";
 import { AppState } from "../AppState";
 import { useCraftList } from "../crafting";
 import IngredientTable from "../crafting/IngredientTable";
@@ -33,14 +33,7 @@ export default function ViewItem() {
     return "All";
   });
 
-  const loadingState = useMemo<TInventoryState>(
-    () => ({
-      category: cat,
-      items: signal([]),
-      options: signal(InventoryOptions.parse(undefined)),
-    }),
-    [cat],
-  );
+  const loadingState = useMemo<TInventoryState>(() => makeInventoryState(cat), [cat]);
 
   return (
     <InventoryState.Provider value={loadingState}>

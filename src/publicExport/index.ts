@@ -1,7 +1,15 @@
 import localforage from "localforage";
 import { decompress } from "lzma1";
 import ADVERSARY from "./adversary.json";
-import { ExportGear, ExportRecipe, ExportResource, ExportSentinel, ExportWarframe, ExportWeapon } from "./schema";
+import {
+  ExportGear,
+  ExportNightwave,
+  ExportRecipe,
+  ExportResource,
+  ExportSentinel,
+  ExportWarframe,
+  ExportWeapon,
+} from "./schema";
 import VAULT from "./vault.json";
 
 export { ADVERSARY, VAULT };
@@ -34,6 +42,7 @@ export type ExportCategory =
 type TypedExports = {
   Manifest: { uniqueName: string; textureLocation: string }[];
   ExportGear: ExportGear[];
+  ExportNightwave: ExportNightwave;
   ExportWeapons: ExportWeapon[];
   ExportRecipes: ExportRecipe[];
   ExportResources: ExportResource[];
@@ -102,6 +111,8 @@ export class PublicExport {
   }
 
   getKey(nameOrKey: string): string {
+    if (nameOrKey == "_NoraBucks") return this.exports.ExportNightwave.rewards[0].uniqueName;
+
     if (!nameOrKey.startsWith("/Lotus") && nameOrKey in this.nameKeys) return this.nameKeys[nameOrKey];
 
     return nameOrKey;
@@ -157,22 +168,40 @@ export class PublicExport {
 
     for (const engName of VAULT) self.vaultedItems.add(self.nameKeys[engName]);
 
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/CaviaRankOne"] = "Cavia Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/EntratiRankOne"] = "Entrati Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/HexRankOne"] = "Hex Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/HoldfastsRankOne"] = "Holdfasts Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/NecraloidRankOne"] = "Necraloid Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/OstronRankOne"] = "Ostron Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/QuillsRankOne"] = "Quills Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/SolarisRankOne"] = "Solaris United Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/VoxRankOne"] = "Vox Solaris Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/Syndicate/VentkidsRankOne"] = "Ventkids Standing";
+
+    self.names["/Lotus/Upgrades/Skins/Sigils/SyndicateSigilArbitersOfHexisA"] = "Arbiters of Hexis Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/SyndicateSigilCephalonSudaA"] = "Cephalon Suda Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/SyndicateSigilNewLokaA"] = "New Loka Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/SyndicateSigilPerrinSequenceA"] = "Perrin Sequence Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/SyndicateSigilRedVeilA"] = "Red Veil Standing";
+    self.names["/Lotus/Upgrades/Skins/Sigils/SyndicateSigilSteelMeridianA"] = "Steel Meridian Standing";
+
     return self;
   }
 
   private addNames(objects: { uniqueName: string; name: string }[], craftable?: boolean) {
     for (const { uniqueName, name } of objects) {
       if (craftable) this.craftableItems.add(uniqueName);
-      this.addName(uniqueName, name);
+      this.addName(uniqueName, name.replace("<ARCHWING> ", ""));
     }
   }
 
   private addName(uniqueName: string, humanName: string) {
     if (humanName.length == 0) return;
     this.names[uniqueName] = humanName;
-    if (humanName in this.nameKeys)
-      console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
-    else this.nameKeys[humanName] = uniqueName;
+    if (humanName in this.nameKeys) {
+      // console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
+    } else this.nameKeys[humanName] = uniqueName;
   }
 
   static async getExportText(filename: string) {

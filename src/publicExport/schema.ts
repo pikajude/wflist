@@ -92,29 +92,28 @@ export type ExportWeapon = {
       slot: number;
     }
 );
-// all the modular stuff (and infested companions) are categorized as Pistols for whatever reason, but aren't included in this
 
 export type DamagePerShot = [
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
-  number,
+  number, // I
+  number, // P
+  number, // S
+  number, // Heat
+  number, // Cold
+  number, // Electric
+  number, // Toxin
+  number, // Blast
+  number, // Radiation
+  number, // Gas
+  number, // Mag
+  number, // Viral
+  number, // Corrosive
+  number, // Void
+  number, // Tau
+  number, // Cinematic
+  number, // Shield Drain
+  number, // Health Drain
+  number, // Energy Drain
+  number, // True
 ];
 
 export type ExportSentinel = {
@@ -126,4 +125,19 @@ export type ExportWarframe = {
   uniqueName: string;
   name: string;
   productCategory: string;
+};
+
+export type ExportNightwave = {
+  affiliationTag: string;
+  challenges: {
+    uniqueName: string;
+    name: string;
+    description: string;
+    standing: number;
+    required: number;
+  }[];
+  rewards: {
+    uniqueName: string;
+    [fieldName: string]: string;
+  }[];
 };

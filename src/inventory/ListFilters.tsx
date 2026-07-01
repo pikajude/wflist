@@ -1,6 +1,7 @@
 import { useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
-import { useCallback, useContext } from "preact/hooks";
+import debounce from "debounce";
+import { useCallback, useContext, useMemo } from "preact/hooks";
 import { InventoryState } from ".";
 import { AppState } from "../AppState";
 import {
@@ -24,7 +25,7 @@ import {
 import cx from "../style";
 import { Checkbox } from "../util";
 
-export default function ListFilters() {
+export default function ListFilters(props: { search?: boolean }) {
   const animating = useSignal(false);
   const visible = useSignal(false);
   const inDom = useComputed(() => animating.value || visible.value);
@@ -46,27 +47,34 @@ export default function ListFilters() {
   });
 
   return (
-    <div className={cx("nav-item")} style={{ marginLeft: "auto" }}>
-      <a className={cx("nav-link")} role="button" onClick={toggle}>
-        <i className={cx("fa-solid", "fa-gear")} /> Options
-      </a>
+    <>
+      {props.search && <SearchBox />}
+      <div className={cx("nav-item")} style={props.search ? {} : { marginLeft: "auto" }}>
+        <a className={cx("nav-link")} role="button" onClick={toggle}>
+          <i className={cx("fa-solid", "fa-gear")} />
+        </a>
 
-      <Show when={inDom}>
-        <div className={cx("modal-backdrop", "fade", { show: visible.value })} />
+        <Show when={inDom}>
+          <div className={cx("modal-backdrop", "fade", { show: visible.value })} />
 
-        <div className={cx("modal", "fade", { show: visible.value })} style={{ display: "block" }} onMouseDown={toggle}>
-          <div className={cx("modal-dialog", "modal-xl")} onMouseDown={(e) => e.stopPropagation()}>
-            <div className={cx("modal-content")}>
-              <div className={cx("modal-header")}>
-                <h1 className={cx("modal-title", "fs-5")}>List settings</h1>
-                <button className={cx("btn-close")} type="button" onClick={toggle} />
+          <div
+            className={cx("modal", "fade", { show: visible.value })}
+            style={{ display: "block" }}
+            onMouseDown={toggle}
+          >
+            <div className={cx("modal-dialog", "modal-xl")} onMouseDown={(e) => e.stopPropagation()}>
+              <div className={cx("modal-content")}>
+                <div className={cx("modal-header")}>
+                  <h1 className={cx("modal-title", "fs-5")}>List settings</h1>
+                  <button className={cx("btn-close")} type="button" onClick={toggle} />
+                </div>
+                <OptionsForm />
               </div>
-              <OptionsForm />
             </div>
           </div>
-        </div>
-      </Show>
-    </div>
+        </Show>
+      </div>
+    </>
   );
 }
 
@@ -306,5 +314,22 @@ function Selector(props: { options: { [key: string]: string }; selected: string;
         </option>
       ))}
     </select>
+  );
+}
+
+function SearchBox() {
+  const { searchQuery } = useContext(InventoryState);
+
+  const upd = useMemo(() => debounce((query: string) => (searchQuery.value = query), 250), [searchQuery]);
+
+  return (
+    <form className={cx("d-flex")} role="search" style={{ marginLeft: "auto" }}>
+      <input
+        className={cx("form-control", "me-2")}
+        type="search"
+        placeholder="Search"
+        onChange={(ev) => upd(ev.currentTarget.value)}
+      />
+    </form>
   );
 }

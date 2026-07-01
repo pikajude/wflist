@@ -5,7 +5,7 @@ import { InventoryState, Item } from "../inventory";
 import cx from "../style";
 import { slugify, Texture } from "../util";
 
-const enableCopyButton = false;
+const enableCopyButton = true;
 
 export default function ItemCard(
   props: {
@@ -42,9 +42,7 @@ export default function ItemCard(
           <button
             className={cx("btn", "btn-sm", "btn-primary", "d-block")}
             onClick={() => {
-              void window.navigator.clipboard.writeText(
-                `${JSON.stringify(prettyName)}: ${JSON.stringify(item.uniqueName)},`,
-              );
+              void window.navigator.clipboard.writeText(JSON.stringify(item.uniqueName));
             }}
           >
             Copy name

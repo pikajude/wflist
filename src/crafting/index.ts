@@ -3,10 +3,11 @@ import { useContext } from "preact/hooks";
 import toposort from "toposort";
 import { AppState } from "../AppState";
 import { InventoryOptions } from "../inventory";
+import { typedKeys } from "../inventory/category";
 import { PublicExport } from "../publicExport";
 import { ExportRecipe } from "../publicExport/schema";
 import { humanName } from "../util";
-import BlueprintExchange from "./blueprintExchange";
+import BlueprintExchange from "./blueprintExchange.json";
 import DeimosExchange from "./deimosExchange.json";
 
 export type CraftRequirement = {
@@ -21,7 +22,7 @@ export type CraftRequirement = {
 export class CraftList {
   private manifest: PublicExport;
   private options: InventoryOptions;
-  private recipes: Record<string, ExportRecipe | undefined> = {};
+  private recipes: Record<string, { v: ExportRecipe | undefined }> = {};
   private _edges: [string, string][] = [];
 
   constructor(manifest: PublicExport, options: InventoryOptions, items: string[] = []) {
@@ -35,7 +36,14 @@ export class CraftList {
   }
 
   getRecipe(uniqueName: string) {
-    return (this.recipes[uniqueName] ??= this.manifest.findRecipe(uniqueName, !this.options.useInvasions));
+    return (this.recipes[uniqueName] ??= { v: this.manifest.findRecipe(uniqueName, !this.options.useInvasions) }).v;
+  }
+
+  getBatchSize(uniqueName: string) {
+    // nitain can only be bought as 5x for 15 creds
+    if (uniqueName == "/Lotus/Types/Items/MiscItems/Alertium") return 5;
+
+    return this.getRecipe(uniqueName)?.num ?? 1;
   }
 
   add(uniqueName: string, toplevel: boolean = true) {
@@ -51,12 +59,10 @@ export class CraftList {
     const recipe = this.getRecipe(uniqueName);
     const regularItems = [...(recipe?.ingredients ?? [])];
 
-    const tk = (k: string) => this.manifest.getKey(k.startsWith("Rauta ") ? k : `${k} Blueprint`);
-
-    for (const dep in BlueprintExchange) {
-      for (let [bps, quantity] of BlueprintExchange[dep]) {
+    for (const dep of typedKeys(BlueprintExchange)) {
+      for (let [bps, quantity] of BlueprintExchange[dep] as [string | string[], number][]) {
         if (typeof bps === "string") bps = [bps];
-        if (bps.map(tk).includes(uniqueName))
+        if (bps.includes(uniqueName))
           regularItems.push({
             ItemType: this.manifest.getKey(dep),
             ItemCount: quantity,
@@ -143,7 +149,7 @@ export class CraftList {
         toplevel: true,
         quantityNeeded: 0,
         quantityTotal: 0,
-        batchSize: this.getRecipe(ItemType)?.num ?? 1,
+        batchSize: this.getBatchSize(ItemType),
       };
 
       if (parent != null && parent != "_root") allItems[ItemType].dependents.add(parent);
