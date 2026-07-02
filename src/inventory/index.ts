@@ -54,6 +54,9 @@ const PermaVaulted = [
   "/Lotus/Powersuits/Excalibur/ExcaliburPrime",
   "/Lotus/Weapons/Tenno/Pistol/LatoPrime",
   "/Lotus/Weapons/Tenno/Melee/LongSword/SkanaPrime",
+
+  // copy of imperator vandal that's apparently in some quest
+  "/Lotus/Types/JadeShadowsPart2Mission/Enemies/Ground/Elites/JS2MCorruptedBossMinigun",
 ];
 
 const isCategory = (c: Category, i: Item) => c == "All" || Categories[c].includes(categorize(i));

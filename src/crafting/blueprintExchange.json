@@ -313,6 +313,73 @@
     ],
     ["/Lotus/Types/Recipes/WarframeRecipes/WolfFrameBlueprint", 125]
   ],
+  "/Lotus/Types/Items/MiscItems/PrimeBucks": [
+    [
+      [
+        "/Lotus/Weapons/Corpus/LongGuns/CorpusUMP/PrismaCorpusUMP",
+        "/Lotus/Weapons/Grineer/Melee/GrineerMachetteAndCleaver/PrismaMachete",
+        "/Lotus/Weapons/Grineer/Pistols/WraithSingleViper/WraithSingleViper"
+      ],
+      400
+    ],
+    [
+      [
+        "/Lotus/Weapons/Grineer/Melee/GrineerMachetteAndCleaver/WraithMacheteWeapon",
+        "/Lotus/Weapons/ClanTech/Energy/VandalElectroProd",
+        "/Lotus/Weapons/Tenno/Melee/Warfan/TnMoonWarfan/MoonWarfanWeapon"
+      ],
+      410
+    ],
+    [
+      [
+        "/Lotus/Weapons/Grineer/Melee/GrnBoomerang/HalikarWraithWeapon",
+        "/Lotus/Weapons/Corpus/LongGuns/CrpShockRifle/QuantaVandal",
+        "/Lotus/Weapons/Corpus/Melee/CrpTonfa/CrpPrismaTonfa",
+        "/Lotus/Weapons/Grineer/LongGuns/GrineerSniperRifle/VulkarWraith"
+      ],
+      450
+    ],
+    [
+      [
+        "/Lotus/Weapons/Corpus/LongGuns/CrpFreezeRay/Vandal/CrpFreezeRayVandalRifle",
+        "/Lotus/Weapons/Corpus/Pistols/CrpHandRL/PrismaAngstrum"
+      ],
+      475
+    ],
+    [
+      "/Lotus/Weapons/Grineer/Melee/GrineerMachetteAndCleaver/PrismaDualCleavers",
+      490
+    ],
+    [
+      [
+        "/Lotus/Weapons/Grineer/Pistols/GrineerBulbousSMG/Prisma/PrismaTwinGremlinsWeapon",
+        "/Lotus/Weapons/Corpus/Melee/KickAndPunch/PrismaObex",
+        "/Lotus/Weapons/Tenno/Pistols/ConclaveLeverPistol/ConclaveLeverPistol",
+        "/Lotus/Weapons/Grineer/LongGuns/GrineerLeverActionRifle/PrismaGrinlokWeapon",
+        "/Lotus/Weapons/VoidTrader/VTDetron",
+        "/Lotus/Weapons/Corpus/LongGuns/Machinegun/SupraVandal"
+      ],
+      500
+    ],
+    ["/Lotus/Weapons/VoidTrader/PrismaSkana", 510],
+    [
+      "/Lotus/Weapons/Tenno/Archwing/Primary/ArchwingHeavyPistols/Prisma/PrismaArchHeavyPistols",
+      525
+    ],
+    [
+      [
+        "/Lotus/Weapons/Tenno/Archwing/Melee/VoidTraderArchsword/VTArchSwordWeapon",
+        "/Lotus/Weapons/Grineer/Melee/GunBlade/GrnGunBlade/GrnGunblade",
+        "/Lotus/Weapons/ClanTech/Chemical/FlameThrowerWraith"
+      ],
+      550
+    ],
+    ["/Lotus/Weapons/Corpus/Bow/Longbow/PrismaLenz/PrismaLenzWeapon", 575],
+    ["/Lotus/Weapons/Grineer/LongGuns/VoidTraderGorgon/VTGorgon", 600],
+    ["/Lotus/Weapons/VoidTrader/PrismaGrakata", 610],
+    ["/Lotus/Weapons/Corpus/LongGuns/CrpBFG/Vandal/VandalCrpBFG", 650],
+    ["/Lotus/Weapons/Grineer/LongGuns/GrnOrokinRifle/GrnOrokinRifleWeapon", 675]
+  ],
 
   "_NoraBucks": [
     ["/Lotus/Types/Items/MiscItems/Alertium", 15],
@@ -765,6 +832,14 @@
         "/Lotus/Types/Vehicles/Hoverboard/HoverboardParts/PartComponents/HoverboardCorpusC/HoverboardCorpusCJetBlueprint"
       ],
       15000
+    ],
+    [
+      [
+        "/Lotus/Types/Recipes/Weapons/TnYareliPistolBlueprint",
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/TnYareliPistolBarrelBlueprint",
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/TnYareliPistolReceiverBlueprint"
+      ],
+      25000
     ]
   ],
   "/Lotus/Upgrades/Skins/Sigils/Syndicate/VoxRankOne": [

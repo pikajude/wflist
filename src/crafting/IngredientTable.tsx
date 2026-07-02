@@ -1,7 +1,6 @@
 import { signal, Signal, useComputed, useSignal } from "@preact/signals";
 import { Show } from "@preact/signals/utils";
 import debounce from "debounce";
-import { TargetedEvent } from "preact";
 import { useContext, useMemo, useState } from "preact/hooks";
 import { usePopper } from "react-popper";
 import { CraftData, CraftRequirement } from ".";
@@ -9,8 +8,12 @@ import { AppState } from "../AppState";
 import cx from "../style";
 import { humanName, Signalbox, sortWith, Texture } from "../util";
 
-function itemSortOrder(name: string) {
+function itemSortOrder(name: string): number {
   if (name.endsWith("Blueprint")) return 150;
+
+  if (name.startsWith("/Lotus/Types/Items/Gems")) return 1;
+  if (name.startsWith("/Lotus/Types/Items/Fish")) return 2;
+
   if (name.startsWith("/Lotus/Types/Items/MiscItems") || name.startsWith("/Lotus/Types/Items/Research")) return 10;
   if (
     name.startsWith("/Lotus/Types/Recipes/Weapons/WeaponParts") ||
@@ -150,11 +153,14 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
   const popped = useSignal(false);
   const { styles, attributes } = usePopper(refEl, popEl, { placement: "top" });
 
-  const setQuantity = (evt: TargetedEvent<HTMLInputElement>) => {
-    let q = evt.currentTarget.valueAsNumber;
-    if (isNaN(q)) q = 0;
-    quantity.value = Math.max(0, q);
-  };
+  const setQuantity = useMemo(
+    () =>
+      debounce((quant: number) => {
+        if (isNaN(quant)) quant = 0;
+        quantity.value = Math.max(0, quant);
+      }, 400),
+    [quantity],
+  );
 
   return (
     <tr>
@@ -201,10 +207,7 @@ export function IngredientRow({ uniqueName, requirement }: { uniqueName: string;
             min={0}
             autocomplete="off"
             disabled={uniqueName == "/Lotus/Types/Items/MiscItems/ArgonCrystal"}
-            onBlur={setQuantity}
-            onChange={(evt) => {
-              if (document.activeElement != evt.currentTarget) setQuantity(evt);
-            }}
+            onChange={(evt) => setQuantity(evt.currentTarget.valueAsNumber)}
           />
           <button className={cx("btn", "btn-primary")} onClick={(_) => (quantity.value = requirement.quantityTotal)}>
             Fill

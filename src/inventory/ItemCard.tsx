@@ -5,7 +5,7 @@ import { InventoryState, Item } from "../inventory";
 import cx from "../style";
 import { slugify, Texture } from "../util";
 
-const enableCopyButton = true;
+const enableCopyButton = false;
 
 export default function ItemCard(
   props: {

@@ -135,7 +135,6 @@ export class PublicExport {
 
     const self = new PublicExport();
 
-    console.log(`PublicExport: fetching index`);
     const response = await fetch(url);
     const lines = new TextDecoder()
       .decode(decompress(await response.bytes()))
@@ -200,7 +199,7 @@ export class PublicExport {
     if (humanName.length == 0) return;
     this.names[uniqueName] = humanName;
     if (humanName in this.nameKeys) {
-      // console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
+      console.warn(`Duplicate human name ${humanName} for ${uniqueName}, first was ${this.nameKeys[humanName]}`);
     } else this.nameKeys[humanName] = uniqueName;
   }
 

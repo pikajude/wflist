@@ -20,14 +20,28 @@ export function slugify(input: string): string {
   return input.replace(/\W+/g, "-").toLowerCase();
 }
 
-export function sortWith<T, V>(arr: T[], fn: (v: T) => V) {
+export type Sortable = string | number | Sortable[];
+
+function cmp(lhs: Sortable, rhs: Sortable): number {
+  if (lhs instanceof Array && rhs instanceof Array) {
+    for (let i = 0; i < Math.max(lhs.length, rhs.length); i++) {
+      if (i >= lhs.length) return -1;
+      if (i >= rhs.length) return 1;
+      const res = cmp(lhs[i], rhs[i]);
+      if (res != 0) return res;
+    }
+    return 0;
+  }
+
+  if (lhs < rhs) return -1;
+  if (lhs > rhs) return 1;
+  return 0;
+}
+
+export function sortWith<T>(arr: T[], fn: (v: T) => Sortable) {
   return arr
     .map((v) => ({ key: fn(v), value: v }))
-    .sort((a, b) => {
-      if (a.key < b.key) return -1;
-      if (a.key > b.key) return 1;
-      return 0;
-    })
+    .sort((a, b) => cmp(a.key, b.key))
     .map((a) => a.value);
 }
 
