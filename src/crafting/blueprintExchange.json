@@ -98,24 +98,42 @@
     ]
   ],
   "/Lotus/Types/JadeShadowsPart2Mission/Gameplay/Resources/GarudaFavor": [
-    ["/Lotus/Types/Recipes/Weapons/OrionScytheBlueprint", 90],
     [
       [
         "/Lotus/Types/Recipes/Weapons/WeaponParts/OrionScytheBladeBlueprint",
         "/Lotus/Types/Recipes/Weapons/WeaponParts/OrionScytheHandleBlueprint"
       ],
       45
-    ]
+    ],
+    [
+      [
+        "/Lotus/Types/Recipes/Weapons/OrionScytheBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionChassisBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionHelmetBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionSystemsBlueprint"
+      ],
+      90
+    ],
+    ["/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionBlueprint", 275]
   ],
   "/Lotus/Types/JadeShadowsPart2Mission/Gameplay/Resources/AshFavor": [
-    ["/Lotus/Types/Recipes/Weapons/SiriusScytheBlueprint", 90],
     [
       [
         "/Lotus/Types/Recipes/Weapons/WeaponParts/SiriusScytheBladeBlueprint",
         "/Lotus/Types/Recipes/Weapons/WeaponParts/SiriusScytheHandleBlueprint"
       ],
       45
-    ]
+    ],
+    [
+      [
+        "/Lotus/Types/Recipes/Weapons/SiriusScytheBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionChassisBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionHelmetBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionSystemsBlueprint"
+      ],
+      90
+    ],
+    ["/Lotus/Types/Recipes/WarframeRecipes/SiriusOrionBlueprint", 275]
   ],
   "/Lotus/Types/Gameplay/Duviri/Resource/DuviriKullervoDropItem": [
     ["/Lotus/Types/Recipes/WarframeRecipes/PaxDuviricusBlueprint", 15],
@@ -313,6 +331,7 @@
     ],
     ["/Lotus/Types/Recipes/WarframeRecipes/WolfFrameBlueprint", 125]
   ],
+
   "/Lotus/Types/Items/MiscItems/PrimeBucks": [
     [
       [
@@ -380,7 +399,6 @@
     ["/Lotus/Weapons/Corpus/LongGuns/CrpBFG/Vandal/VandalCrpBFG", 650],
     ["/Lotus/Weapons/Grineer/LongGuns/GrnOrokinRifle/GrnOrokinRifleWeapon", 675]
   ],
-
   "_NoraBucks": [
     ["/Lotus/Types/Items/MiscItems/Alertium", 15],
     [
