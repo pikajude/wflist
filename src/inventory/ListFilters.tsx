@@ -5,23 +5,23 @@ import { useCallback, useContext, useMemo } from "preact/hooks";
 import { InventoryState } from ".";
 import { AppState } from "../AppState";
 import {
-  Brace,
-  Grip,
-  Jet,
-  Link,
-  Loader,
+  AmpBrace,
+  AmpScaffold,
+  BoardJet,
+  BoardNose,
+  BoardReactor,
+  GunGrip,
+  GunLoader,
   MoaBracket,
   MoaCore,
   MoaGyro,
-  Nose,
   PredAntigen,
   PredMutagen,
-  Reactor,
-  Scaffold,
   VulpAntigen,
   VulpMutagen,
   ZawGrip,
-} from "../crafting/modular";
+  ZawLink,
+} from "../crafting/modular.json";
 import cx from "../style";
 import { Checkbox } from "../util";
 
@@ -109,14 +109,14 @@ function OptionsForm() {
         <label className={cx("form-label")}>Amp components</label>
         <div className={cx("input-group", "input-group-sm")}>
           <Selector
-            options={Brace}
+            options={AmpBrace}
             selected={options.value.modular.ampBrace}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, ampBrace: x } };
             }}
           />
           <Selector
-            options={Scaffold}
+            options={AmpScaffold}
             selected={options.value.modular.ampScaffold}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, ampScaffold: x } };
@@ -128,21 +128,21 @@ function OptionsForm() {
         <label className={cx("form-label")}>K-Drive components</label>
         <div className={cx("input-group", "input-group-sm")}>
           <Selector
-            options={Nose}
+            options={BoardNose}
             selected={options.value.modular.boardNose}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, boardNose: x } };
             }}
           />
           <Selector
-            options={Jet}
+            options={BoardJet}
             selected={options.value.modular.boardJet}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, boardJet: x } };
             }}
           />
           <Selector
-            options={Reactor}
+            options={BoardReactor}
             selected={options.value.modular.boardReactor}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, boardReactor: x } };
@@ -154,14 +154,14 @@ function OptionsForm() {
         <label className={cx("form-label")}>Kitgun components</label>
         <div className={cx("input-group", "input-group-sm")}>
           <Selector
-            options={Grip}
+            options={GunGrip}
             selected={options.value.modular.gunGrip}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, gunGrip: x } };
             }}
           />
           <Selector
-            options={Loader}
+            options={GunLoader}
             selected={options.value.modular.gunLoader}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, gunLoader: x } };
@@ -180,7 +180,7 @@ function OptionsForm() {
             }}
           />
           <Selector
-            options={Link}
+            options={ZawLink}
             selected={options.value.modular.zawLink}
             onChange={(x) => {
               options.value = { ...options.value, modular: { ...options.value.modular, zawLink: x } };
