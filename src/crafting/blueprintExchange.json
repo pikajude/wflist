@@ -1,4 +1,45 @@
 {
+  "/Lotus/Types/Gameplay/Zariman/Resources/EntropicKuvaItem": [
+    ["/Lotus/Types/Recipes/WarframeRecipes/NarinBlueprint", 400],
+    [
+      [
+        "/Lotus/Types/Recipes/Weapons/DuelistPistolsBlueprint",
+        "/Lotus/Types/Recipes/Weapons/DuelistBowBlueprint"
+      ],
+      200
+    ],
+    [
+      [
+        "/Lotus/Types/Recipes/WarframeRecipes/NarinChassisBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/NarinHelmetBlueprint",
+        "/Lotus/Types/Recipes/WarframeRecipes/NarinSystemsBlueprint"
+      ],
+      130
+    ],
+    [
+      "/Lotus/Types/Recipes/Weapons/WeaponParts/DuelistPistolsLinkBlueprint",
+      60
+    ],
+    [
+      [
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/DuelistBowUpperLimbBlueprint",
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/DuelistBowGripBlueprint",
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/DuelistBowLowerLimbBlueprint",
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/DuelistBowStringBlueprint"
+      ],
+      50
+    ],
+    [
+      [
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/DuelistPistolsBarrelBlueprint",
+        "/Lotus/Types/Recipes/Weapons/WeaponParts/DuelistPistolsReceiverBlueprint"
+      ],
+      30
+    ]
+  ],
+  "/Lotus/Types/Gameplay/Events/RoadToTauEvent/RoadToTauEventResource": [
+    ["/Lotus/Weapons/Sentients/SentOctaMiniGun/SentOctaMiniGun", 150]
+  ],
   "/Lotus/Types/Gameplay/Shadowgrapher/Resources/ShadowgrapherResource": [
     ["/Lotus/Types/Recipes/WarframeRecipes/FollieBlueprint", 1200],
     [
@@ -376,7 +417,8 @@
         "/Lotus/Weapons/Tenno/Pistols/ConclaveLeverPistol/ConclaveLeverPistol",
         "/Lotus/Weapons/Grineer/LongGuns/GrineerLeverActionRifle/PrismaGrinlokWeapon",
         "/Lotus/Weapons/VoidTrader/VTDetron",
-        "/Lotus/Weapons/Corpus/LongGuns/Machinegun/SupraVandal"
+        "/Lotus/Weapons/Corpus/LongGuns/Machinegun/SupraVandal",
+        "/Lotus/Types/Sentinels/SentinelPowersuits/PrismaShadePowerSuit"
       ],
       500
     ],
